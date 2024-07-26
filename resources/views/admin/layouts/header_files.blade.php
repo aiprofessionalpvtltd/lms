@@ -8,3 +8,4 @@
 <!-- <link href="css/dark.css" rel="stylesheet"> -->
 
 <link class="js-stylesheet" href="{{asset('backend/css/light.css')}}" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
