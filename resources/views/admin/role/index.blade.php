@@ -24,16 +24,18 @@
         <!-- Basic datatable -->
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title"></h5>
-                <div class="header-elements">
-                    <a href="{{route('add-role')}}"
-                       class="btn btn-outline-primary"><b><i
-                                class="fas fa-plus"></i></b> Add {{$title}} </a>
-                </div>
+                @can('create-roles')
+                    <div class="col-md-12 mt-5">
+                        <a href="{{route('add-role')}}"
+                           class="btn btn-outline-primary float-end"><b><i
+                                    class="fas fa-plus"></i></b> Add {{$title}} </a>
+                    </div>
+                @endcan
+
             </div>
-            @include('admin.message')
+
             <div class="card-body">
-                <table id="" class="table table-striped datatables-reponsive" style="width:100%">
+                <table id="" class="table table-striped datatables-reponsive">
                     <thead>
                     <tr>
                         <th>Role Name</th>
@@ -49,19 +51,19 @@
                             <td>
                                 <div class="d-flex">
 
-{{--                                    @can('edit-roles')--}}
+                                    @can('edit-roles')
                                         <a title="Edit" href="{{ route('edit-role', $role->id) }}"
                                            class="text-primary mr-1"><i
                                                 class="fas fa-edit"></i></a>
-{{--                                    @endcan--}}
+                                    @endcan
 
-{{--                                    @can('delete-roles')--}}
-                                        <a href="javascript:void(0)" data-url="{{route('changeStatus-role')}}"
-                                           data-status='0' data-label="inactive"
+                                    @can('delete-roles')
+                                        <a href="javascript:void(0)" data-url="{{route('destroy-role')}}"
+                                           data-status='0' data-label="delete"
                                            data-id="{{$role->id}}"
                                            class=" text-danger mr-1 change-status-record "
                                            title="Suspend Record"><i class="fas fa-trash"></i></a>
-{{--                                    @endcan--}}
+                                    @endcan
 
                                 </div>
                             </td>
@@ -79,14 +81,5 @@
 
 @push('script')
     <script src="{{asset('backend/js/datatables.js')}}"></script>
-    <script src=" {{asset('backend/custom/js/ajax_form.js')}}"></script>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Datatables Responsive
-            $(".datatables-reponsive").DataTable({
-                responsive: true
-            });
-        });
-    </script>
 @endpush

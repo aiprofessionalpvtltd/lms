@@ -1,9 +1,5 @@
 @extends('admin.layouts.app')
-@push('style')
-    <link href="{{asset('backend/vendor/select2/css/select2.min.css')}}" rel="stylesheet">
-    <link href="{{asset('backend/vendor/bootstrap-select/dist/css/bootstrap-select.min.css')}}" rel="stylesheet">
 
-@endpush
 @section('content')
     <!--**********************************
             Content body start
@@ -21,19 +17,7 @@
 
         </div>
 
-        <div class="breadcrumb-line breadcrumb-line-light header-elements-md-inline">
-            <div class="d-flex">
-                <div class="breadcrumb">
-                    <a href="{{route('dashboard')}}" class="breadcrumb-item"><i class="icon-home2 mr-2"></i> Home </a>
-                    <a href="{{route('show-role')}}" class="breadcrumb-item">Role</a>
-                    <span class="breadcrumb-item active">{{$title}}</span>
-                </div>
 
-                <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
-            </div>
-
-
-        </div>
     </div>
     <!-- /page header -->
 
@@ -74,38 +58,34 @@
                                     </div>
                                 </div>
                                 <div class="row">
-
-
                                     @foreach($permissions as $module)
                                         <div class="col-md-4">
-                                            <div class="mb-3 mt-3">
-                                                <h1 class="mb-0 text-center bg-teal">{{$module['name']}}</h1>
-                                            </div>
-                                            @foreach ($module['permissions'] as $permissionID =>  $permission)
-                                                <div class="form-check form-check-right pl-4 p-1">
-                                                    <label class="form-check-label">
-                                                        {{  $permission['name']}}
-                                                        <input type="checkbox" name="permission[]"
-                                                               class="form-check-input-styled"
-                                                               value=" {{$permissionID}}"
-                                                               {{ $permission['checked'] ? 'checked' : '' }}
-                                                               data-fouc>
-                                                    </label>
+                                            <div class="card mb-3 mt-3">
+                                                <div class="card-header text-center bg-primary-dark">
+                                                    <h4 class="mb-0 text-white">{{$module['name']}}</h4>
                                                 </div>
-                                            @endforeach
+                                                <div class="card-body">
+                                                    @foreach ($module['permissions'] as $permissionID => $permission)
+                                                        <div class="form-check form-check-right p-1">
+                                                            <input type="checkbox" name="permission[]" class="form-check-input" value="{{$permissionID}}"
+                                                                {{ $permission['checked'] ? 'checked' : '' }}>
+                                                            <label class="form-check-label">
+                                                                {{ $permission['name'] }}
+                                                            </label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
                                         </div>
                                     @endforeach
 
-
-                                    @can('edit-roles')
+{{--                                    @can('edit-roles')--}}
                                         <div class="col-md-12 mt-5">
-                                            <button type="submit"
-                                                    class="btn bg-teal-400 btn-labeled btn-labeled-right float-right">
-                                                <b><i class="icon-database-edit2"></i></b> Update
+                                            <button type="submit" class="btn btn-outline-primary float-end">
+                                                <i class="bi bi-database-fill-check me-2"></i> Update
                                             </button>
                                         </div>
-                                    @endcan
-
+{{--                                    @endcan--}}
                                 </div>
                             </div>
                         </div>
@@ -126,15 +106,5 @@
 
 @push('script')
 
-    <script src="{{asset('assets/global_assets/js/plugins/forms/validation/validate.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/inputs/touchspin.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/selects/select2.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/switch.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/switchery.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/uniform.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/demo_pages/form_validation.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/demo_pages/form_select2.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/inputs/inputmask.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/demo_pages/form_checkboxes_radios.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/ui/moment/moment.min.js')}}"></script>
+
 @endpush

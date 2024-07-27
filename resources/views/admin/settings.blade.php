@@ -40,7 +40,7 @@
                     <h5 class="card-title">General information</h5>
 
                 </div>
-                @include('admin.message')
+
                 <div class="card-body">
                     <form class="form-validate-jquery" method="post" enctype="multipart/form-data"
                           action="{{ route('update-settings' , $setting->id) }}">

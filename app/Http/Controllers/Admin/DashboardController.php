@@ -31,10 +31,8 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        if (auth()->user()->isSuperAdmin() || auth()->user()->isAccountUser()|| auth()->user()->isWaterUser()|| auth()->user()->isHousingUser()) {
-            $redirect = 'our-dashboard';
-            return redirect()->route($redirect);
-        }
+         return redirect()->route('our-dashboard');
+
 
     }
 

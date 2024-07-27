@@ -34,7 +34,7 @@
             <form action="{{route('store-role')}}" method="post"
                   name="allotee_registration" class="flex-fill form-validate-jquery">
                 @csrf
-                @include('admin.message')
+
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card mb-0">
@@ -66,8 +66,8 @@
                                     @foreach($permissions as $module)
                                         <div class="col-md-4">
                                             <div class="card mb-3 mt-3 ">
-                                                <div class="card-header text-center  bg-primary text-white">
-                                                    <h5 class="mb-0">{{$module['name']}}</h5>
+                                                <div class="card-header text-center bg-primary-dark">
+                                                    <h4 class="mb-0 text-white">{{$module['name']}}</h4>
                                                 </div>
                                                 <div class="card-body">
                                                     @foreach ($module['permissions'] as $permissionID => $permission)
@@ -88,7 +88,7 @@
 
                                     <div class=" col-md-12 mt-5 ">
                                         <button type="submit"
-                                                class="btn bg-teal-400 btn-labeled btn-labeled-right float-right">
+                                                class="btn btn-outline-primary float-end">
                                             <b><i class="icon-plus3"></i></b> Save
                                         </button>
                                     </div>
@@ -113,16 +113,5 @@
 
 @push('script')
 
-    <script src="{{asset('assets/global_assets/js/plugins/forms/validation/validate.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/inputs/touchspin.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/selects/select2.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/switch.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/switchery.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/uniform.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/demo_pages/form_validation.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/demo_pages/form_select2.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/inputs/inputmask.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/demo_pages/form_checkboxes_radios.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/ui/moment/moment.min.js')}}"></script>
 
 @endpush

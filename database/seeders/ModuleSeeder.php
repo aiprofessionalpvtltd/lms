@@ -15,8 +15,8 @@ class ModuleSeeder extends Seeder
     public function run()
     {
         $modules = array (
-            'User',
-            'Role',
+            'Users',
+            'Roles',
             'Loan Management',
 
         );

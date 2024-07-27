@@ -16,18 +16,6 @@
 
         </div>
 
-        <div class="breadcrumb-line breadcrumb-line-light header-elements-md-inline">
-            <div class="d-flex">
-                <div class="breadcrumb">
-                    <a href="{{route('dashboard')}}" class="breadcrumb-item"><i class="icon-home2 mr-2"></i> Home </a>
-                    <span class="breadcrumb-item active">{{$title}}</span>
-                </div>
-
-                <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
-            </div>
-
-
-        </div>
     </div>
     <!-- /page header -->
 
@@ -41,16 +29,19 @@
                 <h5 class="card-title"></h5>
                 <div class="header-elements">
                     @can('create-users')
-                        <a href="{{route('add-user')}}"
-                           class="btn bg-primary-400 btn-labeled btn-labeled-left rounded-round"><b><i
-                                    class="fas fa-plus"></i></b> Add {{$title}}
-                        </a>
+                        <div class="col-md-12 mt-5">
+
+                            <a href="{{route('add-user')}}"
+                               class="btn btn-outline-primary float-end"><b><i
+                                        class="fas fa-plus"></i></b> {{$title}}
+                            </a>
+                        </div>
                     @endcan
                 </div>
             </div>
-            @include('admin.message')
 
-            <table class="table datatable-basic">
+            <div class="card-body">
+                <table id="" class="table table-striped datatables-reponsive">
                 <thead>
                 <tr>
                     <th>User Name</th>
@@ -77,17 +68,10 @@
 
                                 @can('delete-users')
                                     <a href="javascript:void(0)" data-url="{{route('changeStatus-user')}}"
-                                       data-status='0' data-label="inactive"
+                                       data-status='0' data-label="delete"
                                        data-id="{{$user->id}}"
-                                       class=" text-danger mr-1 change-status-record {{($user->status == '1') ? '' : 'd-none'}}"
+                                       class=" text-danger mr-1 change-status-record"
                                        title="Suspend Record"><i class="fas fa-trash"></i></a>
-
-                                    <a href="javascript:void(0)" data-url="{{route('changeStatus-user')}}"
-                                       data-status='1' data-label="active"
-                                       data-id="{{$user->id}}"
-                                       class="text-success mr-1 change-status-record {{($user->status == '0') ? '' : 'd-none'}}"
-                                       title="Active Record"><i class="fas fa-redo"></i></a>
-
                                 @endcan
                             </div>
                         </td>
@@ -95,6 +79,7 @@
                 @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
         <!-- /basic datatable -->
 
@@ -103,9 +88,6 @@
 @endsection
 
 @push('script')
-    <script src=" {{asset('assets/global_assets/js/plugins/tables/datatables/datatables.min.js')}}"></script>
-    <script src=" {{asset('assets/global_assets/js/plugins/forms/selects/select2.min.js')}}"></script>
-    <script src=" {{asset('assets/global_assets/js/demo_pages/datatables_basic.js')}}"></script>
-    <script src=" {{asset('assets/custom/js/ajax_form.js')}}"></script>
+    <script src="{{asset('backend/js/datatables.js')}}"></script>
 
 @endpush

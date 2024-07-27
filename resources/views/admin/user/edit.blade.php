@@ -21,19 +21,7 @@
 
         </div>
 
-        <div class="breadcrumb-line breadcrumb-line-light header-elements-md-inline">
-            <div class="d-flex">
-                <div class="breadcrumb">
-                    <a href="{{route('dashboard')}}" class="breadcrumb-item"><i class="icon-home2 mr-2"></i> Home </a>
-                    <a href="{{route('show-user')}}" class="breadcrumb-item">User</a>
-                    <span class="breadcrumb-item active">{{$title}}</span>
-                </div>
 
-                <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
-            </div>
-
-
-        </div>
     </div>
     <!-- /page header -->
 
@@ -130,7 +118,7 @@
                                             class="form-group form-group-feedback form-group-feedback-right">
                                             <select data-placeholder="Select Role" required
                                                     name="role_id" id="role_id"
-                                                    class="form-control select-search mb-3 "
+                                                    class="form-control select2 mb-3 "
                                                     data-fouc>
                                                 <option></option>
                                                 @foreach($roles as $key =>  $row)
@@ -147,7 +135,7 @@
                                     </div>
                                     <div class="col-md-12">
                                         <button type="submit"
-                                                class="btn bg-teal-400 btn-labeled btn-labeled-right float-right">
+                                                class="btn  btn-outline-primary float-end">
                                             <b><i class="icon-plus3"></i></b> Update
                                         </button>
                                     </div>

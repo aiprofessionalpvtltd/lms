@@ -21,19 +21,7 @@
 
         </div>
 
-        <div class="breadcrumb-line breadcrumb-line-light header-elements-md-inline">
-            <div class="d-flex">
-                <div class="breadcrumb">
-                    <a href="{{route('dashboard')}}" class="breadcrumb-item"><i class="icon-home2 mr-2"></i> Home </a>
-                    <a href="{{route('show-user')}}" class="breadcrumb-item">User</a>
-                    <span class="breadcrumb-item active">{{$title}}</span>
-                </div>
 
-                <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
-            </div>
-
-
-        </div>
     </div>
     <!-- /page header -->
 
@@ -47,7 +35,7 @@
             <form action="{{route('store-user')}}" method="post"
                   name="allotee_registration" class="flex-fill form-validate-jquery">
                 @csrf
-                @include('admin.message')
+
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card mb-0">
@@ -59,7 +47,7 @@
                                                 class="text-danger">*</span> </label>
                                         <div
                                             class="form-group form-group-feedback form-group-feedback-right">
-                                            <input type="text" required class="form-control"
+                                            <input type="text"   class="form-control"
                                                    name="name"
                                                    value="{{old('name')}}"
                                                    placeholder=" Name">
@@ -98,7 +86,7 @@
                                                 class="text-danger">*</span> </label>
                                         <div
                                             class="form-group form-group-feedback form-group-feedback-right">
-                                            <input required type="password" name="password"
+                                            <input   type="password" name="password"
                                                    class="form-control" id="password"
                                                    placeholder="Create password">
                                             <div class="form-control-feedback">
@@ -115,7 +103,7 @@
                                                 class="text-danger">*</span> </label>
                                         <div
                                             class="form-group form-group-feedback form-group-feedback-right">
-                                            <input required type="password" name="password_confirmation"
+                                            <input   type="password" name="password_confirmation"
                                                    class="form-control"
                                                    placeholder="Create password">
                                             <div class="form-control-feedback">
@@ -129,30 +117,27 @@
                                     </div>
 
                                     <div class="col-md-4">
-                                        <label class="col-form-label  ">Select Role <span
-                                                class="text-danger">*</span> </label>
-                                        <div
-                                            class="form-group form-group-feedback form-group-feedback-right">
-                                            <select data-placeholder="Select Role" required
+                                        <label class="col-form-label">Select Role <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Role"
                                                     name="role_id" id="role_id"
-                                                    class="form-control select-search mb-3 "
-                                                    data-fouc>
-                                                <option></option>
-                                                @foreach($roles as $key =>  $row)
-                                                    <option
-                                                        value="{{$row->id}}">{{$row->name}}</option>
+                                                    class="form-control select2"
+                                            data-fouc>
+                                            <option></option>
+                                            @foreach($roles as $key => $row)
+                                                <option value="{{ $row->id }}">{{ $row->name }}</option>
                                                 @endforeach
-                                            </select>
-                                            @if ($errors->has('role_id'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('role_id') }}</span>
-                                            @endif
+                                                </select>
+                                                @if ($errors->has('role_id'))
+                                                    <span class="text-danger">{{ $errors->first('role_id') }}</span>
+                                                @endif
                                         </div>
                                     </div>
+
                                     <div class="col-md-12">
                                         <button type="submit"
-                                                class="btn bg-teal-400 btn-labeled btn-labeled-right float-right">
-                                            <b><i class="icon-plus3"></i></b> Register
+                                                class="btn btn-outline-primary float-end">
+                                           Save
                                         </button>
                                     </div>
 
@@ -176,17 +161,5 @@
 
 @push('script')
 
-    <script src="{{asset('assets/global_assets/js/plugins/forms/validation/validate.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/inputs/touchspin.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/selects/select2.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/switch.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/switchery.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/styling/uniform.min.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/demo_pages/form_validation.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/demo_pages/form_select2.js')}}"></script>
-    <script src="{{asset('assets/global_assets/js/plugins/forms/inputs/inputmask.js')}}"></script>
-
-
-    <script src="{{asset('assets/global_assets/js/plugins/ui/moment/moment.min.js')}}"></script>
 
 @endpush

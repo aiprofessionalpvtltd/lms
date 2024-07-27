@@ -37,11 +37,11 @@ class UserController extends Controller
         $data = array();
         $title = 'Add User';
         $users = User::with('roles')
-            ->where('id', '!=', auth()->user()->id)
+            ->where('id', '>', auth()->user()->id)
             ->orderBy('created_at', 'DESC')
             ->get();
 
-        return view('backend.user.index', compact('title', 'users', 'data'));
+        return view('admin.user.index', compact('title', 'users', 'data'));
     }
 
     /**
@@ -53,7 +53,7 @@ class UserController extends Controller
     {
         $roles = Role::where('id', '!=', 1)->get();
         $title = 'Add User';
-        return view('backend.user.create', compact('roles', 'title'));
+        return view('admin.user.create', compact('roles', 'title'));
     }
 
     /**
@@ -67,34 +67,46 @@ class UserController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'email' => 'required|email|unique:users',
-            'role_id' => 'required',
+            'role_id' => 'required|exists:roles,id',
             'password' => 'required|min:8|confirmed',
             'password_confirmation' => 'required'
-
         ]);
 
         if ($validator->fails()) {
-
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
-
-        }
-        $validatedData = $validator->validated();
-
-        $data['email_verified_at'] = Carbon::now();
-        $data['password'] = $request->password;
-
-
-        $user = User::create(array_merge($validatedData, $data));
-
-        if ($request->filled('role_id')) {
-            $user->syncRoles($request->input('role_id'));
         }
 
+        DB::beginTransaction();
 
-        return redirect()->route('show-user')->with('success', 'User Created Successfully');
+        try {
+            $validatedData = $validator->validated();
+            $validatedData['email_verified_at'] = Carbon::now();
+            $validatedData['password'] = $request->input('password');
 
+            $user = User::create($validatedData);
+            if ($request->filled('role_id')) {
+                $role = Role::findById($request->input('role_id'));
+
+                if ($role) {
+                    $user->assignRole($role);
+
+                 } else {
+                     dd('mmm');
+                    DB::rollBack();
+                    return redirect()->route('show-user')->with('error', 'Role not found.');
+                }
+            }
+
+
+            DB::commit();
+            return redirect()->route('show-user')->with('success', 'User Created Successfully');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('show-user')->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -116,7 +128,7 @@ class UserController extends Controller
         $title = 'Edit User';
         $user = User::with('roles')->find($id);
         $roles = Role::where('id', '!=', 1)->get();
-        return view('backend.user.edit', compact('title', 'user', 'roles'));
+        return view('admin.user.edit', compact('title', 'user', 'roles'));
     }
 
     /**
@@ -130,11 +142,17 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
+        if (!$user) {
+            return redirect()->route('show-user')->with('error', 'User not found.');
+        }
+
+        DB::beginTransaction();
+
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
-                'email' => 'required|email',
-                'role_id' => 'required',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'role_id' => 'required|exists:roles,id',
             ]);
 
             if ($validator->fails()) {
@@ -157,20 +175,26 @@ class UserController extends Controller
                         ->withInput();
                 }
 
-                $validatedData['password'] = $request->input('password');
+                $validatedData['password'] = ($request->input('password'));
             }
 
             $user->update($validatedData);
-            $user->roles()->detach();
 
             if ($request->has('role_id')) {
-                $user->syncRoles($request->input('role_id'));
+                $role = Role::findById($request->input('role_id'));
+                if ($role) {
+                    $user->syncRoles($role);
+                } else {
+                    DB::rollBack();
+                    return redirect()->route('show-user')->with('error', 'Role not found.');
+                }
             }
 
+            DB::commit();
             return redirect()->route('show-user')->with('success', 'User Updated Successfully');
-        } catch (\Throwable $e) {
-//            dd($e->getMessage());
-            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
 

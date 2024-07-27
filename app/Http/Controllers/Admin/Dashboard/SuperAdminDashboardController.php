@@ -30,28 +30,8 @@ class SuperAdminDashboardController extends Controller
     public function index()
     {
 
-        $alloteeCount = Allotee::count();
-        $sectorCount = Sector::count();
-        $chargeCount = Charge::count();
-        $sizeCount = Size::count();
-        $billCount = Bill::count();
-        $paidBillCount = Bill::where('is_paid',1)->count();
-        $unpaidBillCount = Bill::where('is_paid',0)->count();
-        $arrears = Bill::where('is_paid', '=', 0)
-            ->get();
-        $totalArrears = $arrears->sum('sub_total');
-//        dd($alloteeCount);
-        return view('backend.dashboard.super_admin',
-            compact(
-                'alloteeCount',
-                'sectorCount',
-                'chargeCount',
-                'sizeCount',
-                'billCount',
-                'paidBillCount',
-                'unpaidBillCount',
-                'totalArrears'
-            ));
+
+        return view('home');
     }
 
 

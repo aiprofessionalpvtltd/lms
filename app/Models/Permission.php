@@ -9,6 +9,7 @@ class Permission extends SpatiePermission
 {
     use HasFactory;
 
+
     // Permission.php
     public function module()
     {

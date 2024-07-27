@@ -38,7 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('store-role', [RoleController::class, 'store'])->name('store-role');
     Route::get('role/{id}/edit', [RoleController::class, 'edit'])->name('edit-role');
     Route::put('update-role{id}', [RoleController::class, 'update'])->name('update-role');
-    Route::post('changeStatus-role', [RoleController::class, 'changeStatus'])->name('changeStatus-role');
+    Route::post('destroy-role', [RoleController::class, 'destroy'])->name('destroy-role');
 
 
 });

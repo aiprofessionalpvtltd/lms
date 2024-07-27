@@ -11,12 +11,6 @@ function getSettingValue($val)
     return $settings->$val;
 }
 
-function generateBillNumber($allotteeId){
-
-    $allottee = Allotee::find($allotteeId);
-    return  getSettingValue('invoice_prefix') . time() . '-' . $allottee->id;
-
-}
 
 
 function showStatus($status)
@@ -32,71 +26,7 @@ function showStatus($status)
 
 }
 
-function showSelectedStatus($status)
-{
 
-    if ($status == 1) {
-        echo '<span class="badge badge-success float-right">Selected</span>';
-
-    } else if ($status == 2) {
-        echo '<span class="badge badge-danger float-right">Not Selected</span>';
-    } else {
-        echo '<span class="badge badge-warning float-right">Selection Pending</span>';
-
-    }
-
-}
-
-
-function showVerificationStatus($employer)
-{
-    if ($employer->is_verified == 1) {
-        echo '<span class="badge badge-success"> Verified</span>';
-
-    } else {
-        echo ' <span class="badge badge-danger"> Not Verified</span>';
-
-    }
-
-}
-
-function showBillType($request)
-{
-    $badgeMap = [
-        'is_time_period' => ['label' => 'Period Bill', 'class' => 'badge-success'],
-        'is_non_time_period' => ['label' => 'Non Period Bill', 'class' => 'badge-primary'],
-        'is_violation' => ['label' => 'Violation', 'class' => 'badge-danger'],
-        'is_non_user' => ['label' => 'Non User', 'class' => 'badge-info'],
-        'is_stamp_duty' => ['label' => 'Stamp Duty', 'class' => 'badge-warning'],
-        'is_transfer' => ['label' => 'Transfer', 'class' => 'bg-pink'],
-        'is_possession' => ['label' => 'Possession', 'class' => 'bg-violet'],
-    ];
-
-    foreach ($badgeMap as $condition => $info) {
-        if ($request->$condition == 1) {
-            echo '<span class="badge ' . $info['class'] . '">' . $info['label'] . '</span>';
-        }
-    }
-}
-
-function showBillTypeStatus($request)
-{
-    $badgeMap = [
-        'is_time_period' => ['label' => 'Period Bill', 'class' => 'badge-success'],
-        'is_non_time_period' => ['label' => 'Non Period Bill', 'class' => 'badge-primary'],
-        'is_violation' => ['label' => 'Violation', 'class' => 'badge-danger'],
-        'is_non_user' => ['label' => 'Non User', 'class' => 'badge-info'],
-        'is_stamp_duty' => ['label' => 'Stamp Duty', 'class' => 'badge-warning'],
-        'is_transfer' => ['label' => 'Transfer', 'class' => 'bg-pink'],
-        'is_possession' => ['label' => 'Possession', 'class' => 'bg-violet'],
-    ];
-
-    foreach ($badgeMap as $condition => $info) {
-        if ($request->$condition == 1) {
-            return '<span class="badge ' . $info['class'] . '">' . $info['label'] . '</span>';
-        }
-    }
-}
 
 
 function showBoolean($status)
