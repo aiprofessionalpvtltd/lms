@@ -74,6 +74,16 @@
                     </a>
                 </li>
             @endcan
+
+            @can('view-loan-management')
+
+                <li class="sidebar-item  ">
+                    <a class="sidebar-link" href="{{ route('dashboard') }}">
+                        <i class="fas fa-bank"></i>
+                        <span class="align-middle">Loan</span>
+                    </a>
+                </li>
+            @endcan
         </ul>
     </div>
 </nav>

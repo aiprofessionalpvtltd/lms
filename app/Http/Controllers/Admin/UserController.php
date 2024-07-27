@@ -93,8 +93,7 @@ class UserController extends Controller
                     $user->assignRole($role);
 
                  } else {
-                     dd('mmm');
-                    DB::rollBack();
+                     DB::rollBack();
                     return redirect()->route('show-user')->with('error', 'Role not found.');
                 }
             }
@@ -199,7 +198,7 @@ class UserController extends Controller
     }
 
 
-    public function changeStatus(Request $request)
+    public function destroy(Request $request)
     {
         $user = User::find($request->id);
         $user->status = $request->status;
