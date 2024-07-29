@@ -5,18 +5,18 @@
         <div class="col-sm-10 col-md-8 col-lg-6 mx-auto d-table h-100">
             <div class="d-table-cell align-middle">
 
-                <div class="text-center mt-4">
-                    <p class="lead">
-                        Sign in to your account to continue
-                    </p>
-                </div>
+{{--                <div class="text-center mt-4">--}}
+{{--                    <p class="lead">--}}
+{{--                        Sign in to your account to continue--}}
+{{--                    </p>--}}
+{{--                </div>--}}
 
                 <div class="card">
                     <div class="card-body">
                         <div class="m-sm-4">
                             <div class="text-center">
                                 <img src="{{asset('backend/img/avatars/avatar.jpg')}}" alt="Charles Hall"
-                                     class="img-fluid rounded-circle" width="132" height="132"/>
+                                     class="img-fluid rounded-circle" width="200" height="132"/>
                             </div>
                             <form method="POST" action="{{ route('login') }}">
                                 @csrf
