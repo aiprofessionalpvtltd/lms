@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('user/register', [RegisterController::class, 'register']);
 Route::post('user/login', [RegisterController::class, 'login']);
-
+ Route::post('user/verify-otp', [RegisterController::class, 'verifyOtp']);
 
 
 Route::get('/user', function (Request $request) {

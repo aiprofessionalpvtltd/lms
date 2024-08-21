@@ -4,9 +4,12 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Resources\UserProfileResource;
 use App\Http\Resources\UserResource;
+use App\Models\Otp;
+use App\Models\UserProfile;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
@@ -76,15 +79,91 @@ class RegisterController extends BaseController
      */
     public function login(Request $request): JsonResponse
     {
-        if(Auth::attempt(['email' => $request->email, 'password' => $request->password])){
-            $user = Auth::user();
-            $success['token'] =  $user->createToken('MyApp')-> accessToken;
-            $success['name'] =  $user->name;
+        // Validate the request
+        $request->validate([
+            'mobile_no' => 'required',
+            'password' => 'required',
+        ]);
+        // Find the UserProfile with the given mobile_no
+        $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
 
-            return $this->sendResponse($success, 'User login successfully.');
-        }
-        else{
-            return $this->sendError('Unauthorised.', ['error'=>'Unauthorised']);
+        if ($userProfile && Auth::attempt(['id' => $userProfile->user_id, 'password' => $request->password])) {
+            $user = $userProfile->user;
+            // Generate OTP
+            $otpCode = rand(100000, 999999);
+
+            // Store OTP
+            Otp::create([
+                'user_id' => $user->id,
+                'otp' => $otpCode,
+                'expires_at' => Carbon::now()->addMinutes(10),
+            ]);
+
+            // Send OTP to the user's mobile number
+//            $this->sendSmsToUser($user->mobile_no, "Your OTP is: {$otpCode}");
+
+            return $this->sendResponse(['mobile_no' => $request->mobile_no , 'otp' => $otpCode], 'OTP sent to your mobile number.');
+        } else {
+            return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
         }
     }
+
+    public function verifyOtp(Request $request): JsonResponse
+    {
+        // Validate the request
+        $request->validate([
+            'mobile_no' => 'required',
+            'otp' => 'required|digits:6',
+        ]);
+
+        // Find the UserProfile with the given mobile_no
+        $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
+
+        if ($userProfile) {
+            $user = $userProfile->user;
+
+            // Verify the OTP
+            $otpRecord = Otp::where('user_id', $user->id)
+                ->where('otp', $request->otp)
+                ->where('expires_at', '>', Carbon::now())
+                ->first();
+
+            if ($otpRecord) {
+                // OTP is correct, log the user in
+                $success['token'] = $user->createToken('MyApp')->accessToken;
+                $success['name'] = $user->name;
+                $success['user'] = new UserResource($user);
+
+                // Delete the OTP after successful verification
+                $otpRecord->delete();
+
+                return $this->sendResponse($success, 'User logged in successfully.');
+            } else {
+                return $this->sendError('Invalid OTP or expired.', ['error' => 'Invalid OTP or expired.']);
+            }
+        } else {
+            return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
+        }
+    }
+
+
+    public function sendSmsToUser($mobile_no, $message)
+    {
+        // Example using Twilio
+        try {
+            $client = new \Twilio\Rest\Client(env('TWILIO_SID'), env('TWILIO_AUTH_TOKEN'));
+            $client->messages->create(
+                $mobile_no,
+                [
+                    'from' => env('TWILIO_FROM'),
+                    'body' => $message,
+                ]
+            );
+        } catch (\Exception $e) {
+            // Handle exception if SMS sending fails
+            return $this->sendError('Failed to send SMS.', ['error' => $e->getMessage()]);
+        }
+    }
+
+
 }

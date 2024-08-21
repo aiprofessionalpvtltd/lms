@@ -19,6 +19,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             SettingSeeder::class,
             PermissionsSeeder::class,
+            LoanDurationSeeder::class,
+            ProductServiceSeeder::class,
+            LoanPurposeSeeder::class,
         ]);
     }
 }
