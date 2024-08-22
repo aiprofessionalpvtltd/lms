@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\Dashboard\SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\API\LoanApplicationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,6 +35,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('changePassword', [UserController::class, 'changePassword'])->name('changePassword');
 
 
+    Route::get('show-customer', [CustomerController::class, 'show'])->name('show-customer');
+    Route::get('user/{id}/view', [CustomerController::class, 'view'])->name('view-customer');
+
+
     Route::get('show-role', [RoleController::class, 'show'])->name('show-role');
     Route::get('add-role', [RoleController::class, 'index'])->name('add-role');
     Route::post('store-role', [RoleController::class, 'store'])->name('store-role');
@@ -40,6 +46,11 @@ Route::middleware(['auth'])->group(function () {
     Route::put('update-role{id}', [RoleController::class, 'update'])->name('update-role');
     Route::post('destroy-role', [RoleController::class, 'destroy'])->name('destroy-role');
 
+
+
+    Route::get('get-all-loan-applications', [LoanApplicationController::class, 'getAllData'])->name('get-all-loan-applications');
+    Route::get('loan-application/{id}/view', [LoanApplicationController::class, 'getSingleData'])->name('view-loan-application');
+     Route::put('loan-applications/{id}/status', [LoanApplicationController::class, 'updateStatus'])->name('update-loan-application-status');
 
 });
 

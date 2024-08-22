@@ -17,6 +17,7 @@ class ModuleSeeder extends Seeder
         $modules = array (
             'Users',
             'Roles',
+            'Customer',
             'Loan Management',
 
         );

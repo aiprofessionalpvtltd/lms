@@ -55,7 +55,22 @@ function showBooleanStatus($status)
 
 }
 
+function showApprovalStatus($status)
+{
 
+    if ($status === 'pending') {
+        echo '<span class="badge bg-warning">Pending</span>';
+
+    }
+    if ($status === 'accepted') {
+        echo '<span class="badge bg-success">Accepted</span>';
+
+    }  if ($status === 'rejected') {
+        echo '<span class="badge bg-danger">Rejected</span>';
+
+    }
+
+}
 
 
 function settingImagePath($image)

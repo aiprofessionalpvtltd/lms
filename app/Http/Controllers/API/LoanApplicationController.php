@@ -19,22 +19,33 @@ class LoanApplicationController extends BaseController
     public function getAllData(Request $request)
     {
         // Get the status from the request, defaulting to 'pending' if not provided
-        $status = $request->get('status', 'pending');
+        $status = $request->get('status');
 
         try {
-            // Fetch loan applications based on the status
-            $loanApplications = LoanApplication::where('status', $status)->get();
+            if($status){
+                // Fetch loan applications based on the status
+                $loanApplications = LoanApplication::where('status', $status)->get();
+            }else{
+                $loanApplications = LoanApplication::all();
+
+            }
+
 
             // Check if any loan applications are found
             if ($loanApplications->isEmpty()) {
                 return $this->sendError('No Loan Applications found for the given status.');
             }
 
-            // Return the loan applications as a response
-            return $this->sendResponse(
-                LoanApplicationResource::collection($loanApplications),
-                'Loan Applications retrieved successfully.'
-            );
+            if ($request->expectsJson()) {
+                // Return the loan applications as a response
+                return $this->sendResponse(
+                    LoanApplicationResource::collection($loanApplications),
+                    'Loan Applications retrieved successfully.'
+                );
+            } else {
+
+                return view('admin.loan_applications.index', compact('loanApplications'));
+            }
 
         } catch (\Exception $e) {
             // Log the error for debugging purposes
@@ -44,6 +55,44 @@ class LoanApplicationController extends BaseController
             return $this->sendError('An error occurred while retrieving loan applications. Please try again later.');
         }
     }
+
+    public function getSingleData(Request $request , $id)
+    {
+        // Get the status from the request, defaulting to 'pending' if not provided
+        $loanApplicationID = $id;
+
+        try {
+            // Fetch loan applications based on the status
+            $loanApplication = LoanApplication::find($loanApplicationID);
+
+             // Check if any loan applications are found
+            if ($loanApplication == null) {
+                return $this->sendError('No Loan Applications found');
+            }
+
+            if ($request->expectsJson()) {
+                // Return the loan applications as a response
+                return $this->sendResponse(
+                    new LoanApplicationResource($loanApplication),
+                    'Loan Applications retrieved successfully.'
+                );
+            } else {
+
+//                dd($loanApplication);
+                return view('admin.loan_applications.view', compact('loanApplication'));
+            }
+
+
+
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
+
+            // Return a generic error response
+            return $this->sendError('An error occurred while retrieving loan applications. Please try again later.');
+        }
+    }
+
 
     public function getUserData(Request $request)
     {
@@ -179,5 +228,37 @@ class LoanApplicationController extends BaseController
             return $this->sendError('Something went wrong: ' . $e->getMessage());
         }
     }
+
+    public function updateStatus(Request $request, $id)
+    {
+         $validator = Validator::make($request->all(), [
+            'status' => 'required|in:pending,accepted,rejected',
+            'rejection_reason' => 'required_if:status,rejected'
+        ]);
+
+         if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $loanApplication = LoanApplication::find($id);
+
+        if (!$loanApplication) {
+            return redirect()->back()->with('error', 'Loan Application not found.');
+        }
+
+         $loanApplication->status = $request->status;
+        $loanApplication->save();
+
+        LoanApplicationHistory::create([
+            'loan_application_id' => $loanApplication->id,
+            'status' => $request->status,
+            'remarks' => $request->status === 'rejected' ? $request->rejection_reason : null
+        ]);
+
+        return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
+    }
+
+
+
 
 }

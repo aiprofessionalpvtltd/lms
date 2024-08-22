@@ -75,12 +75,22 @@
                 </li>
             @endcan
 
+            @can('view-customer')
+
+                <li class="sidebar-item {{ request()->routeIs('show-customer') ? 'active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('show-customer') }}">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">Customers</span>
+                    </a>
+                </li>
+            @endcan
+
             @can('view-loan-management')
 
                 <li class="sidebar-item  ">
-                    <a class="sidebar-link" href="{{ route('dashboard') }}">
+                    <a class="sidebar-link" href="{{ route('get-all-loan-applications') }}">
                         <i class="fas fa-bank"></i>
-                        <span class="align-middle">Loan</span>
+                        <span class="align-middle">Loan Applications</span>
                     </a>
                 </li>
             @endcan
