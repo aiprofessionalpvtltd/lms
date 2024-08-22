@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             LoanDurationSeeder::class,
             ProductServiceSeeder::class,
             LoanPurposeSeeder::class,
+            DocumentTypeSeeder::class,
         ]);
     }
 }

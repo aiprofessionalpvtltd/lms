@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
+use Spatie\Permission\Models\Role;
 
 class RegisterController extends BaseController
 {
@@ -59,6 +60,8 @@ class RegisterController extends BaseController
 
         // Link profile to the user
         $user->profile()->create($profileData);
+
+        $user->assignRole(Role::where('name', 'Customer')->first());
 
         $success['token'] = $user->createToken('LMS')->accessToken;
         $success['name'] = $user->name;

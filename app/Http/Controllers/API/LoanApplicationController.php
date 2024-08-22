@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\LoanApplicationResource;
 use App\Models\LoanApplication;
 use App\Models\LoanApplicationHistory;
+use App\Models\LoanAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -87,7 +88,6 @@ class LoanApplicationController extends BaseController
             'address' => 'required|string',
             'reference_contact_1' => 'required|string|max:255',
             'reference_contact_2' => 'required|string|max:255',
-            'documents.*' => 'sometimes|file|mimes:pdf,jpg,png,doc,docx|max:2048', // Example validation rules
         ]);
 
         if ($validator->fails()) {
@@ -98,13 +98,6 @@ class LoanApplicationController extends BaseController
         DB::beginTransaction();
 
         try {
-
-            $documents = [];
-            if ($request->hasFile('documents')) {
-                foreach ($request->file('documents') as $file) {
-                    $documents[] = $file->store('documents', 'public');
-                }
-            }
 
             $userID = auth::user()->id;
 
@@ -120,10 +113,9 @@ class LoanApplicationController extends BaseController
                 'reference_contact_1' => $request->reference_contact_1,
                 'reference_contact_2' => $request->reference_contact_2,
                 'status' => 'pending',
-                'documents' => $documents,
             ]);
 
-            LoanApplicationHistory::create([
+             LoanApplicationHistory::create([
                 'loan_application_id' => $loanApplication->id,
                 'status' => 'pending',
             ]);
@@ -139,4 +131,53 @@ class LoanApplicationController extends BaseController
             return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
+
+    public function storeDocuments(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'document_type_id' => 'required|array|min:1',
+            'document_type_id.*' => 'required|exists:document_types,id',
+            'documents' => 'required|array|min:1',
+            'documents.*' => 'required|file|mimes:pdf,jpg,png,doc,docx|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $loanApplication = LoanApplication::find($request->id);
+
+            if (!$loanApplication) {
+                return $this->sendError('Loan Application not found.');
+            }
+
+            foreach ($request->file('documents') as $index => $file) {
+                $path = $file->store('documents', 'public');
+
+                // Check if a record with the same loan_application_id and document_type_id exists
+                LoanAttachment::updateOrCreate(
+                    [
+                        'loan_application_id' => $loanApplication->id,
+                        'document_type_id' => $request->document_type_id[$index],
+                    ],
+                    [
+                        'path' => $path, // Update the path if the record exists
+                    ]
+                );
+            }
+
+            DB::commit();
+            return $this->sendResponse([
+                'loan_application' => new LoanApplicationResource($loanApplication)
+            ], 'Documents uploaded successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Something went wrong: ' . $e->getMessage());
+        }
+    }
+
 }
