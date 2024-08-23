@@ -29,8 +29,8 @@ class RegisterController extends BaseController
             'email' => 'required|email|unique:users,email',
             'password' => 'required',
             'confirmation_password' => 'required|same:password',
-            'photo' => 'required|string',
-            'cnic' => 'required|string',
+            'photo' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'cnic' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'cnic_no' => 'required|string|max:15|unique:user_profiles,cnic_no',
             'issue_date' => 'required|date',
             'expire_date' => 'required|date',
@@ -51,12 +51,14 @@ class RegisterController extends BaseController
         // Handle the profile photo upload
         $profileData = $request->only(['photo','cnic', 'cnic_no', 'issue_date', 'expire_date', 'dob', 'mobile_no']);
 
-        if ($request->has('photo')) {
-            $profileData['photo'] = $this->saveBase64Image($request->photo, 'profile_photos');
+        if ($request->hasFile('photo')) {
+            $profileData['photo'] = $request->file('photo')->store('profile_photos', 'public');
         }
-        if ($request->has('cnic')) {
-            $profileData['cnic'] = $this->saveBase64Image($request->cnic, 'cnic_photos');
+
+        if ($request->hasFile('cnic')) {
+            $profileData['cnic'] = $request->file('cnic')->store('cnic_photos', 'public');
         }
+
 
         // Link profile to the user
         $user->profile()->create($profileData);
