@@ -48,7 +48,7 @@ class RegisterController extends BaseController
         try {
             // Create user
             $input = $request->only(['name', 'email', 'password']);
-            $input['password'] = bcrypt($input['password']);
+            $input['password'] = $input['password'];
             $user = User::create($input);
 
             // Handle the profile photo and CNIC upload
