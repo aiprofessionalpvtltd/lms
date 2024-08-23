@@ -14,7 +14,7 @@ class LoanApplicationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+         return [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
@@ -26,8 +26,8 @@ class LoanApplicationResource extends JsonResource
             'address' => $this->address,
             'reference_contact_1' => $this->reference_contact_1,
             'reference_contact_2' => $this->reference_contact_2,
-            'status' => $this->status,  // Array of document file pa
-            'documents' => $this->documents,  // Array of document file paths
+            'status' => $this->status,
+            'documents' => ($this->attachments != null) ? LoanAttachmentResource::collection($this->attachments) : null, // Conditionally return attachments
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'history' => LoanApplicationHistoryResource::collection($this->histories),

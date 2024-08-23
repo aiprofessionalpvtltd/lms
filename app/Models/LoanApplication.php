@@ -44,4 +44,9 @@ class LoanApplication extends Model
     {
         return $this->hasMany(LoanApplicationHistory::class);
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(LoanAttachment::class);
+    }
 }
