@@ -14,13 +14,9 @@ class DocumentTypeSeeder extends Seeder
     public function run(): void
     {
         $documentTypes = [
-            ['name' => 'Passport'],
-            ['name' => 'ID Card'],
             ['name' => 'Bank Statement'],
-            ['name' => 'Utility Bill'],
             ['name' => '6 Month Salary Slip'],
             ['name' => 'Signature'],
-            // Add more types as needed
         ];
 
         foreach ($documentTypes as $type) {

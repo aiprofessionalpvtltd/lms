@@ -184,10 +184,9 @@ class LoanApplicationController extends BaseController
     public function storeDocuments(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'document_type_id' => 'required|array|min:1',
-            'document_type_id.*' => 'required|exists:document_types,id',
-            'documents' => 'required|array|min:1',
-            'documents.*' => 'required|file|mimes:pdf,jpg,png,doc,docx|max:2048',
+            'bank_document' => 'required|file|mimes:pdf,jpg,png,doc,docx|max:2048',
+            'salary_slip_document' => 'required|file|mimes:pdf,jpg,png,doc,docx|max:2048',
+            'signature' => 'required|string',  // Expecting base64 string for signature
         ]);
 
         if ($validator->fails()) {
@@ -203,20 +202,41 @@ class LoanApplicationController extends BaseController
                 return $this->sendError('Loan Application not found.');
             }
 
-            foreach ($request->file('documents') as $index => $file) {
-                $path = $file->store('documents', 'public');
+            // Handle bank document upload
+            $bankDocumentPath = $request->bank_document->store('documents', 'public');
+            LoanAttachment::updateOrCreate(
+                [
+                    'loan_application_id' => $loanApplication->id,
+                    'document_type_id' => 1,  // Type ID for Bank Document
+                ],
+                [
+                    'path' => $bankDocumentPath,
+                ]
+            );
 
-                // Check if a record with the same loan_application_id and document_type_id exists
-                LoanAttachment::updateOrCreate(
-                    [
-                        'loan_application_id' => $loanApplication->id,
-                        'document_type_id' => $request->document_type_id[$index],
-                    ],
-                    [
-                        'path' => $path, // Update the path if the record exists
-                    ]
-                );
-            }
+            // Handle salary slip document upload
+            $salarySlipDocumentPath = $request->salary_slip_document->store('documents', 'public');
+            LoanAttachment::updateOrCreate(
+                [
+                    'loan_application_id' => $loanApplication->id,
+                    'document_type_id' => 2,  // Type ID for Salary Slip Document
+                ],
+                [
+                    'path' => $salarySlipDocumentPath,
+                ]
+            );
+
+            // Handle signature as base64 image upload
+            $signaturePath = $this->saveBase64Image($request->signature, 'documents');
+            LoanAttachment::updateOrCreate(
+                [
+                    'loan_application_id' => $loanApplication->id,
+                    'document_type_id' => 3,  // Type ID for Signature
+                ],
+                [
+                    'path' => $signaturePath,
+                ]
+            );
 
             DB::commit();
             return $this->sendResponse([

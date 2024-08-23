@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\LoanApplicationController;
 use App\Http\Controllers\API\RegisterController;
 use Illuminate\Http\Request;
@@ -11,8 +12,14 @@ Route::post('user/login', [RegisterController::class, 'login']);
 
 Route::middleware('auth:api')->group(function () {
 
-Route::get('user/loan-applications', [LoanApplicationController::class, 'getAllData']);
-Route::get('user/user-loan-applications', [LoanApplicationController::class, 'getUserData']);
-Route::post('user/loan-applications', [LoanApplicationController::class, 'store']);
-Route::post('user/loan-applications/documents', [LoanApplicationController::class, 'storeDocuments']);
+    Route::get('user/loan-applications', [LoanApplicationController::class, 'getAllData']);
+    Route::get('user/user-loan-applications', [LoanApplicationController::class, 'getUserData']);
+    Route::post('user/loan-applications', [LoanApplicationController::class, 'store']);
+    Route::post('user/loan-applications/documents', [LoanApplicationController::class, 'storeDocuments']);
+
+    // Routes fr dropdowns
+    Route::get('dropdown/loan-duration', [DropdownController::class, 'getLoanDuration']);
+    Route::get('dropdown/loan-purpose', [DropdownController::class, 'getLoanPurpose']);
+    Route::get('dropdown/product-service', [DropdownController::class, 'getProductService']);
+    Route::get('dropdown/document-type', [DropdownController::class, 'getDocumentType']);
 });
