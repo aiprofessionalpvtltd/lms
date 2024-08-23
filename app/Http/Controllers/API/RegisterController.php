@@ -11,6 +11,7 @@ use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Spatie\Permission\Models\Role;
@@ -25,9 +26,9 @@ class RegisterController extends BaseController
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required',
+            'password' => 'required|string|min:6',
             'confirmation_password' => 'required|same:password',
             'photo' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'cnic' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -42,38 +43,49 @@ class RegisterController extends BaseController
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
+        DB::beginTransaction();
 
-        // Create user
-        $input = $request->all();
-        $input['password'] = $input['password'];
-        $user = User::create($input);
+        try {
+            // Create user
+            $input = $request->only(['name', 'email', 'password']);
+            $input['password'] = bcrypt($input['password']);
+            $user = User::create($input);
 
-        // Handle the profile photo upload
-        $profileData = $request->only(['photo','cnic', 'cnic_no', 'issue_date', 'expire_date', 'dob', 'mobile_no']);
+            // Handle the profile photo and CNIC upload
+            $profileData = $request->only(['cnic_no', 'issue_date', 'expire_date', 'dob', 'mobile_no']);
 
-        if ($request->hasFile('photo')) {
-            $profileData['photo'] = $request->file('photo')->store('profile_photos', 'public');
+            if ($request->hasFile('photo')) {
+                $profileData['photo'] = $request->file('photo')->store('profile_photos', 'public');
+            }
+
+            if ($request->hasFile('cnic')) {
+                $profileData['cnic'] = $request->file('cnic')->store('cnic_photos', 'public');
+            }
+
+            // Link profile to the user
+            $user->profile()->create($profileData);
+
+            // Assign role to the user
+            $user->assignRole(Role::where('name', 'Customer')->first());
+
+            // Create access token
+            $success['token'] = $user->createToken('LMS')->accessToken;
+            $success['name'] = $user->name;
+
+            DB::commit();
+
+            // Return the response with the UserResource
+            return $this->sendResponse([
+                'name' => $user->name,
+                'token' => $success['token'],
+                'user' => new UserResource($user)
+            ], 'User registered successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return $this->sendError('Registration failed.', ['error' => $e->getMessage()]);
         }
-
-        if ($request->hasFile('cnic')) {
-            $profileData['cnic'] = $request->file('cnic')->store('cnic_photos', 'public');
-        }
-
-
-        // Link profile to the user
-        $user->profile()->create($profileData);
-
-        $user->assignRole(Role::where('name', 'Customer')->first());
-
-        $success['token'] = $user->createToken('LMS')->accessToken;
-        $success['name'] = $user->name;
-
-// Return the response with the UserResource
-        return $this->sendResponse([
-            'name' => $user->name,
-            'token' => $success['token'],
-            'user' => new UserResource($user)
-        ], 'User registered successfully.');
     }
 
 
@@ -89,27 +101,38 @@ class RegisterController extends BaseController
             'mobile_no' => 'required',
             'password' => 'required',
         ]);
-        // Find the UserProfile with the given mobile_no
-        $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
 
-        if ($userProfile && Auth::attempt(['id' => $userProfile->user_id, 'password' => $request->password])) {
-            $user = $userProfile->user;
-            // Generate OTP
-            $otpCode = rand(100000, 999999);
+        DB::beginTransaction();
 
-            // Store OTP
-            Otp::create([
-                'user_id' => $user->id,
-                'otp' => $otpCode,
-                'expires_at' => Carbon::now()->addMinutes(10),
-            ]);
+        try {
+            // Find the UserProfile with the given mobile_no
+            $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
 
-            // Send OTP to the user's mobile number
-//            $this->sendSmsToUser($user->mobile_no, "Your OTP is: {$otpCode}");
+            if ($userProfile && Auth::attempt(['id' => $userProfile->user_id, 'password' => $request->password])) {
+                $user = $userProfile->user;
 
-            return $this->sendResponse(['mobile_no' => $request->mobile_no , 'otp' => $otpCode], 'OTP sent to your mobile number.');
-        } else {
-            return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
+                // Generate OTP
+                $otpCode = rand(100000, 999999);
+
+                // Store OTP
+                Otp::create([
+                    'user_id' => $user->id,
+                    'otp' => $otpCode,
+                    'expires_at' => Carbon::now()->addMinutes(10),
+                ]);
+
+                // Send OTP to the user's mobile number
+//            $this->sendSmsToUser($userProfile->mobile_no, "Your OTP is: {$otpCode}");
+
+                DB::commit();
+
+                return $this->sendResponse(['mobile_no' => $request->mobile_no, 'otp' => $otpCode], 'OTP sent to your mobile number.');
+            } else {
+                return $this->sendError('Unauthorized.', ['error' => 'Unauthorized']);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Login failed.', ['error' => $e->getMessage()]);
         }
     }
 
@@ -121,36 +144,44 @@ class RegisterController extends BaseController
             'otp' => 'required|digits:6',
         ]);
 
-        // Find the UserProfile with the given mobile_no
-        $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
+        DB::beginTransaction();
 
-        if ($userProfile) {
-            $user = $userProfile->user;
+        try {
+            // Find the UserProfile with the given mobile_no
+            $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
 
-            // Verify the OTP
-            $otpRecord = Otp::where('user_id', $user->id)
-                ->where('otp', $request->otp)
-                ->where('expires_at', '>', Carbon::now())
-                ->first();
+            if ($userProfile) {
+                $user = $userProfile->user;
 
-            if ($otpRecord) {
-                // OTP is correct, log the user in
-                $success['token'] = $user->createToken('MyApp')->accessToken;
-                $success['name'] = $user->name;
-                $success['user'] = new UserResource($user);
+                // Verify the OTP
+                $otpRecord = Otp::where('user_id', $user->id)
+                    ->where('otp', $request->otp)
+                    ->where('expires_at', '>', Carbon::now())
+                    ->first();
 
-                // Delete the OTP after successful verification
-                $otpRecord->delete();
+                if ($otpRecord) {
+                    // OTP is correct, log the user in
+                    $success['token'] = $user->createToken('MyApp')->accessToken;
+                    $success['name'] = $user->name;
+                    $success['user'] = new UserResource($user);
 
-                return $this->sendResponse($success, 'User logged in successfully.');
+                    // Delete the OTP after successful verification
+                    $otpRecord->delete();
+
+                    DB::commit();
+
+                    return $this->sendResponse($success, 'User logged in successfully.');
+                } else {
+                    return $this->sendError('Invalid OTP or expired.', ['error' => 'Invalid OTP or expired.']);
+                }
             } else {
-                return $this->sendError('Invalid OTP or expired.', ['error' => 'Invalid OTP or expired.']);
+                return $this->sendError('Unauthorized.', ['error' => 'Unauthorized']);
             }
-        } else {
-            return $this->sendError('Unauthorised.', ['error' => 'Unauthorised']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Verification failed.', ['error' => $e->getMessage()]);
         }
     }
-
 
     public function sendSmsToUser($mobile_no, $message)
     {

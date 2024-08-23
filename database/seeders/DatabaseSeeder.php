@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Laravel\Passport\ClientRepository;
 
 class DatabaseSeeder extends Seeder
 {
@@ -24,5 +25,20 @@ class DatabaseSeeder extends Seeder
             LoanPurposeSeeder::class,
             DocumentTypeSeeder::class,
         ]);
+
+        $this->createPersonalAccessClient();
+
+
     }
+
+    private function createPersonalAccessClient()
+    {
+        $clientRepository = new ClientRepository();
+        $clientRepository->createPersonalAccessClient(
+            null, 'LMS', env('APP_URL')
+        );
+
+        $this->command->info('Personal access client created successfully.');
+    }
+
 }
