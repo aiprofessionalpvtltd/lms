@@ -18,6 +18,10 @@ class LoanApplicationHistoryResource extends JsonResource
             'id' => $this->id,
             'status' => $this->status,
             'remarks' => $this->remarks,
+            'fromUser' => new UserResource($this->fromUser),
+            'fromRole' => new RoleResource($this->fromRole),
+            'toUser' => new UserResource($this->toUser),
+            'toRole' => new RoleResource($this->toRole),
              'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

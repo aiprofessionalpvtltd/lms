@@ -17,13 +17,19 @@ class RoleSeeder extends Seeder
     {
         $roles = array (
             'Super Admin',
-            'Admin',
+            'Management',
             'Customer',
+            'Loan Onboarding',
+            'Account & Finance',
+            'Loan Disbursement',
+            'Recovery',
+            'Legal',
+            'Complaints',
         );
 
         foreach ($roles as $row) {
 
-            $roleCreated =  Role::create([
+            $roleCreated =  Role::firstOrCreate([
                 'name' => $row,
             ]);
 

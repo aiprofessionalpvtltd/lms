@@ -19,7 +19,8 @@ class ModuleSeeder extends Seeder
             'Roles',
             'Customer',
             'Loan Management',
-
+            'Installments',
+            'Complaints',
         );
 
         foreach ($modules as $row) {

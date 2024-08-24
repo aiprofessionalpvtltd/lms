@@ -38,6 +38,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Asisgned To</th>
                     <th>Loan Amount</th>
                     <th>Duration</th>
                     <th>Service</th>
@@ -52,15 +53,16 @@
                     <tr>
                         <td>{{$loanApplication->name}}</td>
                         <td>{{$loanApplication->email}}</td>
+                        <td>{{$loanApplication->getLatestHistory->toUser->name}}</td>
                         <td>{{$loanApplication->loan_amount}}</td>
                         <td>{{$loanApplication->loanDuration->name}}</td>
                         <td>{{$loanApplication->productService->name}}</td>
                         <td>{{$loanApplication->loanPurpose->name}}</td>
                         <td>{{$loanApplication->address}}</td>
                         <td>{{showApprovalStatus($loanApplication->status)}}</td>
-                          <td>`
+                          <td>
                             <div class="d-flex">
-                                @can('view-customer')
+                                @can('view-loan-management')
                                     <a title="View" href="{{ route('view-loan-application', $loanApplication->id) }}"
                                        class="text-primary mr-1"><i
                                             class="fas fa-eye"></i></a>

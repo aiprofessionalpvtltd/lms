@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\DropdownController;
+use App\Http\Controllers\API\GuarantorController;
 use App\Http\Controllers\API\LoanApplicationController;
 use App\Http\Controllers\API\RegisterController;
 use Illuminate\Http\Request;
@@ -22,4 +23,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('dropdown/loan-purpose', [DropdownController::class, 'getLoanPurpose']);
     Route::get('dropdown/product-service', [DropdownController::class, 'getProductService']);
     Route::get('dropdown/document-type', [DropdownController::class, 'getDocumentType']);
+
+    Route::post('user/loan-applications/guarantors', [GuarantorController::class, 'store']);
+    Route::get('user/loan-applications/guarantors/{id}', [GuarantorController::class, 'show']);
 });

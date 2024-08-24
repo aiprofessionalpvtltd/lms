@@ -29,12 +29,12 @@ class UserSeeder extends Seeder
 
 
         $user = User::create([
-            'name' => 'Admin',
-            'email' => 'admin@admin.com',
+            'name' => 'Management',
+            'email' => 'management@admin.com',
             'password' => '123456',
             'email_verified_at' => currentDateTimeInsert(),
         ]);
 
-        $user->assignRole(Role::where('name', 'Admin')->first());
+        $user->assignRole(Role::where('name', 'Management')->first());
     }
 }

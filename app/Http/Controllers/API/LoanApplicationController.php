@@ -7,6 +7,7 @@ use App\Http\Resources\LoanApplicationResource;
 use App\Models\LoanApplication;
 use App\Models\LoanApplicationHistory;
 use App\Models\LoanAttachment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -22,10 +23,11 @@ class LoanApplicationController extends BaseController
         $status = $request->get('status');
 
         try {
-            if($status){
+            $loanApplications = [];
+            if ($status) {
                 // Fetch loan applications based on the status
                 $loanApplications = LoanApplication::where('status', $status)->get();
-            }else{
+            } else {
                 $loanApplications = LoanApplication::all();
 
             }
@@ -33,7 +35,13 @@ class LoanApplicationController extends BaseController
 
             // Check if any loan applications are found
             if ($loanApplications->isEmpty()) {
-                return $this->sendError('No Loan Applications found for the given status.');
+                if ($request->expectsJson()) {
+                    return $this->sendError('No Loan Applications found for the given status.');
+
+                } else {
+
+                    return view('admin.loan_applications.index', compact('loanApplications'));
+                }
             }
 
             if ($request->expectsJson()) {
@@ -56,7 +64,7 @@ class LoanApplicationController extends BaseController
         }
     }
 
-    public function getSingleData(Request $request , $id)
+    public function getSingleData(Request $request, $id)
     {
         // Get the status from the request, defaulting to 'pending' if not provided
         $loanApplicationID = $id;
@@ -65,10 +73,11 @@ class LoanApplicationController extends BaseController
             // Fetch loan applications based on the status
             $loanApplication = LoanApplication::find($loanApplicationID);
 
-             // Check if any loan applications are found
+            // Check if any loan applications are found
             if ($loanApplication == null) {
                 return $this->sendError('No Loan Applications found');
             }
+
 
             if ($request->expectsJson()) {
                 // Return the loan applications as a response
@@ -78,10 +87,15 @@ class LoanApplicationController extends BaseController
                 );
             } else {
 
-//                dd($loanApplication);
-                return view('admin.loan_applications.view', compact('loanApplication'));
-            }
+                $roleId = 4; // for loan onboarding
 
+                $toUsers = User::where('id', '!=', auth()->user()->id)
+                    ->whereHas('roles', function ($query) use ($roleId) {
+                        $query->where('id', '>=', $roleId);
+                    })->with('roles:name,id')->get();
+
+                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers'));
+            }
 
 
         } catch (\Exception $e) {
@@ -149,6 +163,15 @@ class LoanApplicationController extends BaseController
         try {
 
             $userID = auth::user()->id;
+            $userRoleID = auth()->user()->roles->first()->id;
+
+            $roleId = 4; // for Loan Onboarding
+
+            $toUsers = User::whereHas('roles', function ($query) use ($roleId) {
+                $query->where('id', $roleId);
+            })->first();
+
+            $toRoleID = $toUsers->roles->first()->id;
 
             $loanApplication = LoanApplication::create([
                 'name' => $request->name,
@@ -164,9 +187,14 @@ class LoanApplicationController extends BaseController
                 'status' => 'pending',
             ]);
 
-             LoanApplicationHistory::create([
+            LoanApplicationHistory::create([
                 'loan_application_id' => $loanApplication->id,
+                'from_user_id' => $userID,
+                'from_role_id' => $userRoleID,
+                'to_user_id' => $toUsers->id,
+                'to_role_id' => $toRoleID,
                 'status' => 'pending',
+                'remarks' => 'Application Submitted By Customer',
             ]);
 
 
@@ -251,12 +279,13 @@ class LoanApplicationController extends BaseController
 
     public function updateStatus(Request $request, $id)
     {
-         $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'status' => 'required|in:pending,accepted,rejected',
-            'rejection_reason' => 'required_if:status,rejected'
+            'remarks' => 'required',
+            'to_user_id' => 'required'
         ]);
 
-         if ($validator->fails()) {
+        if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
@@ -266,19 +295,29 @@ class LoanApplicationController extends BaseController
             return redirect()->back()->with('error', 'Loan Application not found.');
         }
 
-         $loanApplication->status = $request->status;
+        $loanApplication->status = $request->status;
         $loanApplication->save();
+
+
+        $userID = auth::user()->id;
+        $userRoleID = auth()->user()->roles->first()->id;
+
+        $toUsers = User::find($request->to_user_id);
+        $toRoleID = $toUsers->roles->first()->id;
+
 
         LoanApplicationHistory::create([
             'loan_application_id' => $loanApplication->id,
             'status' => $request->status,
-            'remarks' => $request->status === 'rejected' ? $request->rejection_reason : null
+            'remarks' => $request->remarks,
+            'from_user_id' => $userID,
+            'from_role_id' => $userRoleID,
+            'to_user_id' => $toUsers->id,
+            'to_role_id' => $toRoleID,
         ]);
 
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
     }
-
-
 
 
 }
