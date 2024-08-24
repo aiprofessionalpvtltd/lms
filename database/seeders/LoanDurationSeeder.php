@@ -14,9 +14,11 @@ class LoanDurationSeeder extends Seeder
     public function run(): void
     {
         $durations = [
+            '3 Months',
             '6 Months',
-            '1 Year',
-            '2 Years'
+            '9 Months',
+            '12 Months',
+
         ];
 
         foreach ($durations as $duration) {
