@@ -60,7 +60,7 @@ class LoanApplicationController extends BaseController
             Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
 
             // Return a generic error response
-            return $this->sendError('An error occurred while retrieving loan applications. Please try again later.');
+            return $this->sendError($e->getMessage());
         }
     }
 
@@ -103,7 +103,7 @@ class LoanApplicationController extends BaseController
             Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
 
             // Return a generic error response
-            return $this->sendError('An error occurred while retrieving loan applications. Please try again later.');
+            return $this->sendError($e->getMessage());
         }
     }
 
@@ -134,7 +134,7 @@ class LoanApplicationController extends BaseController
             Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
 
             // Return a generic error response
-            return $this->sendError('An error occurred while retrieving loan applications. Please try again later.');
+            return $this->sendError($e->getMessage());
         }
     }
 
