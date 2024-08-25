@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
             'profile' => new UserProfileResource($this->profile),  // Including the related profile
+            'bank_account' => new UserBankAccountResource($this->bank_account),  // Including the related profile
         ];
     }
 }

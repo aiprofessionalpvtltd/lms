@@ -71,4 +71,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(UserProfile::class)->withDefault();
     }
 
+    public function bank_account()
+    {
+        return $this->hasOne(UserBankAccount::class)->withDefault();
+    }
+
 }

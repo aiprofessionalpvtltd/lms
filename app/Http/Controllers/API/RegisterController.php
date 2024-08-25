@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Resources\UserBankAccountResource;
 use App\Http\Resources\UserProfileResource;
 use App\Http\Resources\UserResource;
 use App\Models\Otp;
+use App\Models\UserBankAccount;
 use App\Models\UserProfile;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
@@ -161,7 +163,8 @@ class RegisterController extends BaseController
 
                 if ($otpRecord) {
                     // OTP is correct, log the user in
-                    $success['token'] = $user->createToken('MyApp')->accessToken;
+                    $accessToken = $user->createToken('MyApp')->accessToken;
+                    $success['token'] = $accessToken;
                     $success['name'] = $user->name;
                     $success['user'] = new UserResource($user);
 
@@ -170,7 +173,8 @@ class RegisterController extends BaseController
 
                     DB::commit();
 
-                    return $this->sendResponse($success, 'User logged in successfully.');
+                    return $this->sendResponse($success, 'User logged in successfully.')
+                        ->header('Authorization', "Bearer $accessToken");
                 } else {
                     return $this->sendError('Invalid OTP or expired.', ['error' => 'Invalid OTP or expired.']);
                 }
@@ -200,6 +204,42 @@ class RegisterController extends BaseController
             return $this->sendError('Failed to send SMS.', ['error' => $e->getMessage()]);
         }
     }
+
+
+    public function storeUserBankAccount(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+             'bank_name' => 'required|string|max:255',
+            'account_name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:255|unique:user_bank_accounts,account_number',
+            'iban' => 'nullable|string|max:34',
+            'swift_code' => 'nullable|string|max:11',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $bankAccount = UserBankAccount::create([
+                'user_id' => auth()->user()->id,
+                'bank_name' => $request->bank_name,
+                'account_name' => $request->account_name,
+                'account_number' => $request->account_number,
+                'iban' => $request->iban,
+                'swift_code' => $request->swift_code,
+            ]);
+            DB::commit();
+
+            return $this->sendResponse(new UserBankAccountResource($bankAccount), 'Bank account added successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Error occurred.', ['error' => $e->getMessage()]);
+        }
+    }
+
 
 
 }

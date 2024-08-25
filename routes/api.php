@@ -13,6 +13,9 @@ Route::post('user/login', [RegisterController::class, 'login']);
 
 Route::middleware('auth:api')->group(function () {
 
+    Route::post('user/account', [RegisterController::class, 'storeUserBankAccount']);
+
+
     Route::get('user/loan-applications', [LoanApplicationController::class, 'getAllData']);
     Route::get('user/user-loan-applications', [LoanApplicationController::class, 'getUserData']);
     Route::post('user/loan-applications', [LoanApplicationController::class, 'store']);

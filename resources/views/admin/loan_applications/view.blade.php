@@ -125,6 +125,14 @@
                         <p><strong>Created At:</strong> {{ $loanApplication->user->created_at }}</p>
                         <p><strong>Updated At:</strong> {{ $loanApplication->user->updated_at }}</p>
                     </div>
+                    <div class="col-md-6">
+                        <p><strong>Bank Name:</strong> {{ $loanApplication->user->bank_account->bank_name }}</p>
+                        <p><strong>Account Title:</strong> {{ $loanApplication->user->bank_account->account_name }}</p>
+                        <p><strong>Account Number:</strong> {{ $loanApplication->user->bank_account->account_number }}</p>
+                        <p><strong>IBAN:</strong> {{ $loanApplication->user->bank_account->iban }}</p>
+                        <p><strong>Swift Code:</strong> {{ $loanApplication->user->bank_account->swift_code }}</p>
+                    </div>
+
                 </div>
             </div>
         </div>

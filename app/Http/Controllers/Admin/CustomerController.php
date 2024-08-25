@@ -46,7 +46,7 @@ class CustomerController extends Controller
     public function view($id)
     {
         $title = 'Edit User';
-        $customer = User::with('roles', 'profile')->find($id);
+        $customer = User::with('roles', 'profile','bank_account')->find($id);
         return view('admin.customer.view', compact('title', 'customer'));
     }
 
