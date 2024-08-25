@@ -173,8 +173,7 @@ class RegisterController extends BaseController
 
                     DB::commit();
 
-                    return $this->sendResponse($success, 'User logged in successfully.')
-                        ->header('Authorization', "Bearer $accessToken");
+                    return $this->sendResponse($success, 'User logged in successfully.');
                 } else {
                     return $this->sendError('Invalid OTP or expired.', ['error' => 'Invalid OTP or expired.']);
                 }
