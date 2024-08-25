@@ -71,7 +71,7 @@ class RegisterController extends BaseController
             $user->assignRole(Role::where('name', 'Customer')->first());
 
             // Create access token
-            $success['token'] = $user->createToken('LMS')->accessToken;
+//            $success['token'] = $user->createToken('LMS')->accessToken;
             $success['name'] = $user->name;
 
             DB::commit();
@@ -79,7 +79,7 @@ class RegisterController extends BaseController
             // Return the response with the UserResource
             return $this->sendResponse([
                 'name' => $user->name,
-                'token' => $success['token'],
+//                'token' => $success['token'],
                 'user' => new UserResource($user)
             ], 'User registered successfully.');
 
