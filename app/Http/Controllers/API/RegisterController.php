@@ -239,6 +239,17 @@ class RegisterController extends BaseController
         }
     }
 
+    public function logout(Request $request): JsonResponse
+    {
+        try {
+            // Revoke the user's current token
+            $request->user()->token()->revoke();
+
+            return $this->sendResponse([], 'User logged out successfully.');
+        } catch (\Exception $e) {
+            return $this->sendError('Logout failed.', ['error' => $e->getMessage()]);
+        }
+    }
 
 
 }
