@@ -171,6 +171,11 @@ class LoanApplicationController extends BaseController
                 $query->where('id', $roleId);
             })->first();
 
+            if(!$toUsers){
+                return $this->sendError('Loan Onboarding user not found');
+
+            }
+
             $toRoleID = $toUsers->roles->first()->id;
 
             $loanApplication = LoanApplication::create([
