@@ -36,5 +36,17 @@ class UserSeeder extends Seeder
         ]);
 
         $user->assignRole(Role::where('name', 'Management')->first());
+
+
+        $user = User::create([
+            'name' => 'loanonboarding',
+            'email' => 'loanonboarding@admin.com',
+            'password' => '123456',
+            'email_verified_at' => currentDateTimeInsert(),
+        ]);
+
+        $user->assignRole(Role::where('name', 'Loan Onboarding')->first());
+
+
     }
 }
