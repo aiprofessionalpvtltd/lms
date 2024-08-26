@@ -41,7 +41,7 @@ class GuarantorController extends BaseController
             if ($existingGuarantor == 2) {
                 return $this->sendError('You can submit a maximum of 2 guarantors.');
             }
-             
+
             $cnicAttachmentPath = '';
             if ($request->file('cnic_attachment')) {
                 // Store the CNIC attachment

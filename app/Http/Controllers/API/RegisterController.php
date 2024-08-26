@@ -15,6 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 use Spatie\Permission\Models\Role;
@@ -332,4 +333,41 @@ class RegisterController extends BaseController
             return $this->sendError('Profile update failed.', ['error' => $e->getMessage()]);
         }
     }
+    public function changePassword(Request $request): JsonResponse
+    {
+        // Validation
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:8',
+            'confirmation_password' => 'required|same:new_password',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Get the authenticated user
+            $user = Auth::user();
+
+            // Check if the current password is correct
+            if (!Hash::check($request->current_password, $user->password)) {
+                return $this->sendError('Current password is incorrect.');
+            }
+
+            // Update the user's password
+            $user->password = $request->new_password;
+            $user->save();
+
+            DB::commit();
+
+            return $this->sendResponse([], 'Password changed successfully.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Password change failed.', ['error' => $e->getMessage()]);
+        }
+    }
+
 }
