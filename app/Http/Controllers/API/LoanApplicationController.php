@@ -116,7 +116,13 @@ class LoanApplicationController extends BaseController
 
         try {
             // Fetch loan applications based on the status
-            $loanApplications = LoanApplication::where('status', $status)->where('user_id', $userID)->get();
+            if ($status) {
+                // Fetch loan applications based on the status
+                $loanApplications = LoanApplication::where('status', $status)->where('user_id', $userID)->get();
+            } else {
+                $loanApplications = LoanApplication::where('user_id', $userID)->get();
+
+            }
 
             // Check if any loan applications are found
             if ($loanApplications->isEmpty()) {
@@ -164,6 +170,12 @@ class LoanApplicationController extends BaseController
 
             $userID = auth::user()->id;
             $userRoleID = auth()->user()->roles->first()->id;
+
+            $runningLoanApplication = LoanApplication::where('user_id',$userID)->where('is_completed',1)->count();
+
+            if($runningLoanApplication == 0){
+                return $this->sendError('An application is already in progress. A new application cannot be submitted.');
+            }
 
             $roleId = 4; // for Loan Onboarding
 

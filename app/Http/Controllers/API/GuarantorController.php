@@ -9,6 +9,7 @@ use App\Http\Resources\RoleResource;
 use App\Models\Guarantor;
 use App\Models\LoanApplication;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -34,6 +35,13 @@ class GuarantorController extends BaseController
         DB::beginTransaction();
 
         try {
+
+            $existingGuarantor = Guarantor::where('loan_application_id', $request->loan_application_id)->count();
+
+            if ($existingGuarantor == 2) {
+                return $this->sendError('You can submit a maximum of 2 guarantors.');
+            }
+             
             $cnicAttachmentPath = '';
             if ($request->file('cnic_attachment')) {
                 // Store the CNIC attachment

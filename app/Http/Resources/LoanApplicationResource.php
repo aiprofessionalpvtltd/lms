@@ -30,6 +30,7 @@ class LoanApplicationResource extends JsonResource
             'documents' => ($this->attachments != null) ? LoanAttachmentResource::collection($this->attachments) : null, // Conditionally return attachments
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'is_completed' => $this->is_completed,
             'history' => LoanApplicationHistoryResource::collection($this->histories),
             'guarantors' => GuarantorResource::collection($this->guarantors),
         ];
