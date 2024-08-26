@@ -11,6 +11,7 @@ use App\Models\UserProfile;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -251,5 +252,23 @@ class RegisterController extends BaseController
         }
     }
 
+    public function userInfo(): JsonResponse
+    {
+        try {
+            // Retrieve the authenticated user
+            $user = Auth::user();
+
+            // Check if the user exists
+            if (!$user) {
+                return $this->sendError('User not found.', ['error' => 'User not found.']);
+            }
+
+            // Return the user information using UserResource
+            return $this->sendResponse(new UserResource($user), 'User information retrieved successfully.');
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return $this->sendError('Failed to retrieve user information.', ['error' => $e->getMessage()]);
+        }
+    }
 
 }
