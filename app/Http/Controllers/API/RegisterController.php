@@ -271,4 +271,65 @@ class RegisterController extends BaseController
         }
     }
 
+    public function updateProfile(Request $request): JsonResponse
+    {
+        // Get the authenticated user
+        $user = Auth::user();
+        $userProfile = $user->profile;
+
+        // Validation rules
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'photo' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'cnic' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'cnic_no' => 'required|string|max:15|unique:user_profiles,cnic_no,' . $userProfile->id,
+            'issue_date' => 'required|date',
+            'expire_date' => 'required|date',
+            'dob' => 'required|date',
+            'mobile_no' => 'required|string|max:15|unique:user_profiles,mobile_no,' . $userProfile->id,
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Update the user information
+            $user->update([
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
+
+            // Handle the profile photo and CNIC uploads
+            if ($request->hasFile('photo')) {
+                $photoPath = $request->file('photo')->store('profile_photos', 'public');
+                $userProfile->photo = $photoPath;
+            }
+
+            if ($request->hasFile('cnic')) {
+                $cnicPath = $request->file('cnic')->store('cnic_photos', 'public');
+                $userProfile->cnic = $cnicPath;
+            }
+
+            // Update the user's profile information
+            $userProfile->update([
+                'cnic_no' => $request->cnic_no,
+                'issue_date' => $request->issue_date,
+                'expire_date' => $request->expire_date,
+                'dob' => $request->dob,
+                'mobile_no' => $request->mobile_no,
+            ]);
+
+            DB::commit();
+
+            return $this->sendResponse(new UserResource($user), 'Profile updated successfully.');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Profile update failed.', ['error' => $e->getMessage()]);
+        }
+    }
 }
