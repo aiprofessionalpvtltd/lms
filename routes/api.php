@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('user/register', [RegisterController::class, 'register']);
 Route::post('user/login', [RegisterController::class, 'login']);
  Route::post('user/verify-otp', [RegisterController::class, 'verifyOtp']);
+ Route::post('user/forgot-password', [RegisterController::class, 'forgotPassword']);
+ Route::post('user/verify-otp-reset-password', [RegisterController::class, 'verifyOtpAndResetPassword']);
+Route::post('user/reset-password', [RegisterController::class, 'resetPassword']);
 
 Route::middleware('auth:api')->group(function () {
 

@@ -370,4 +370,123 @@ class RegisterController extends BaseController
         }
     }
 
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        // Validate the request
+        $request->validate([
+            'mobile_no' => 'required|string|max:15',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Find the UserProfile with the given mobile_no
+            $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
+
+            if (!$userProfile) {
+                return $this->sendError('Mobile number not found.', ['error' => 'Mobile number not found']);
+            }
+
+            // Generate OTP
+            $otpCode = rand(100000, 999999);
+
+            // Store OTP
+            Otp::create([
+                'user_id' => $userProfile->user_id,
+                'otp' => $otpCode,
+                'expires_at' => Carbon::now()->addMinutes(10),
+            ]);
+
+            DB::commit();
+
+            // Send OTP to the user's mobile number
+            // $this->sendSmsToUser($request->mobile_no, "Your OTP is: {$otpCode}");
+
+            return $this->sendResponse(['mobile_no' => $request->mobile_no, 'otp' => $otpCode], 'OTP sent to your mobile number.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Failed to send OTP.', ['error' => $e->getMessage()]);
+        }
+    }
+
+    public function verifyOtpAndResetPassword(Request $request): JsonResponse
+    {
+        // Validate the request
+        $request->validate([
+            'mobile_no' => 'required|string|max:15',
+            'otp' => 'required|digits:6',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Find the UserProfile with the given mobile_no
+            $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
+
+            if (!$userProfile) {
+                return $this->sendError('Mobile number not found.', ['error' => 'Mobile number not found']);
+            }
+
+            $user = $userProfile->user;
+
+            // Verify the OTP
+            $otpRecord = Otp::where('user_id', $user->id)
+                ->where('otp', $request->otp)
+                ->where('expires_at', '>', Carbon::now())
+                ->first();
+
+            if (!$otpRecord) {
+                return $this->sendError('Invalid or expired OTP.', ['error' => 'Invalid or expired OTP']);
+            }
+
+            // Delete the OTP after successful verification
+            $otpRecord->delete();
+
+            DB::commit();
+
+            return $this->sendResponse(new UserResource($user), 'OTP Verified successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Failed to reset password.', ['error' => $e->getMessage()]);
+        }
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        // Validation
+        $validator = Validator::make($request->all(), [
+            'mobile_no' => 'required|string|max:15',
+             'new_password' => 'required|string|min:8',
+            'confirmation_password' => 'required|same:new_password',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Find the UserProfile with the given mobile_no
+            $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
+
+            if (!$userProfile) {
+                return $this->sendError('Mobile number not found.', ['error' => 'Mobile number not found']);
+            }
+
+            $user = $userProfile->user;
+
+            // Update the user's password
+            $user->password = $request->new_password;
+            $user->save();
+
+            DB::commit();
+
+            return $this->sendResponse(new UserResource($user), 'Password Reset successfully.');
+        } catch (Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Password change failed.', ['error' => $e->getMessage()]);
+        }
+    }
+
 }
