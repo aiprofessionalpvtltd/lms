@@ -171,9 +171,9 @@ class LoanApplicationController extends BaseController
             $userID = auth::user()->id;
             $userRoleID = auth()->user()->roles->first()->id;
 
-            $runningLoanApplication = LoanApplication::where('user_id',$userID)->where('is_completed',1)->count();
+            $runningLoanApplication = LoanApplication::where('user_id',$userID)->where('is_completed',0)->count();
 
-            if($runningLoanApplication == 0){
+             if($runningLoanApplication > 0){
                 return $this->sendError('An application is already in progress. A new application cannot be submitted.');
             }
 
