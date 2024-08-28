@@ -128,7 +128,8 @@
                     <div class="col-md-6">
                         <p><strong>Bank Name:</strong> {{ $loanApplication->user->bank_account->bank_name }}</p>
                         <p><strong>Account Title:</strong> {{ $loanApplication->user->bank_account->account_name }}</p>
-                        <p><strong>Account Number:</strong> {{ $loanApplication->user->bank_account->account_number }}</p>
+                        <p><strong>Account Number:</strong> {{ $loanApplication->user->bank_account->account_number }}
+                        </p>
                         <p><strong>IBAN:</strong> {{ $loanApplication->user->bank_account->iban }}</p>
                         <p><strong>Swift Code:</strong> {{ $loanApplication->user->bank_account->swift_code }}</p>
                     </div>
@@ -195,147 +196,154 @@
         </div>
 
         @if($loanApplication->guarantors)
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Loan Application Guarantor</h3>
-            </div>
-            <div class="card-body">
-                @foreach($loanApplication->guarantors as $guarantor)
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>First Name:</strong> {{ $guarantor->first_name }}</p>
-                            <p><strong>Last Name:</strong> {{ $guarantor->last_name }}</p>
-                            <p><strong>CNIC No</strong> {{ $guarantor->cnic_no }}</p>
-                            <p><strong>Address:</strong> {{ $guarantor->address }}</p>
-                            <p><strong>Mobile No:</strong> {{ $guarantor->mobile_no }}</p>
-                         </div>
-                        <div class="col-md-6">
-
-                            <p><strong>CNIC Attachment</strong></p>
-                            <img src="{{ asset('storage/' . $guarantor->cnic_attachment) }}"
-                                 alt="CNIC Attachment" class="img-thumbnail"
-                                 style="max-width: 150px;">
-
-                        </div>
-                    </div>
-                    <hr>
-                @endforeach
-            </div>
-        </div>
-        @endif
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Loan Application History</h3>
-            </div>
-            <div class="card-body">
-                <ul class="timeline">
-                    @foreach($loanApplication->histories as $history)
-                        @php
-                            $statusClass = '';
-                            if ($history->status == 'pending') {
-                                $statusClass = 'timeline-warning';
-                            } elseif ($history->status == 'accepted') {
-                                $statusClass = 'timeline-success';
-                            } elseif ($history->status == 'rejected') {
-                                $statusClass = 'timeline-danger';
-                            }
-                        @endphp
-                        <li class="timeline-item {{ $statusClass }}">
-                            <div class="timeline-badge">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="timeline-content">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div class="timeline-details">
-                                        <h6 class="mb-2 text-capitalize">
-                                            <strong>Assigned By:</strong> {{$history->fromUser->name}}
-                                            ({{$history->fromRole->name}})
-                                        </h6>
-                                        <h6 class="mb-2 text-capitalize">
-                                            <strong>Assigned To:</strong> {{$history->toUser->name}}
-                                            ({{$history->toRole->name}})
-                                        </h6>
-                                        <h6 class="text-capitalize">
-                                            <strong>Status:</strong> {{$history->status}}
-                                        </h6>
-                                    </div>
-                                    <small class="text-muted">
-                                        {{ $history->created_at->format('F j, Y, g:i a') }}
-                                    </small>
-                                </div>
-
-                                <p class="mb-1">
-                                    <strong>Reason:</strong> {{ $history->remarks }}
-                                </p>
-
-                            </div>
-                        </li>
-
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-
-
-        <!-- Status Update Form -->
-        <form action="{{ url('loan-applications/'.$loanApplication->id.'/status') }}" method="POST">
-            @csrf
-            @method('PUT')
             <div class="card mb-4">
                 <div class="card-header">
-                    <h3>Update for proceeding</h3>
+                    <h3>Loan Application Guarantor</h3>
                 </div>
                 <div class="card-body">
-                    @if($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="status" class="form-label"><strong>Status</strong></label>
-                            <select class="form-select" id="status" name="status" required>
-                                <option value="pending" {{ $loanApplication->status == 'pending' ? 'selected' : '' }}>
-                                    Pending
-                                </option>
-                                <option value="accepted" {{ $loanApplication->status == 'accepted' ? 'selected' : '' }}>
-                                    Accepted
-                                </option>
-                                <option value="rejected" {{ $loanApplication->status == 'rejected' ? 'selected' : '' }}>
-                                    Rejected
-                                </option>
-                            </select>
-                        </div>
+                    @foreach($loanApplication->guarantors as $guarantor)
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>First Name:</strong> {{ $guarantor->first_name }}</p>
+                                <p><strong>Last Name:</strong> {{ $guarantor->last_name }}</p>
+                                <p><strong>CNIC No</strong> {{ $guarantor->cnic_no }}</p>
+                                <p><strong>Address:</strong> {{ $guarantor->address }}</p>
+                                <p><strong>Mobile No:</strong> {{ $guarantor->mobile_no }}</p>
+                            </div>
+                            <div class="col-md-6">
 
-                        <div class="col-md-6">
-                            <label for="status" class="form-label"><strong>Assigned To</strong></label>
-                            <select class="form-select" id="to_user_id" name="to_user_id" required>
-                                @foreach($toUsers as $user)
-                                    <option value="{{$user->id}}">
-                                        {{$user->name . ' (' . $user->getRoleNames()[0] .')'}}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
+                                <p><strong>CNIC Attachment</strong></p>
+                                <img src="{{ asset('storage/' . $guarantor->cnic_attachment) }}"
+                                     alt="CNIC Attachment" class="img-thumbnail"
+                                     style="max-width: 150px;">
 
-                    <div class="row mb-3" id="reason_div" style="display: block;">
-                        <div class="col-md-12">
-                            <label for="remarks" class="form-label"><strong>Remarks</strong></label>
-                            <textarea class="form-control" id="remarks" name="remarks"
-                                      rows="3"></textarea>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class="card-footer text-end">
-                    <button type="submit" class="btn btn-primary">Proceed</button>
+                        <hr>
+                    @endforeach
                 </div>
             </div>
-        </form>
+        @endif
+        <div class="card mb-4">
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-8">
+                        <h3>Loan Application History</h3>
+                        <ul class="timeline">
+                            @foreach($loanApplication->histories as $history)
+                                @php
+                                    $statusClass = '';
+                                    if ($history->status == 'pending') {
+                                        $statusClass = 'timeline-warning';
+                                    } elseif ($history->status == 'accepted') {
+                                        $statusClass = 'timeline-success';
+                                    } elseif ($history->status == 'rejected') {
+                                        $statusClass = 'timeline-danger';
+                                    }
+                                @endphp
+                                <li class="timeline-item {{ $statusClass }}">
+                                    <div class="timeline-badge">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="timeline-details">
+                                                <h6 class="mb-2 text-capitalize">
+                                                    <strong>Assigned By:</strong> {{$history->fromUser->name}}
+                                                    ({{$history->fromRole->name}})
+                                                </h6>
+                                                <h6 class="mb-2 text-capitalize">
+                                                    <strong>Assigned To:</strong> {{$history->toUser->name}}
+                                                    ({{$history->toRole->name}})
+                                                </h6>
+                                                <h6 class="text-capitalize">
+                                                    <strong>Status:</strong> {{$history->status}}
+                                                </h6>
+                                            </div>
+                                            <small class="text-muted">
+                                                {{ $history->created_at->format('F j, Y, g:i a') }}
+                                            </small>
+                                        </div>
+
+                                        <p class="mb-1">
+                                            <strong>Reason:</strong> {{ $history->remarks }}
+                                        </p>
+
+                                    </div>
+                                </li>
+
+                            @endforeach
+                        </ul>
+                    </div>
+                    <div class="col-4">
+                        <form action="{{ url('loan-applications/'.$loanApplication->id.'/status') }}" method="POST">
+                            @csrf
+                            @method('PUT')
+
+                            <h3>Update for proceeding</h3>
+
+                            @if($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                            <div class="row mb-3">
+                                <div class="col-md-12 mb-3">
+                                    <label for="status" class="form-label"><strong>Status</strong></label>
+                                    <select class="form-select" id="status" name="status" required>
+                                        <option
+                                            value="pending" {{ $loanApplication->status == 'pending' ? 'selected' : '' }}>
+                                            Pending
+                                        </option>
+                                        <option
+                                            value="accepted" {{ $loanApplication->status == 'accepted' ? 'selected' : '' }}>
+                                            Accepted
+                                        </option>
+                                        <option
+                                            value="rejected" {{ $loanApplication->status == 'rejected' ? 'selected' : '' }}>
+                                            Rejected
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-12 mb-3">
+                                    <label for="status" class="form-label"><strong>Assigned To</strong></label>
+                                    <select class="form-select" id="to_user_id" name="to_user_id" required>
+                                        @foreach($toUsers as $user)
+                                            <option value="{{$user->id}}">
+                                                {{$user->name . ' (' . $user->getRoleNames()[0] .')'}}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3" id="reason_div" style="display: block;">
+                                <div class="col-md-12">
+                                    <label for="remarks" class="form-label"><strong>Remarks</strong></label>
+                                    <textarea class="form-control" id="remarks" name="remarks"
+                                              rows="3"></textarea>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary float-end">Proceed</button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+
+
 
 
         <a href="{{ route('get-all-loan-applications') }}" class="btn btn-primary">Back to Application List</a>
