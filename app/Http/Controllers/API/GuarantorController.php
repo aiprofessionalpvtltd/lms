@@ -56,6 +56,9 @@ class GuarantorController extends BaseController
                 return $this->sendError('No Loan Applications found');
             }
 
+            $loanApplication->is_submitted = true;
+            $loanApplication->save();
+
             $guarantor = Guarantor::create([
                 'loan_application_id' => $loanApplication->id,
                 'first_name' => $request->first_name,

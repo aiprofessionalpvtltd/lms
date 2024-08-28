@@ -26,6 +26,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->json('documents')->nullable(); // To store multiple document paths
             $table->boolean('is_completed')->default(false); // To store multiple document paths
+            $table->boolean('is_submitted')->default(false); // To store multiple document paths
             $table->timestamps();
             $table->softDeletes();
 
