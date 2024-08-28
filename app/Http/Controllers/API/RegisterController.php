@@ -112,27 +112,34 @@ class RegisterController extends BaseController
             // Find the UserProfile with the given mobile_no
             $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
 
-            if ($userProfile && Auth::attempt(['id' => $userProfile->user_id, 'password' => $request->password])) {
-                $user = $userProfile->user;
+            if ($userProfile) {
+                // Check if the provided password is correct
+                if (Auth::attempt(['id' => $userProfile->user_id, 'password' => $request->password])) {
+                    $user = $userProfile->user;
 
-                // Generate OTP
-                $otpCode = rand(100000, 999999);
+                    // Generate OTP
+                    $otpCode = rand(100000, 999999);
 
-                // Store OTP
-                Otp::create([
-                    'user_id' => $user->id,
-                    'otp' => $otpCode,
-                    'expires_at' => Carbon::now()->addMinutes(10),
-                ]);
+                    // Store OTP
+                    Otp::create([
+                        'user_id' => $user->id,
+                        'otp' => $otpCode,
+                        'expires_at' => Carbon::now()->addMinutes(10),
+                    ]);
 
-                // Send OTP to the user's mobile number
+                    // Send OTP to the user's mobile number
 //            $this->sendSmsToUser($userProfile->mobile_no, "Your OTP is: {$otpCode}");
 
-                DB::commit();
+                    DB::commit();
 
-                return $this->sendResponse(['mobile_no' => $request->mobile_no, 'otp' => $otpCode], 'OTP sent to your mobile number.');
+                    return $this->sendResponse(['mobile_no' => $request->mobile_no, 'otp' => $otpCode], 'OTP sent to your mobile number.');
+                } else {
+                    // Password is incorrect
+                    return $this->sendError('Unauthorized.', ['error' => 'The password is incorrect.']);
+                }
             } else {
-                return $this->sendError('Unauthorized.', ['error' => 'Unauthorized']);
+                // Mobile number is incorrect
+                return $this->sendError('Unauthorized.', ['error' => 'The mobile number is not registered.']);
             }
         } catch (\Exception $e) {
             DB::rollBack();

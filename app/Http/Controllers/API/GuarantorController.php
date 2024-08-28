@@ -24,7 +24,7 @@ class GuarantorController extends BaseController
             'cnic_no' => 'required|string|max:15',
             'address' => 'required|string|max:255',
             'mobile_no' => 'required|string|max:15',
-            'cnic_attachment' => 'required|file|mimes:jpg,png,pdf|max:2048',
+            'cnic_attachment' => 'required|file|mimes:jpg,png,pdf',
         ]);
 
         if ($validator->fails()) {
