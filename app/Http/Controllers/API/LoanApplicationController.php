@@ -229,8 +229,8 @@ class LoanApplicationController extends BaseController
     public function storeDocuments(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'bank_document' => 'required|file|mimes:pdf,jpg,png,doc,docx|max:2048',
-            'salary_slip_document' => 'required|file|mimes:pdf,jpg,png,doc,docx|max:2048',
+            'bank_document' => 'required|file|mimes:pdf,jpg,png,doc,docx',
+            'salary_slip_document' => 'required|file|mimes:pdf,jpg,png,doc,docx',
             'signature' => 'required|string',  // Expecting base64 string for signature
         ]);
 
