@@ -4,12 +4,14 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Resources\UserBankAccountResource;
 use App\Http\Resources\UserEmploymentResource;
+use App\Http\Resources\UserFamilyDependentResource;
 use App\Http\Resources\UserProfileResource;
 use App\Http\Resources\UserProfileTrackingResource;
 use App\Http\Resources\UserResource;
 use App\Models\Otp;
 use App\Models\UserBankAccount;
 use App\Models\UserEmployment;
+use App\Models\UserFamilyDependent;
 use App\Models\UserProfile;
 use App\Models\UserProfileTracking;
 use Illuminate\Http\Request;
@@ -181,4 +183,43 @@ class UserController extends BaseController
             return $this->sendError('Error storing user employment details.', $e->getMessage());
         }
     }
+
+    public function storeFamilyDependent(Request $request)
+    {
+
+        // Validate incoming request data
+        $validator = Validator::make($request->all(), [
+            'number_of_dependents' => 'required|integer|min:0',
+            'spouse_name' => 'nullable|string|max:255',
+            'spouse_employment_details' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user = Auth::user();
+
+            $request->merge(['user_id' => $user->id]);
+
+            // Create a new UserFamilyDependent record
+            $userFamilyDependent = UserFamilyDependent::create($request->all());
+
+            // Load relationships if needed for the response
+            $userFamilyDependent->load('user');
+
+            DB::commit();
+
+            // Return the response with UserFamilyDependentResource
+            return $this->sendResponse(new UserFamilyDependentResource($userFamilyDependent), 'Family and dependents information stored successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Error storing family and dependents information.', $e->getMessage());
+        }
+    }
+
 }
