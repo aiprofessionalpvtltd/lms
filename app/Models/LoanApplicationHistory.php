@@ -26,21 +26,21 @@ class LoanApplicationHistory extends Model
 
     public function fromUser()
     {
-        return $this->belongsTo(User::class,'from_user_id');
+        return $this->belongsTo(User::class, 'from_user_id')->withDefault();
     }
 
     public function toUser()
     {
-        return $this->belongsTo(User::class,'to_user_id');
+        return $this->belongsTo(User::class, 'to_user_id')->withDefault();
     }
 
     public function fromRole()
     {
-        return $this->belongsTo(Role::class,'from_role_id');
+        return $this->belongsTo(Role::class, 'from_role_id')->withDefault();
     }
 
     public function toRole()
     {
-        return $this->belongsTo(Role::class,'to_role_id');
+        return $this->belongsTo(Role::class, 'to_role_id')->withDefault();
     }
 }

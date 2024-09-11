@@ -4,15 +4,27 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DocumentTypeResource;
+use App\Http\Resources\EmploymentStatusResource;
+use App\Http\Resources\GenderResource;
+use App\Http\Resources\IncomeSourceResource;
 use App\Http\Resources\LoanDurationResource;
 use App\Http\Resources\LoanPurposeResource;
+use App\Http\Resources\MaritalStatusResource;
+use App\Http\Resources\NationalityResource;
 use App\Http\Resources\ProductServiceResource;
 use App\Models\DocumentType;
+use App\Models\EmploymentStatus;
+use App\Models\Gender;
+use App\Models\IncomeSource;
 use App\Models\LoanDuration;
 use App\Models\LoanPurpose;
+use App\Models\MaritalStatus;
+use App\Models\Nationality;
 use App\Models\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+
+use Exception;
 
 class DropdownController extends BaseController
 {
@@ -134,6 +146,64 @@ class DropdownController extends BaseController
 
             // Return a generic error response
             return $this->sendError('An error occurred while retrieving document types. Please try again later.' . $e->getMessage());
+        }
+    }
+
+    public function getGenders()
+    {
+        try {
+            $genders = Gender::all();
+            return $this->sendResponse(GenderResource::collection($genders), 'Genders retrieved successfully.');
+        } catch (Exception $e) {
+            return $this->sendError('Error retrieving genders.', $e->getMessage());
+        }
+    }
+
+    public function getMaritalStatuses()
+    {
+        try {
+            $maritalStatuses = MaritalStatus::all();
+            return $this->sendResponse(MaritalStatusResource::collection($maritalStatuses), 'Marital statuses retrieved successfully.');
+        } catch (Exception $e) {
+            return $this->sendError('Error retrieving marital statuses.', $e->getMessage());
+        }
+    }
+
+    public function getNationalities()
+    {
+        try {
+            $nationalities = Nationality::all();
+            return $this->sendResponse(NationalityResource::collection($nationalities), 'Nationalities retrieved successfully.');
+        } catch (Exception $e) {
+            return $this->sendError('Error retrieving nationalities.', $e->getMessage());
+        }
+    }
+
+    public function getIncomeSource()
+    {
+        try {
+            // Retrieve all income sources
+            $incomeSources = IncomeSource::all();
+
+            // Return a successful response with the collection of IncomeSourceResource
+            return $this->sendResponse(IncomeSourceResource::collection($incomeSources), 'Income sources retrieved successfully.');
+        } catch (\Exception $e) {
+            // Handle exceptions and return an error response
+            return $this->sendError('Error retrieving income sources.', $e->getMessage());
+        }
+    }
+
+    public function getEmploymentStatus()
+    {
+        try {
+            // Retrieve all employment statuses
+            $employmentStatuses = EmploymentStatus::all();
+
+            // Return a successful response with the collection of EmploymentStatusResource
+            return $this->sendResponse(EmploymentStatusResource::collection($employmentStatuses), 'Employment statuses retrieved successfully.');
+        } catch (\Exception $e) {
+            // Handle exceptions and return an error response
+            return $this->sendError('Error retrieving employment statuses.', $e->getMessage());
         }
     }
 

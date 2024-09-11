@@ -4,10 +4,12 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Resources\UserBankAccountResource;
 use App\Http\Resources\UserProfileResource;
+use App\Http\Resources\UserProfileTrackingResource;
 use App\Http\Resources\UserResource;
 use App\Models\Otp;
 use App\Models\UserBankAccount;
 use App\Models\UserProfile;
+use App\Models\UserProfileTracking;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
@@ -30,68 +32,102 @@ class RegisterController extends BaseController
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
+            // User validation
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'confirmation_password' => 'required|same:password',
+
+            // User Profile validation
+            'gender_id' => 'required|exists:genders,id',
+            'marital_status_id' => 'required|exists:marital_statuses,id',
+            'nationality_id' => 'required|exists:nationalities,id',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
             'photo' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'cnic' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'cnic_front' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'cnic_back' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'cnic_no' => 'required|string|max:15|unique:user_profiles,cnic_no',
-            'issue_date' => 'required|date',
-            'expire_date' => 'required|date',
+            'issue_date' => 'nullable|date',
+            'expire_date' => 'nullable|date',
             'dob' => 'required|date',
             'mobile_no' => 'required|string|max:15|unique:user_profiles,mobile_no',
+            'alternate_mobile_no' => 'required|string|max:15',
+            'permanent_address' => 'required|string|max:255',
+            'current_address' => 'required|string|max:255',
+            'current_address_duration' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
-        DB::beginTransaction();
+         DB::beginTransaction();
 
         try {
-            // Create user
-            $input = $request->only(['name', 'email', 'password']);
-            $input['password'] = $input['password'];
-            $user = User::create($input);
+            // Step 1: Create User
+            $userInput = $request->only(['name', 'email', 'password']);
+            $userInput['password'] = $userInput['password']; // Hash password
+            $user = User::create($userInput);
 
-            // Handle the profile photo and CNIC upload
-            $profileData = $request->only(['cnic_no', 'issue_date', 'expire_date', 'dob', 'mobile_no']);
+            // Step 2: Handle Profile Image & CNIC upload
+            $profileData = $request->only([
+                'gender_id', 'marital_status_id', 'nationality_id', 'first_name',
+                'last_name', 'father_name', 'cnic_no', 'issue_date', 'expire_date',
+                'dob', 'mobile_no', 'alternate_mobile_no', 'permanent_address',
+                'current_address', 'current_address_duration'
+            ]);
 
             if ($request->hasFile('photo')) {
                 $profileData['photo'] = $request->file('photo')->store('profile_photos', 'public');
             }
 
-            if ($request->hasFile('cnic')) {
-                $profileData['cnic'] = $request->file('cnic')->store('cnic_photos', 'public');
+            if ($request->hasFile('cnic_front')) {
+                $profileData['cnic_front'] = $request->file('cnic_front')->store('cnic_photos', 'public');
             }
 
-            // Link profile to the user
+            if ($request->hasFile('cnic_back')) {
+                $profileData['cnic_back'] = $request->file('cnic_back')->store('cnic_photos', 'public');
+            }
+
+            // Step 3: Create User Profile and link to the user
             $user->profile()->create($profileData);
 
-            // Assign role to the user
+            // Step 4: Create User Profile Tracking
+            $userTracking = UserProfileTracking::create([
+                'user_id' => $user->id,
+                'is_registration' => true,  // Mark registration as complete
+                'is_kyc' => false,
+                'is_profile' => false,
+                'is_reference' => false,
+                'is_utility' => false,
+                'is_bank_statement' => false,
+            ]);
+
+            // Step 5: Assign role to the user
             $user->assignRole(Role::where('name', 'Customer')->first());
 
-            // Create access token
-//            $success['token'] = $user->createToken('LMS')->accessToken;
-            $success['name'] = $user->name;
+            // Eager load relationships
+            $user = User::with('profile.gender','profile.maritalStatus','profile.nationality')->findOrFail($user->id);
+
+            $accessToken = $user->createToken('MyApp')->accessToken;
 
             DB::commit();
 
-            // Return the response with the UserResource
+            // Step 6: Return success response with UserResource
             return $this->sendResponse([
                 'name' => $user->name,
-//                'token' => $success['token'],
-                'user' => new UserResource($user)
+                'user' => new UserResource($user),
+                'token' => $accessToken,
+                'userTracking'  =>new UserProfileTrackingResource($userTracking)
             ], 'User registered successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             return $this->sendError('Registration failed.', ['error' => $e->getMessage()]);
         }
     }
-
 
     /**
      * Login api
@@ -161,8 +197,9 @@ class RegisterController extends BaseController
             // Find the UserProfile with the given mobile_no
             $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
 
-            if ($userProfile) {
+             if ($userProfile) {
                 $user = $userProfile->user;
+                $userTracking = $user->tracking;
 
                 // Verify the OTP
                 $otpRecord = Otp::where('user_id', $user->id)
@@ -176,6 +213,7 @@ class RegisterController extends BaseController
                     $success['token'] = $accessToken;
                     $success['name'] = $user->name;
                     $success['user'] = new UserResource($user);
+                    $success['userTracking'] = new UserProfileTrackingResource($userTracking);
 
                     // Delete the OTP after successful verification
                     $otpRecord->delete();
@@ -214,39 +252,6 @@ class RegisterController extends BaseController
     }
 
 
-    public function storeUserBankAccount(Request $request): JsonResponse
-    {
-        $validator = Validator::make($request->all(), [
-             'bank_name' => 'required|string|max:255',
-            'account_name' => 'required|string|max:255',
-            'account_number' => 'required|string|max:255|unique:user_bank_accounts,account_number',
-            'iban' => 'nullable|string|max:34',
-            'swift_code' => 'nullable|string|max:11',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error.', $validator->errors());
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $bankAccount = UserBankAccount::create([
-                'user_id' => auth()->user()->id,
-                'bank_name' => $request->bank_name,
-                'account_name' => $request->account_name,
-                'account_number' => $request->account_number,
-                'iban' => $request->iban,
-                'swift_code' => $request->swift_code,
-            ]);
-            DB::commit();
-
-            return $this->sendResponse(new UserBankAccountResource($bankAccount), 'Bank account added successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->sendError('Error occurred.', ['error' => $e->getMessage()]);
-        }
-    }
 
     public function logout(Request $request): JsonResponse
     {
@@ -260,86 +265,8 @@ class RegisterController extends BaseController
         }
     }
 
-    public function userInfo(): JsonResponse
-    {
-        try {
-            // Retrieve the authenticated user
-            $user = Auth::user();
 
-            // Check if the user exists
-            if (!$user) {
-                return $this->sendError('User not found.', ['error' => 'User not found.']);
-            }
 
-            // Return the user information using UserResource
-            return $this->sendResponse(new UserResource($user), 'User information retrieved successfully.');
-        } catch (Exception $e) {
-            // Catch any exceptions and return an error response
-            return $this->sendError('Failed to retrieve user information.', ['error' => $e->getMessage()]);
-        }
-    }
-
-    public function updateProfile(Request $request): JsonResponse
-    {
-        // Get the authenticated user
-        $user = Auth::user();
-        $userProfile = $user->profile;
-
-        // Validation rules
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'photo' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'cnic' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'cnic_no' => 'required|string|max:15|unique:user_profiles,cnic_no,' . $userProfile->id,
-            'issue_date' => 'required|date',
-            'expire_date' => 'required|date',
-            'dob' => 'required|date',
-            'mobile_no' => 'required|string|max:15|unique:user_profiles,mobile_no,' . $userProfile->id,
-        ]);
-
-        if ($validator->fails()) {
-            return $this->sendError('Validation Error.', $validator->errors());
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Update the user information
-            $user->update([
-                'name' => $request->name,
-                'email' => $request->email,
-            ]);
-
-            // Handle the profile photo and CNIC uploads
-            if ($request->hasFile('photo')) {
-                $photoPath = $request->file('photo')->store('profile_photos', 'public');
-                $userProfile->photo = $photoPath;
-            }
-
-            if ($request->hasFile('cnic')) {
-                $cnicPath = $request->file('cnic')->store('cnic_photos', 'public');
-                $userProfile->cnic = $cnicPath;
-            }
-
-            // Update the user's profile information
-            $userProfile->update([
-                'cnic_no' => $request->cnic_no,
-                'issue_date' => $request->issue_date,
-                'expire_date' => $request->expire_date,
-                'dob' => $request->dob,
-                'mobile_no' => $request->mobile_no,
-            ]);
-
-            DB::commit();
-
-            return $this->sendResponse(new UserResource($user), 'Profile updated successfully.');
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return $this->sendError('Profile update failed.', ['error' => $e->getMessage()]);
-        }
-    }
     public function changePassword(Request $request): JsonResponse
     {
         // Validation
@@ -463,7 +390,7 @@ class RegisterController extends BaseController
         // Validation
         $validator = Validator::make($request->all(), [
             'mobile_no' => 'required|string|max:15',
-             'new_password' => 'required|string|min:8',
+            'new_password' => 'required|string|min:8',
             'confirmation_password' => 'required|same:new_password',
         ]);
 

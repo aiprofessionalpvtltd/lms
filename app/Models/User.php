@@ -76,4 +76,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(UserBankAccount::class)->withDefault();
     }
 
+    public function tracking()
+    {
+        return $this->hasOne(UserProfileTracking::class)->withDefault();
+    }
+
+
 }

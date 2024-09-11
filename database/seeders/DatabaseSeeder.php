@@ -25,6 +25,14 @@ class DatabaseSeeder extends Seeder
             ProductServiceSeeder::class,
             LoanPurposeSeeder::class,
             DocumentTypeSeeder::class,
+
+
+            GenderSeeder::class,
+            MaritalStatusSeeder::class,
+            NationalitySeeder::class,
+            EmploymentStatusSeeder::class,
+            IncomeSourceSeeder::class,
+
         ]);
 
         $this->createPersonalAccessClient();
