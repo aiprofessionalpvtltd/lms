@@ -3,15 +3,19 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Resources\UserBankAccountResource;
+use App\Http\Resources\UserEducationResource;
 use App\Http\Resources\UserEmploymentResource;
 use App\Http\Resources\UserFamilyDependentResource;
+use App\Http\Resources\UserGuarantorResource;
 use App\Http\Resources\UserProfileResource;
 use App\Http\Resources\UserProfileTrackingResource;
 use App\Http\Resources\UserResource;
 use App\Models\Otp;
 use App\Models\UserBankAccount;
+use App\Models\UserEducation;
 use App\Models\UserEmployment;
 use App\Models\UserFamilyDependent;
+use App\Models\UserGuarantor;
 use App\Models\UserProfile;
 use App\Models\UserProfileTracking;
 use Illuminate\Http\Request;
@@ -221,5 +225,76 @@ class UserController extends BaseController
             return $this->sendError('Error storing family and dependents information.', $e->getMessage());
         }
     }
+
+
+    public function storeUserGuarantor(Request $request)
+    {
+        // Validate the input
+        $validator = Validator::make($request->all(), [
+            'guarantor_contact_name' => 'required|string|max:255',
+            'relationship_id' => 'required|exists:relationships,id',
+            'guarantor_contact_number' => 'nullable|string|max:15',
+
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Create a new UserGuarantor record for the authenticated user
+            $guarantor = UserGuarantor::create([
+                'user_id' => Auth::id(),  // Get the authenticated user's ID
+                'guarantor_contact_name' => $request->guarantor_contact_name,
+                'relationship_id' => $request->relationship_id,
+                'guarantor_contact_number' => $request->guarantor_contact_number,
+            ]);
+
+            // Load relationships if needed for the response
+            $guarantor->load('user', 'relationship');
+
+            DB::commit();
+
+            // Return the response with the GuarantorResource
+            return $this->sendResponse(new UserGuarantorResource($guarantor), 'Guarantor added successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Guarantor creation failed.', ['error' => $e->getMessage()]);
+        }
+    }
+
+    public function storeUserEducation(Request $request)
+    {
+        // Validate the input
+        $validatedData = $request->validate([
+            'education_id' => 'required|exists:educations,id', // Ensure valid education
+            'university_name' => 'required|string|max:255',
+        ]);
+
+        try {
+            // Transaction to ensure atomicity with Eloquent
+            DB::beginTransaction();
+
+            $validatedData['user_id'] = Auth::id();
+
+            // Create UserEducation using Eloquent
+            $userEducation = UserEducation::create($validatedData);
+
+            DB::commit();
+
+            return $this->sendResponse(new UserEducationResource($userEducation), 'User Education added successfully.');
+
+
+        } catch (\Exception $e) {
+            // Handle exception and rollback
+            DB::rollBack();
+
+            return $this->sendError('User Education creation failed.', ['error' => $e->getMessage()]);
+
+        }
+    }
+
 
 }

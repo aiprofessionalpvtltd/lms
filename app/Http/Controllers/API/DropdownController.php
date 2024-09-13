@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DocumentTypeResource;
+use App\Http\Resources\EducationResource;
 use App\Http\Resources\EmploymentStatusResource;
 use App\Http\Resources\GenderResource;
 use App\Http\Resources\IncomeSourceResource;
@@ -13,6 +14,7 @@ use App\Http\Resources\MaritalStatusResource;
 use App\Http\Resources\NationalityResource;
 use App\Http\Resources\ProductServiceResource;
 use App\Models\DocumentType;
+use App\Models\Education;
 use App\Models\EmploymentStatus;
 use App\Models\Gender;
 use App\Models\IncomeSource;
@@ -204,6 +206,22 @@ class DropdownController extends BaseController
         } catch (\Exception $e) {
             // Handle exceptions and return an error response
             return $this->sendError('Error retrieving employment statuses.', $e->getMessage());
+        }
+    }
+
+    public function getEducation()
+    {
+        try {
+
+            $educations = Education::all();
+
+            return $this->sendResponse(EducationResource::collection($educations), 'Education  retrieved successfully.');
+
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return $this->sendError('Error retrieving education levels.', $e->getMessage());
+
+
         }
     }
 
