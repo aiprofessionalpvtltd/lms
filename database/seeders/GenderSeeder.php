@@ -16,8 +16,8 @@ class GenderSeeder extends Seeder
         $genders =
             [
                 ['name' => 'Male', 'emoji' => 'man'],
-                ['name' => 'Female', 'emoji' => 'women'],
-                ['name' => 'Other', 'emoji' => 'women'],
+                ['name' => 'Female', 'emoji' => 'woman'],
+                ['name' => 'Other', 'emoji' => 'woman'],
 
             ];
 
