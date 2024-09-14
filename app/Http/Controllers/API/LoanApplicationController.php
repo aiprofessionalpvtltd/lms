@@ -17,6 +17,74 @@ use Illuminate\Support\Facades\Validator;
 
 class LoanApplicationController extends BaseController
 {
+
+
+    public function calculateLoan(Request $request)
+    {
+        $loanAmount = $request->input('loan_amount');
+        $months = $request->input('months');
+
+        // Validate input
+        if (!in_array($months, [3, 6, 9, 12])) {
+            return response()->json(['error' => 'Invalid month duration. Choose from 3, 6, 9, or 12 months.'], 400);
+        }
+
+        // Constants
+        $processingFeeRate = 0.027;
+        $riskPremiumRate = 0.02;
+        $operatingCostsRate = 0.03;
+        $profitMarginRate = 0.20;
+        $costOfFundsRate = $this->getCostOfFundsRate($months);
+
+        // Calculate processing fee
+        $processingFee = $loanAmount * $processingFeeRate;
+
+        // Calculate total markup
+        $totalMarkup = ($costOfFundsRate + $riskPremiumRate + $operatingCostsRate + $profitMarginRate) * ($months / 12) * $loanAmount;
+
+        // Calculate total payable amount
+        $totalPayableAmount = $loanAmount + $processingFee + $totalMarkup;
+
+        // calculate overall markup
+        $overallMarkup = $processingFee + $totalMarkup;
+
+        // calculate Monthly Installment to Pay
+        $monthlyInstallment = $totalPayableAmount / $months;
+
+        return $this->sendResponse(
+            [
+                'loan_amount' => $loanAmount,
+                'months' => $months,
+                'processing_fee' => round($processingFee),
+                'total_markup' => round($totalMarkup),
+                'over_markup' => round($overallMarkup),
+                'monthly_installment' => round($monthlyInstallment),
+                'total_payable_amount' => round($totalPayableAmount),
+            ],
+            'Loan calculated successfully.'
+        );
+
+
+    }
+
+    private function getCostOfFundsRate($months)
+    {
+        switch ($months) {
+            case 6:
+                return 0.05; // 5% for 6 months
+            case 9:
+                return 0.075; // 7.5% for 9 months
+            case 12:
+                return 0.10; // 10% for 12 months
+            case 3:
+                return 0.05; // 5% for 3 months
+            default:
+                return 0; // No cost of funds for 3 months
+        }
+    }
+
+
+
     public function getAllData(Request $request)
     {
         // Get the status from the request, defaulting to 'pending' if not provided

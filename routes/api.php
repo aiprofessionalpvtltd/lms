@@ -27,6 +27,8 @@ Route::get('dropdown/incomeSource', [DropdownController::class, 'getIncomeSource
 Route::get('dropdown/employmentStatus', [DropdownController::class, 'getEmploymentStatus']);
     Route::get('dropdown/educations', [DropdownController::class, 'getEducation']);
 
+Route::post('user/loan-calculator', [LoanApplicationController::class, 'calculateLoan']);
+
 
 Route::middleware('auth:api')->group(function () {
 
