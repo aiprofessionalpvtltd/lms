@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\LoanDuration;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class LoanDurationSeeder extends Seeder
@@ -14,15 +13,17 @@ class LoanDurationSeeder extends Seeder
     public function run(): void
     {
         $durations = [
-            '3 Months',
-            '6 Months',
-            '9 Months',
-            '12 Months',
-
+            ['name' => '3 Months', 'value' => 3],
+            ['name' => '6 Months', 'value' => 6],
+            ['name' => '9 Months', 'value' => 9],
+            ['name' => '12 Months', 'value' => 12],
         ];
 
         foreach ($durations as $duration) {
-            LoanDuration::firstOrCreate(['name' => $duration]);
+            LoanDuration::firstOrCreate([
+                'name' => $duration['name'],
+                'value' => $duration['value']
+            ]);
         }
     }
 }

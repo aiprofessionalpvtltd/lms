@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('loan_durations', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('value');
             $table->softDeletes();
             $table->timestamps();
         });

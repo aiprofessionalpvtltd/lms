@@ -17,6 +17,8 @@ class NationalityResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'emoji' => $this->emoji,
+
         ];
     }
 }

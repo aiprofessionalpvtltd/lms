@@ -13,10 +13,19 @@ class GenderSeeder extends Seeder
      */
     public function run(): void
     {
-        $genders = ['Male', 'Female', 'Other'];
+        $genders =
+            [
+                ['name' => 'Male', 'emoji' => 'man'],
+                ['name' => 'Female', 'emoji' => 'women'],
+                ['name' => 'Other', 'emoji' => 'women'],
+
+            ];
 
         foreach ($genders as $gender) {
-            Gender::firstOrCreate(['name' => $gender]);
+            Gender::firstOrCreate([
+                'name' => $gender['name'],
+                'emoji' => $gender['emoji']
+            ]);
         }
     }
 }

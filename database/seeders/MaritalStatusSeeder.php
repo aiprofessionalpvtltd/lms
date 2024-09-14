@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\MaritalStatus;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class MaritalStatusSeeder extends Seeder
@@ -13,10 +12,18 @@ class MaritalStatusSeeder extends Seeder
      */
     public function run(): void
     {
-        $statuses = ['Single', 'Married', 'Divorced', 'Widowed'];
+        $statuses = [
+            ['name' => 'Single', 'emoji' => 'smile'],
+            ['name' => 'Married', 'emoji' => 'ring'],
+            ['name' => 'Divorced', 'emoji' => 'broken_heart'],
+            ['name' => 'Widowed', 'emoji' => 'cry'],
+        ];
 
         foreach ($statuses as $status) {
-            MaritalStatus::firstOrCreate(['name' => $status]);
+            MaritalStatus::firstOrCreate([
+                'name' => $status['name'],
+                'emoji' => $status['emoji']
+            ]);
         }
     }
 }

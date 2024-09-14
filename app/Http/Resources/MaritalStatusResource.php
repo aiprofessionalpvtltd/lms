@@ -17,6 +17,8 @@ class MaritalStatusResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'emoji' => $this->emoji,
+
         ];
     }
 }

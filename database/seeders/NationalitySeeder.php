@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Nationality;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class NationalitySeeder extends Seeder
@@ -13,10 +12,18 @@ class NationalitySeeder extends Seeder
      */
     public function run(): void
     {
-        $nationalities = ['Pakistani', 'Other'];
+        $nationalities = [
+            ['name' => 'Pakistani', 'emoji' => 'flag-pk'],
+            ['name' => 'United States', 'emoji' => 'flag-us'],
+            ['name' => 'United Kingdom', 'emoji' => 'flag-gb'],
+            ['name' => 'Japan', 'emoji' => 'flag-jp'],
+        ];
 
         foreach ($nationalities as $nationality) {
-            Nationality::firstOrCreate(['name' => $nationality]);
+            Nationality::firstOrCreate([
+                'name' => $nationality['name'],
+                'emoji' => $nationality['emoji']
+            ]);
         }
     }
 }
