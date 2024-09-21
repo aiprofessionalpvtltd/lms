@@ -51,6 +51,25 @@ class UserController extends BaseController
         }
     }
 
+    public function getTracking(): JsonResponse
+    {
+        try {
+            // Retrieve the authenticated user
+            $user = Auth::user();
+
+            // Check if the user exists
+            if (!$user) {
+                return $this->sendError('User not found.', ['error' => 'User not found.']);
+            }
+
+            // Return the user information using UserResource
+            return $this->sendResponse(new UserProfileTrackingResource($user->tracking), 'User Tracking retrieved successfully.');
+        } catch (Exception $e) {
+            // Catch any exceptions and return an error response
+            return $this->sendError('Failed to retrieve user information.', ['error' => $e->getMessage()]);
+        }
+    }
+
     public function updateProfile(Request $request): JsonResponse
     {
         // Get the authenticated user

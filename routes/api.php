@@ -44,6 +44,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('user/family-dependents', [UserController::class, 'storeFamilyDependent']);
     Route::post('user/user-guarantor', [UserController::class, 'storeUserGuarantor']);
     Route::post('user/user-education', [UserController::class, 'storeUserEducation']);
+    Route::get('user/tracking', [UserController::class, 'getTracking']);
 
 
     Route::get('user/loan-applications', [LoanApplicationController::class, 'getAllData']);
