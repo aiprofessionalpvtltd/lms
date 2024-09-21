@@ -10,6 +10,7 @@ use App\Models\LoanAttachment;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -402,6 +403,73 @@ class LoanApplicationController extends BaseController
         ]);
 
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
+    }
+
+    public function checkEligibility(Request $request)
+    {
+        // Assuming you have a User model with related information such as CNIC, age, employment status, income, bank statement, and address proof
+
+        // Fetch the authenticated user
+        $user = Auth::user();
+
+        // Initialize an array to store eligibility checks
+        $eligibilityChecks = [];
+
+        // 1. Age Check
+        $age = Carbon::parse($user->profile->dob)->age;
+
+        if ($age >= 21 && $age <= 60) {
+            $eligibilityChecks['age'] = true;
+        } else {
+            $eligibilityChecks['age'] = false;
+        }
+
+        // 2. CNIC Check
+        if (!empty($user->profile->cnic_no)) {
+            $eligibilityChecks['cnic'] = true;
+        } else {
+            $eligibilityChecks['cnic'] = false;
+        }
+
+        // 3. Employment Status Check
+
+        if ($user->employment->employment_status_id == 1 && $user->employment->employment_duration >= 6) {
+            $eligibilityChecks['employment'] = true;
+
+        } elseif ($user->employment->employment_status_id == 2 && $user->employment->employment_duration >= 12) {
+            $eligibilityChecks['employment'] = true;
+
+        } else {
+            $eligibilityChecks['employment'] = false;
+        }
+
+        // 4. Minimum Monthly Income Check
+        if ($user->employment->net_income >= 30000) {
+            $eligibilityChecks['income'] = true;
+        } else {
+            $eligibilityChecks['income'] = false;
+        }
+
+        // 5. Bank Statement Check (last 6 months)
+        if (!empty($user->tracking->is_bank_statement)) {
+            $eligibilityChecks['bank_statement'] = true;
+        } else {
+            $eligibilityChecks['bank_statement'] = false;
+        }
+
+        // 6. Address Proof Check
+        if (!empty($user->tracking->is_address_proof)) {
+            $eligibilityChecks['address_proof'] = true;
+        } else {
+            $eligibilityChecks['address_proof'] = false;
+        }
+
+        // Check if all criteria are met
+        if (collect($eligibilityChecks)->contains(false)) {
+            return $this->sendError('Eligibility Criteria Not Met', $eligibilityChecks);
+        }
+
+        return $this->sendResponse('Eligible for Sarmaya Loan', 'You meet all the eligibility criteria.');
     }
 
 

@@ -154,6 +154,7 @@ class UserController extends BaseController
             'employment_status_id' => 'required|exists:employment_statuses,id',
             'income_source_id' => 'required|exists:income_sources,id',
             'current_employer' => 'nullable|string|max:255',
+            'employment_duration' => 'nullable|string|max:255',
             'job_title' => 'nullable|string|max:255',
             'gross_income' => 'nullable|numeric',
             'net_income' => 'nullable|numeric',

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('income_source_id');
             $table->string('current_employer')->nullable();
             $table->string('job_title')->nullable();
+            $table->string('employment_duration')->nullable();
             $table->decimal('gross_income', 15, 2)->nullable(); // For gross income
             $table->decimal('net_income', 15, 2)->nullable();   // For net income
             $table->text('existing_loans')->nullable(); // For details of current liabilities

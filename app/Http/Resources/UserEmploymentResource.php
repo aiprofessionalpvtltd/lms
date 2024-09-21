@@ -20,6 +20,7 @@ class UserEmploymentResource extends JsonResource
             'employment_status' => new EmploymentStatusResource($this->whenLoaded('employmentStatus')),
             'income_source' => new IncomeSourceResource($this->whenLoaded('incomeSource')),
             'current_employer' => $this->current_employer,
+            'employment_duration' => $this->employment_duration,
             'job_title' => $this->job_title,
             'gross_income' => $this->gross_income,
             'net_income' => $this->net_income,

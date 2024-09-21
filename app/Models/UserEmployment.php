@@ -14,6 +14,7 @@ class UserEmployment extends Model
         'employment_status_id',
         'income_source_id',
         'current_employer',
+        'employment_duration',
         'job_title',
         'gross_income',
         'net_income',
