@@ -33,6 +33,9 @@ class DatabaseSeeder extends Seeder
             EmploymentStatusSeeder::class,
             IncomeSourceSeeder::class,
 
+            EducationSeeder::class,
+            RelationshipSeeder::class,
+
         ]);
 
         $this->createPersonalAccessClient();
