@@ -110,6 +110,7 @@ class LoanApplicationController extends BaseController
 
                 } else {
 
+
                     return view('admin.loan_applications.index', compact('loanApplications'));
                 }
             }
@@ -164,7 +165,19 @@ class LoanApplicationController extends BaseController
                         $query->where('id', '>=', $roleId);
                     })->with('roles:name,id')->get();
 
-                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers'));
+                $loanApplication->load('loanDuration');
+                $extraParameterForLoan = [
+                    'loan_amount' => $loanApplication->loan_amount,
+                    'months' =>$loanApplication->loanDuration->value
+                ];
+
+                $request->merge($extraParameterForLoan);
+
+                $loanCalculator = $this->calculateLoan($request)->getData(true);
+
+                $loanCalculatedDetail = $loanCalculator['data'];
+
+                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers' ,'loanCalculatedDetail'));
             }
 
 

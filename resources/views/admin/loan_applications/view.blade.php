@@ -99,8 +99,7 @@
             <div class="page-title d-flex">
                 <h4><span class="font-weight-semibold"></span> Loan Application Detail
                 </h4>
-                <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
-            </div>
+             </div>
 
 
         </div>
@@ -109,63 +108,13 @@
     </div>
     <!-- /page header -->
 
+    <a href="{{ route('view-customer', $loanApplication->user->id) }}" class="btn btn-primary">View Customer Detail</a>
     <!-- Content area -->
     <div class="content">
 
         <div class="card mb-4">
             <div class="card-header">
-                <h3>User Information</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>ID:</strong> {{ $loanApplication->user->id }}</p>
-                        <p><strong>Name:</strong> {{ $loanApplication->user->name }}</p>
-                        <p><strong>Email:</strong> {{ $loanApplication->user->email }}</p>
-                        <p><strong>Created At:</strong> {{ $loanApplication->user->created_at }}</p>
-                        <p><strong>Updated At:</strong> {{ $loanApplication->user->updated_at }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Bank Name:</strong> {{ $loanApplication->user->bank_account->bank_name }}</p>
-                        <p><strong>Account Title:</strong> {{ $loanApplication->user->bank_account->account_name }}</p>
-                        <p><strong>Account Number:</strong> {{ $loanApplication->user->bank_account->account_number }}
-                        </p>
-                        <p><strong>IBAN:</strong> {{ $loanApplication->user->bank_account->iban }}</p>
-                        <p><strong>Swift Code:</strong> {{ $loanApplication->user->bank_account->swift_code }}</p>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Profile Information</h3>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>CNIC No:</strong> {{ $loanApplication->user->profile->cnic_no }}</p>
-                        <p><strong>Issue Date:</strong> {{ $loanApplication->user->profile->issue_date }}</p>
-                        <p><strong>Expire Date:</strong> {{ $loanApplication->user->profile->expire_date }}</p>
-                        <p><strong>Date of Birth:</strong> {{ $loanApplication->user->profile->dob }}</p>
-                        <p><strong>Mobile No:</strong> {{ $loanApplication->user->profile->mobile_no }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Profile Photo:</strong></p>
-                        <img src="{{ asset('storage/' . $loanApplication->user->profile->photo) }}" alt="Profile Photo"
-                             class="img-thumbnail" style="max-width: 150px;">
-                        <p><strong>CNIC Photo:</strong></p>
-                        <img src="{{ asset('storage/' . $loanApplication->user->profile->cnic) }}" alt="CNIC Photo"
-                             class="img-thumbnail" style="max-width: 150px;">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Loan Application Information</h3>
+                <h2>Loan Application Information</h2>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -178,58 +127,45 @@
                         <p><strong>Reference Contact 1:</strong> {{ $loanApplication->reference_contact_1 }}</p>
                         <p><strong>Reference Contact 2:</strong> {{ $loanApplication->reference_contact_2 }}</p>
                         <p><strong>Status:</strong> {{ $loanApplication->status }}</p>
+
+                        <br>
+                        <h2>Calculated Loan</h2>
+                        <p><strong>Loan Amount:</strong> {{ $loanCalculatedDetail['loan_amount'] }}</p>
+                        <p><strong>Months:</strong> {{ $loanCalculatedDetail['months'] }}</p>
+                        <p><strong>Processing Fee:</strong> {{ $loanCalculatedDetail['processing_fee'] }}</p>
+                        <p><strong>Total Markup:</strong> {{ $loanCalculatedDetail['total_markup'] }}</p>
+                        <p><strong>Over Markup:</strong> {{ $loanCalculatedDetail['over_markup'] }}</p>
+                        <p><strong>Monthly Installment:</strong> {{ $loanCalculatedDetail['monthly_installment'] }}</p>
+                        <p><strong>Total Payable Amount:</strong> {{ $loanCalculatedDetail['total_payable_amount'] }}</p>
+
+
                     </div>
                     <div class="col-md-6">
                         @if(count($loanApplication->attachments) > 0)
                             @foreach($loanApplication->attachments as $attachment)
-                                <p><strong>{{$attachment->documentType->name}}</strong></p>
-                                <img src="{{ asset('storage/' . $attachment->path) }}"
-                                     alt="{{$attachment->documentType->name}}" class="img-thumbnail"
-                                     style="max-width: 150px;">
+                                <p><strong>{{ $attachment->documentType->name }}</strong></p>
+                                <a href="{{ asset('storage/' . $attachment->path) }}" target="_blank">
+                                    <img src="{{ asset('storage/' . $attachment->path) }}"
+                                         alt="{{ $attachment->documentType->name }}" class="img-thumbnail"
+                                         style="max-width: 150px;">
+                                </a>
                             @endforeach
                         @else
                             <p><strong>No Documents Uploaded</strong></p>
                         @endif
                     </div>
+
                 </div>
             </div>
         </div>
 
-        @if($loanApplication->guarantors)
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3>Loan Application Guarantor</h3>
-                </div>
-                <div class="card-body">
-                    @foreach($loanApplication->guarantors as $guarantor)
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>First Name:</strong> {{ $guarantor->first_name }}</p>
-                                <p><strong>Last Name:</strong> {{ $guarantor->last_name }}</p>
-                                <p><strong>CNIC No</strong> {{ $guarantor->cnic_no }}</p>
-                                <p><strong>Address:</strong> {{ $guarantor->address }}</p>
-                                <p><strong>Mobile No:</strong> {{ $guarantor->mobile_no }}</p>
-                            </div>
-                            <div class="col-md-6">
 
-                                <p><strong>CNIC Attachment</strong></p>
-                                <img src="{{ asset('storage/' . $guarantor->cnic_attachment) }}"
-                                     alt="CNIC Attachment" class="img-thumbnail"
-                                     style="max-width: 150px;">
-
-                            </div>
-                        </div>
-                        <hr>
-                    @endforeach
-                </div>
-            </div>
-        @endif
         <div class="card mb-4">
 
             <div class="card-body">
                 <div class="row">
                     <div class="col-8">
-                        <h3>Loan Application History</h3>
+                        <h2>Loan Application History</h2>
                         <ul class="timeline">
                             @foreach($loanApplication->histories as $history)
                                 @php
@@ -281,7 +217,7 @@
                             @csrf
                             @method('PUT')
 
-                            <h3>Update for proceeding</h3>
+                            <h2>Update for proceeding</h2>
 
                             @if($errors->any())
                                 <div class="alert alert-danger">

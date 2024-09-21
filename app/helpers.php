@@ -27,7 +27,18 @@ function showStatus($status)
 }
 
 
+function showCompleted($status)
+{
 
+    if ($status == 1) {
+        echo 'Completed';
+
+    } else {
+        echo 'Not Completed';
+
+    }
+
+}
 
 function showBoolean($status)
 {
