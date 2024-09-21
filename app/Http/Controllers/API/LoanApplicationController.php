@@ -7,6 +7,7 @@ use App\Http\Resources\LoanApplicationResource;
 use App\Models\LoanApplication;
 use App\Models\LoanApplicationHistory;
 use App\Models\LoanAttachment;
+use App\Models\LoanDuration;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -470,6 +471,63 @@ class LoanApplicationController extends BaseController
         }
 
         return $this->sendResponse('Eligible for Sarmaya Loan', 'You meet all the eligibility criteria.');
+    }
+
+    public function storeAmountAndDurationAfterCalculation(Request $request)
+    {
+        // Validate incoming request data
+        $validator = Validator::make($request->all(), [
+            'loan_amount' => 'required|numeric',
+            'months' => 'required|integer|exists:loan_durations,value', // Ensure 'months' corresponds to loan duration in the DB
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Get the authenticated user's ID
+            $userID = auth()->user()->id;
+
+            // Check if the user already has a submitted loan application
+            $existingLoanApplication = LoanApplication::where('user_id', $userID)
+                ->where('is_submitted', 1)
+                ->first(); // Get the first existing loan application
+
+            // Get the loan duration based on the months provided
+            $loanDuration = LoanDuration::where('value', $request->months)->first();
+
+            // If there is an existing loan application, return an error
+            if ($existingLoanApplication) {
+                return $this->sendError('An application is already in progress. A new application cannot be submitted.');
+            }
+
+            // Otherwise, update or create a loan application
+            $newLoanApplication = LoanApplication::updateOrCreate(
+                [
+                    'user_id' => $userID,
+                    'is_submitted' => 0, // We only allow creating/updating if the loan is not yet submitted
+                ],
+                [
+                    'loan_amount' => $request->loan_amount,
+                    'loan_duration_id' => $loanDuration->id,
+                ]
+            );
+
+            DB::commit();
+
+            // Return a successful response
+            return $this->sendResponse(
+                ['loan_application' => new LoanApplicationResource($newLoanApplication)],
+                'Loan Application submitted successfully.'
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('An error occurred.', ['error' => $e->getMessage()]);
+        }
     }
 
 

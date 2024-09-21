@@ -13,6 +13,7 @@ use App\Http\Resources\LoanPurposeResource;
 use App\Http\Resources\MaritalStatusResource;
 use App\Http\Resources\NationalityResource;
 use App\Http\Resources\ProductServiceResource;
+use App\Http\Resources\RelationshipResource;
 use App\Models\DocumentType;
 use App\Models\Education;
 use App\Models\EmploymentStatus;
@@ -23,6 +24,7 @@ use App\Models\LoanPurpose;
 use App\Models\MaritalStatus;
 use App\Models\Nationality;
 use App\Models\ProductService;
+use App\Models\Relationship;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -220,6 +222,22 @@ class DropdownController extends BaseController
         } catch (\Exception $e) {
             // Handle any exceptions
             return $this->sendError('Error retrieving education levels.', $e->getMessage());
+
+
+        }
+    }
+
+    public function getRelationShip()
+    {
+        try {
+
+            $relationships = Relationship::all();
+
+            return $this->sendResponse(RelationshipResource::collection($relationships), 'Relationship  retrieved successfully.');
+
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return $this->sendError('Error retrieving Relationship .', $e->getMessage());
 
 
         }

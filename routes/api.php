@@ -25,7 +25,8 @@ Route::get('dropdown/marital-statuses', [DropdownController::class, 'getMaritalS
 Route::get('dropdown/nationalities', [DropdownController::class, 'getNationalities']);
 Route::get('dropdown/incomeSource', [DropdownController::class, 'getIncomeSource']);
 Route::get('dropdown/employmentStatus', [DropdownController::class, 'getEmploymentStatus']);
-    Route::get('dropdown/educations', [DropdownController::class, 'getEducation']);
+Route::get('dropdown/educations', [DropdownController::class, 'getEducation']);
+Route::get('dropdown/relationships', [DropdownController::class, 'getRelationShip']);
 
 Route::post('user/loan-calculator', [LoanApplicationController::class, 'calculateLoan']);
 
@@ -49,6 +50,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('user/user-loan-applications', [LoanApplicationController::class, 'getUserData']);
     Route::post('user/loan-applications', [LoanApplicationController::class, 'store']);
     Route::post('user/loan-applications/documents', [LoanApplicationController::class, 'storeDocuments']);
+    Route::post('user/loan-applications/calculation', [LoanApplicationController::class, 'storeAmountAndDurationAfterCalculation']);
     Route::get('user/loan-applications/checkEligibility', [LoanApplicationController::class, 'checkEligibility']);
 
     // Routes fr dropdowns
