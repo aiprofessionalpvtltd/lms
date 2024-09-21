@@ -20,6 +20,7 @@ class UserGuarantor extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function relationship()
     {
         return $this->belongsTo(Relationship::class);

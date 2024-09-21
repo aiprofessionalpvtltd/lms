@@ -172,15 +172,16 @@ class UserController extends BaseController
             $request->merge(['user_id' => $user->id]);
 
             // Create a new UserEmployment record
-            $userEmployment = UserEmployment::create($request->all());
+            UserEmployment::create($request->all());
 
-            // Load relationships if needed for the response
-            $userEmployment->load('employmentStatus', 'incomeSource', 'user');
+            $user->load('tracking', 'familyDependent', 'bank_account', 'profile', 'education','employment','references');
+
+            $user->tracking->update(['is_kyc' => 1]);
 
             DB::commit();
 
-            // Return the response with UserEmploymentResource
-            return $this->sendResponse(new UserEmploymentResource($userEmployment), 'User employment details stored successfully.');
+            // Return the response with UserResource
+            return $this->sendResponse(new UserResource($user), 'User KYC details stored successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -226,7 +227,6 @@ class UserController extends BaseController
         }
     }
 
-
     public function storeUserGuarantor(Request $request)
     {
         // Validate the input
@@ -244,21 +244,25 @@ class UserController extends BaseController
         DB::beginTransaction();
 
         try {
+            $user = Auth::user();
+
             // Create a new UserGuarantor record for the authenticated user
-            $guarantor = UserGuarantor::create([
-                'user_id' => Auth::id(),  // Get the authenticated user's ID
+           UserGuarantor::create([
+                'user_id' => $user->id,  // Get the authenticated user's ID
                 'guarantor_contact_name' => $request->guarantor_contact_name,
                 'relationship_id' => $request->relationship_id,
                 'guarantor_contact_number' => $request->guarantor_contact_number,
             ]);
 
-            // Load relationships if needed for the response
-            $guarantor->load('user', 'relationship');
+
+            $user->load('tracking', 'familyDependent', 'bank_account', 'profile', 'education','employment','references');
+
+            $user->tracking->update(['is_reference' => 1]);
 
             DB::commit();
 
             // Return the response with the GuarantorResource
-            return $this->sendResponse(new UserGuarantorResource($guarantor), 'Guarantor added successfully.');
+            return $this->sendResponse(new UserResource($user), 'Reference Guarantor added successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->sendError('Guarantor creation failed.', ['error' => $e->getMessage()]);
@@ -293,6 +297,81 @@ class UserController extends BaseController
 
             return $this->sendError('User Education creation failed.', ['error' => $e->getMessage()]);
 
+        }
+    }
+
+    public function storeProfile(Request $request)
+    {
+
+        // Validate the input for all three operations
+        $validator = Validator::make($request->all(), [
+            // Validation for Family Dependents
+            'number_of_dependents' => 'required|integer|min:0',
+            'spouse_name' => 'nullable|string|max:255',
+            'spouse_employment_details' => 'nullable|string',
+
+            // Validation for Bank Account
+            'bank_name' => 'required|string|max:255',
+            'account_name' => 'required|string|max:255',
+            'account_number' => 'required|string|max:255|unique:user_bank_accounts,account_number',
+            'iban' => 'nullable|string|max:34',
+            'swift_code' => 'nullable|string|max:11',
+
+            // Validation for Education
+            'education_id' => 'required|exists:educations,id',
+            'university_name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user = Auth::user();
+
+            // Store Family Dependents
+            $request->merge(['user_id' => $user->id]);
+            UserFamilyDependent::create([
+                'user_id' => $user->id,
+                'number_of_dependents' => $request->number_of_dependents,
+                'spouse_name' => $request->spouse_name,
+                'spouse_employment_details' => $request->spouse_employment_details,
+            ]);
+
+            // Store Bank Account
+            UserBankAccount::create([
+                'user_id' => $user->id,
+                'bank_name' => $request->bank_name,
+                'account_name' => $request->account_name,
+                'account_number' => $request->account_number,
+                'iban' => $request->iban,
+                'swift_code' => $request->swift_code,
+            ]);
+
+            // Store Education
+            UserEducation::create([
+                'user_id' => $user->id,
+                'education_id' => $request->education_id,
+                'university_name' => $request->university_name,
+            ]);
+
+            $user->load('tracking', 'familyDependent', 'bank_account', 'profile', 'education','employment','references');
+
+            $user->tracking->update(['is_profile' => 1]);
+
+            DB::commit();
+
+            // Return the response with all resources
+            return $this->sendResponse([
+                'user' => new UserResource($user),
+
+            ], 'Profile data stored successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('Error occurred.', $e->getMessage());
         }
     }
 

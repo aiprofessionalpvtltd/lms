@@ -39,6 +39,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('user/account', [UserController::class, 'storeUserBankAccount']);
     Route::post('user/update', [UserController::class, 'updateProfile']);
     Route::post('user/employment', [UserController::class, 'storeUserEmployment']);
+    Route::post('user/store-profile', [UserController::class, 'storeProfile']);
     Route::post('user/family-dependents', [UserController::class, 'storeFamilyDependent']);
     Route::post('user/user-guarantor', [UserController::class, 'storeUserGuarantor']);
     Route::post('user/user-education', [UserController::class, 'storeUserEducation']);

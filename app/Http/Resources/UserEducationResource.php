@@ -19,8 +19,6 @@ class UserEducationResource extends JsonResource
             'user' => new UserResource($this->whenLoaded('user')),  // Include user relationship
             'education' => new EducationResource($this->whenLoaded('education')),  // Include education relationship
             'university_name' => $this->university_name,
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
         ];
     }
 }

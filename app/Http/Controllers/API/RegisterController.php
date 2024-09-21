@@ -79,6 +79,10 @@ class RegisterController extends BaseController
                 'current_address', 'current_address_duration'
             ]);
 
+            $profileData['dob'] = dateInsert($request->dob);
+            $profileData['issue_date'] = dateInsert($request->issue_date);
+            $profileData['expire_date'] = dateInsert($request->expire_date);
+
             if ($request->hasFile('photo')) {
                 $profileData['photo'] = $request->file('photo')->store('profile_photos', 'public');
             }
@@ -91,6 +95,7 @@ class RegisterController extends BaseController
                 $profileData['cnic_back'] = $request->file('cnic_back')->store('cnic_photos', 'public');
             }
 
+//            dd($profileData);
             // Step 3: Create User Profile and link to the user
             $user->profile()->create($profileData);
 
@@ -213,7 +218,6 @@ class RegisterController extends BaseController
                     $success['token'] = $accessToken;
                     $success['name'] = $user->name;
                     $success['user'] = new UserResource($user);
-                    $success['userTracking'] = new UserProfileTrackingResource($userTracking);
 
                     // Delete the OTP after successful verification
                     $otpRecord->delete();

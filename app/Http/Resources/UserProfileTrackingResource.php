@@ -22,9 +22,7 @@ class UserProfileTrackingResource extends JsonResource
             'is_profile' => $this->is_profile,
             'is_reference' => $this->is_reference,
             'is_utility' => $this->is_utility,
-            'is_bank_statement' => $this->is_bank_statement,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'is_bank_statement' => $this->is_bank_statement
         ];
     }
 }

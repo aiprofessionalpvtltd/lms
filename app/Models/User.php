@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Resources\UserGuarantorResource;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -79,6 +80,26 @@ class User extends Authenticatable implements MustVerifyEmail
     public function tracking()
     {
         return $this->hasOne(UserProfileTracking::class)->withDefault();
+    }
+
+    public function employment()
+    {
+        return $this->hasOne(UserEmployment::class)->withDefault();
+    }
+    public function familyDependent()
+    {
+        return $this->hasOne(UserFamilyDependent::class)->withDefault();
+    }
+
+    public function education()
+    {
+        return $this->hasOne(UserEducation::class)->withDefault();
+    }
+
+
+    public function references()
+    {
+        return $this->hasMany(UserGuarantor::class);
     }
 
 
