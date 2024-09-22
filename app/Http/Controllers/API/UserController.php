@@ -266,6 +266,12 @@ class UserController extends BaseController
         try {
             $user = Auth::user();
 
+            // Check if the user already has 4 guarantors
+            $existingGuarantorsCount = $user->references()->count();
+            if ($existingGuarantorsCount >= 4) {
+                return $this->sendError('You cannot add more than 4 guarantors.');
+            }
+
             // Create a new UserGuarantor record for the authenticated user
            UserGuarantor::create([
                 'user_id' => $user->id,  // Get the authenticated user's ID
