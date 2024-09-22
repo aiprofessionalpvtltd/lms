@@ -283,7 +283,14 @@ class UserController extends BaseController
 
             $user->load('tracking', 'familyDependent', 'bank_account', 'profile', 'education','employment','references');
 
-            $user->tracking->update(['is_reference' => 1]);
+            // Reload the references to get the updated count
+            $totalGuarantors = $user->references()->count();
+
+            // If the user now has exactly 4 guarantors, update the tracking
+            if ($totalGuarantors == 4) {
+                $user->tracking->update(['is_reference' => 1]);
+            }
+
 
             DB::commit();
 
