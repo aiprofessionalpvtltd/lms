@@ -86,7 +86,6 @@ class LoanApplicationController extends BaseController
     }
 
 
-
     public function getAllData(Request $request)
     {
         // Get the status from the request, defaulting to 'pending' if not provided
@@ -168,7 +167,7 @@ class LoanApplicationController extends BaseController
                 $loanApplication->load('loanDuration');
                 $extraParameterForLoan = [
                     'loan_amount' => $loanApplication->loan_amount,
-                    'months' =>$loanApplication->loanDuration->value
+                    'months' => $loanApplication->loanDuration->value
                 ];
 
                 $request->merge($extraParameterForLoan);
@@ -177,7 +176,7 @@ class LoanApplicationController extends BaseController
 
                 $loanCalculatedDetail = $loanCalculator['data'];
 
-                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers' ,'loanCalculatedDetail'));
+                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanCalculatedDetail'));
             }
 
 
@@ -214,7 +213,7 @@ class LoanApplicationController extends BaseController
 
             // Return the loan applications as a response
             return $this->sendResponse(
-                LoanApplicationResource::collection($loanApplications),
+                ['loan_application' => LoanApplicationResource::collection($loanApplications)],
                 'Loan Applications retrieved successfully.'
             );
 
@@ -254,9 +253,9 @@ class LoanApplicationController extends BaseController
             $userID = auth::user()->id;
             $userRoleID = auth()->user()->roles->first()->id;
 
-            $runningLoanApplication = LoanApplication::where('user_id',$userID)->where('is_submitted',1)->count();
+            $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_submitted', 1)->count();
 
-              if($runningLoanApplication > 0){
+            if ($runningLoanApplication > 0) {
                 return $this->sendError('An application is already in progress. A new application cannot be submitted.');
             }
 
@@ -266,7 +265,7 @@ class LoanApplicationController extends BaseController
                 $query->where('id', $roleId);
             })->first();
 
-            if(!$toUsers){
+            if (!$toUsers) {
                 return $this->sendError('Loan Onboarding user not found');
 
             }
@@ -526,6 +525,7 @@ class LoanApplicationController extends BaseController
                 [
                     'loan_amount' => $request->loan_amount,
                     'loan_duration_id' => $loanDuration->id,
+                    'is_submitted' => true,
                 ]
             );
 

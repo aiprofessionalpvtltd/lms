@@ -282,7 +282,7 @@ class UserController extends BaseController
             DB::commit();
 
             // Return the response with the GuarantorResource
-            return $this->sendResponse(new UserResource($user), 'Reference Guarantor added successfully.');
+            return $this->sendResponse(['references' => UserGuarantorResource::collection($user->references) , 'total_counts' => count($user->references)], 'Reference Guarantor added successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return $this->sendError('Guarantor creation failed.', ['error' => $e->getMessage()]);
