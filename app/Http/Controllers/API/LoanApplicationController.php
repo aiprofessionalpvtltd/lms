@@ -229,24 +229,31 @@ class LoanApplicationController extends BaseController
 
     public function getApplicationTracking(Request $request)
     {
-        // Get the status from the request, defaulting to 'pending' if not provided
-        $status = $request->get('status', 'pending');
+
         $userID = auth()->id();  // A cleaner way to get the authenticated user ID
 
         try {
             // Fetch the first loan application that matches the status and user ID, and is not completed
             $loanApplication = LoanApplication::where([
-                ['status', '=', $status],
+                ['status', '=', 'pending'],
                 ['is_completed', '=', false],
                 ['user_id', '=', $userID]
             ])->first();
 
             // Check if a loan application is found
             if (!$loanApplication) {
-                return $this->sendError('No loan applications found for the given status.');
+                return $this->sendResponse(
+                    ['loan_application' => [
+                        "is_completed" => false,
+                        "is_application_submitted" => false,
+                        "is_documents_uploaded" => false,
+                        "is_process_completed" => false,
+                    ]],
+                    'No Loan application available.'
+                );
             }
 
-            // Return the loan application as a response
+             // Return the loan application as a response
             return $this->sendResponse(
                 ['loan_application' => new LoanApplicationTrackingResource($loanApplication)],
                 'Loan application retrieved successfully.'
@@ -257,7 +264,7 @@ class LoanApplicationController extends BaseController
             Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
 
             // Return a generic error response
-            return $this->sendError('An error occurred while retrieving the loan application.');
+            return $this->sendError('An error occurred while retrieving the loan application.' . $e->getMessage());
         }
     }
 
