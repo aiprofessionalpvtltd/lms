@@ -57,7 +57,6 @@ Route::middleware('auth:api')->group(function () {
 
     // Routes fr dropdowns
 
-
     Route::post('user/loan-applications/guarantors', [GuarantorController::class, 'store']);
     Route::get('user/loan-applications/guarantors/{id}', [GuarantorController::class, 'show']);
 });
