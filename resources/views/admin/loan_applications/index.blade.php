@@ -66,6 +66,10 @@
                                     <a title="View" href="{{ route('view-loan-application', $loanApplication->id) }}"
                                        class="text-primary mr-1"><i
                                             class="fas fa-eye"></i></a>
+
+                                    <a title="Complete" href="{{ route('complete-loan-application', $loanApplication->id) }}"
+                                       class="text-primary mr-1"><i
+                                            class="fas fa-ticket"></i></a>
                                 @endcan
 
 

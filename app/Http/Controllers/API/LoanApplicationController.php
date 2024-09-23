@@ -339,6 +339,7 @@ class LoanApplicationController extends BaseController
             ]);
 
 
+            $loanApplication->load('attachments');
             DB::commit();
             return $this->sendResponse([
                 'loan_application' => new LoanApplicationResource($loanApplication)

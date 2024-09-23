@@ -14,14 +14,17 @@ class LoanApplicationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+// Check if attachments exist
+        $hasAttachments = $this->attachments && $this->attachments->isNotEmpty();
+
         return [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'is_completed' => $this->is_completed,
+            'is_completed' => ($this->is_completed == 1) ? true : false,
             'is_application_submitted' => true,
-            'is_documents_uploaded' => ($this->attachments != null) ? true : false,
-            'is_process_completed' => $this->is_submitted,
+            'is_documents_uploaded' => $hasAttachments ? true : false,  // Check if there are any attachments
+            'is_process_completed' => ($this->is_submitted == 1) ? true : false,
             'loan_amount' => $this->loan_amount,
             'address' => $this->address,
             'reference_contact_2' => $this->reference_contact_2,
