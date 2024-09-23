@@ -199,13 +199,13 @@ class LoanApplicationController extends BaseController
 
         try {
             // Fetch loan applications based on the status
-            if ($status) {
-                // Fetch loan applications based on the status
-                $loanApplications = LoanApplication::where('status', $status)->where('user_id', $userID)->get();
-            } else {
+//            if ($status) {
+//                // Fetch loan applications based on the status
+//                $loanApplications = LoanApplication::where('status', $status)->where('user_id', $userID)->get();
+//            } else {
                 $loanApplications = LoanApplication::where('user_id', $userID)->get();
 
-            }
+//            }
 
             // Check if any loan applications are found
             if ($loanApplications->isEmpty()) {
@@ -235,12 +235,11 @@ class LoanApplicationController extends BaseController
         try {
             // Fetch the first loan application that matches the status and user ID, and is not completed
             $loanApplication = LoanApplication::where([
-                ['status', '=', 'pending'],
                 ['is_completed', '=', false],
                 ['user_id', '=', $userID]
-            ])->first();
+            ])->latest()->first();
 
-            // Check if a loan application is found
+             // Check if a loan application is found
             if (!$loanApplication) {
                 return $this->sendResponse(
                     ['loan_application' => [
@@ -271,6 +270,9 @@ class LoanApplicationController extends BaseController
 
     public function store(Request $request)
     {
+        // Get the max amount from .env file
+        $maxAmount = env('MAX_AMOUNT', 300000); // Fallback to 300000 if not set in .env
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -292,10 +294,14 @@ class LoanApplicationController extends BaseController
 
         try {
 
+            if($request->loan_amount > $maxAmount){
+                return $this->sendError('Loan Amount Limit', 'The loan amount cannot exceed ' . number_format($maxAmount) . ' PKR.');
+
+            }
             $userID = auth::user()->id;
             $userRoleID = auth()->user()->roles->first()->id;
 
-            $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_submitted', 1)->count();
+            $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_completed', 0)->count();
 
             if ($runningLoanApplication > 0) {
                 return $this->sendError('An application is already in progress. A new application cannot be submitted.');
@@ -419,6 +425,24 @@ class LoanApplicationController extends BaseController
         }
     }
 
+    public function completeApplication($id)
+    {
+
+
+        $loanApplication = LoanApplication::find($id);
+
+        if (!$loanApplication) {
+            return redirect()->back()->with('error', 'Loan Application not found.');
+        }
+
+        $loanApplication->is_completed = true;
+        $loanApplication->save();
+
+
+
+        return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application Completed successfully.');
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -460,6 +484,7 @@ class LoanApplicationController extends BaseController
 
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
     }
+
 
     public function checkEligibility(Request $request)
     {
@@ -545,10 +570,13 @@ class LoanApplicationController extends BaseController
         try {
             // Get the authenticated user's ID
             $userID = auth()->user()->id;
+            $applicationID = $request->id;
 
             // Check if the user already has a submitted loan application
-            $existingLoanApplication = LoanApplication::where('user_id', $userID)
+            $existingLoanApplication = LoanApplication::
+                    where('user_id', $userID)
                 ->where('is_submitted', 1)
+                ->where('id', $applicationID)
                 ->first(); // Get the first existing loan application
 
             // Get the loan duration based on the months provided
@@ -562,6 +590,7 @@ class LoanApplicationController extends BaseController
             // Otherwise, update or create a loan application
             $newLoanApplication = LoanApplication::updateOrCreate(
                 [
+                    'id' => $applicationID,
                     'user_id' => $userID,
                     'is_submitted' => 0, // We only allow creating/updating if the loan is not yet submitted
                 ],
