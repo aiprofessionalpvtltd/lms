@@ -23,7 +23,7 @@ class RoleController extends Controller
 
     public function show()
     {
-         $title = 'Roles';
+        $title = 'Roles';
         $roles = Role::all();
         return view("admin.role.index", compact('roles', 'title'));
     }
@@ -88,7 +88,9 @@ class RoleController extends Controller
         }
 
         $permissionsID = array_map(
-            function($value) { return (int)$value; },
+            function ($value) {
+                return (int)$value;
+            },
             $request->input('permission')
         );
 
@@ -150,7 +152,7 @@ class RoleController extends Controller
 
 //        dd($permissions);
 
-        return view('admin.role.edit', compact('title','roles','permissions','role', 'rolePermissions'));
+        return view('admin.role.edit', compact('title', 'roles', 'permissions', 'role', 'rolePermissions'));
     }
 
     /**
@@ -179,7 +181,9 @@ class RoleController extends Controller
         $role->save();
 
         $permissionsID = array_map(
-            function($value) { return (int)$value; },
+            function ($value) {
+                return (int)$value;
+            },
             $request->input('permission')
         );
 
@@ -187,7 +191,7 @@ class RoleController extends Controller
 
         if ($role) {
 
-                        return redirect()->route('show-role')->with('success', 'Role and Permission Updated Successfully');
+            return redirect()->route('show-role')->with('success', 'Role and Permission Updated Successfully');
 
         } else {
 

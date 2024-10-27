@@ -27,6 +27,9 @@ Route::get('dropdown/incomeSource', [DropdownController::class, 'getIncomeSource
 Route::get('dropdown/employmentStatus', [DropdownController::class, 'getEmploymentStatus']);
 Route::get('dropdown/educations', [DropdownController::class, 'getEducation']);
 Route::get('dropdown/relationships', [DropdownController::class, 'getRelationShip']);
+Route::get('dropdown/getJobTitle', [DropdownController::class, 'getJobTitle']);
+Route::get('dropdown/getResidenceTypes', [DropdownController::class, 'getResidenceTypes']);
+Route::get('dropdown/getResidenceDuration', [DropdownController::class, 'getResidenceDuration']);
 
 Route::post('user/loan-calculator', [LoanApplicationController::class, 'calculateLoan']);
 

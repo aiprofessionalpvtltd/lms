@@ -24,7 +24,7 @@ class UserEmployment extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-     }
+    }
 
     public function employmentStatus()
     {
@@ -34,5 +34,15 @@ class UserEmployment extends Model
     public function incomeSource()
     {
         return $this->belongsTo(IncomeSource::class, 'income_source_id');
+    }
+
+    public function relationship()
+    {
+        return $this->belongsTo(Relationship::class, 'relationship_id');
+    }
+
+    public function job_title()
+    {
+        return $this->belongsTo(JobTitle::class, 'job_title_id');
     }
 }

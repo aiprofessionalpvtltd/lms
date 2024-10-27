@@ -35,6 +35,9 @@ class DatabaseSeeder extends Seeder
 
             EducationSeeder::class,
             RelationshipSeeder::class,
+            JobTitleSeeder::class,
+            ResidenceTypeSeeder::class,
+            ResidenceDurationSeeder::class,
 
         ]);
 

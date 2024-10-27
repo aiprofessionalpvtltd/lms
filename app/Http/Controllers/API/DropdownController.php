@@ -8,23 +8,29 @@ use App\Http\Resources\EducationResource;
 use App\Http\Resources\EmploymentStatusResource;
 use App\Http\Resources\GenderResource;
 use App\Http\Resources\IncomeSourceResource;
+use App\Http\Resources\JobTitleResource;
 use App\Http\Resources\LoanDurationResource;
 use App\Http\Resources\LoanPurposeResource;
 use App\Http\Resources\MaritalStatusResource;
 use App\Http\Resources\NationalityResource;
 use App\Http\Resources\ProductServiceResource;
 use App\Http\Resources\RelationshipResource;
+use App\Http\Resources\ResidenceDurationResource;
+use App\Http\Resources\ResidenceTypeResource;
 use App\Models\DocumentType;
 use App\Models\Education;
 use App\Models\EmploymentStatus;
 use App\Models\Gender;
 use App\Models\IncomeSource;
+use App\Models\JobTitle;
 use App\Models\LoanDuration;
 use App\Models\LoanPurpose;
 use App\Models\MaritalStatus;
 use App\Models\Nationality;
 use App\Models\ProductService;
 use App\Models\Relationship;
+use App\Models\ResidenceDuration;
+use App\Models\ResidenceType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -238,6 +244,56 @@ class DropdownController extends BaseController
         } catch (\Exception $e) {
             // Handle any exceptions
             return $this->sendError('Error retrieving Relationship .', $e->getMessage());
+
+
+        }
+    }
+
+
+    public function getJobTitle()
+    {
+        try {
+
+            $titles = JobTitle::all();
+
+            return $this->sendResponse(JobTitleResource::collection($titles), 'Job Title  retrieved successfully.');
+
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return $this->sendError('Error retrieving Job Title .', $e->getMessage());
+
+
+        }
+    }
+
+
+    public function getResidenceTypes()
+    {
+        try {
+
+            $types = ResidenceType::all();
+
+            return $this->sendResponse(ResidenceTypeResource::collection($types), 'Residence Types  retrieved successfully.');
+
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return $this->sendError('Error retrieving Residence Types .', $e->getMessage());
+
+
+        }
+    }
+
+    public function getResidenceDuration()
+    {
+        try {
+
+            $durations = ResidenceDuration::all();
+
+            return $this->sendResponse(ResidenceDurationResource::collection($durations), 'Residence Durations  retrieved successfully.');
+
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return $this->sendError('Error retrieving Residence Duration .', $e->getMessage());
 
 
         }

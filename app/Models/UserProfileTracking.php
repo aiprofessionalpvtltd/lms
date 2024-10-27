@@ -25,6 +25,7 @@ class UserProfileTracking extends Model
         'is_bank_statement',
         'is_address_proof',
         'is_eligibility',
+        'score',
     ];
 
     // Default attribute values for the model

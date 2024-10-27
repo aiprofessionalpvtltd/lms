@@ -52,7 +52,7 @@ class RegisterController extends BaseController
             'issue_date' => 'nullable|date',
             'expire_date' => 'nullable|date',
             'dob' => 'required|date',
-            'mobile_no' => 'required|string|max:15|unique:user_profiles,mobile_no',
+            'mobile_no' => 'required|string|max:15',
             'alternate_mobile_no' => 'required|string|max:15',
             'permanent_address' => 'required|string|max:255',
             'current_address' => 'required|string|max:255',

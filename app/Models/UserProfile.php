@@ -51,4 +51,14 @@ class UserProfile extends Model
     {
         return $this->belongsTo(Nationality::class);
     }
+
+    public function residenceType()
+    {
+        return $this->belongsTo(ResidenceType::class);
+    }
+
+    public function residenceDuration()
+    {
+        return $this->belongsTo(ResidenceDuration::class);
+    }
 }

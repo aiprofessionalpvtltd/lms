@@ -24,6 +24,7 @@ return new class extends Migration
             $table->boolean('is_bank_statement')->default(false);
             $table->boolean('is_address_proof')->default(false);
             $table->boolean('is_eligibility')->default(false);
+            $table->integer('score')->default(0);
 
             $table->timestamps();
 

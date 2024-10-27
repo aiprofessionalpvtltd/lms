@@ -17,6 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('gender_id');
             $table->unsignedBigInteger('marital_status_id');
             $table->unsignedBigInteger('nationality_id');
+             $table->unsignedBigInteger('residence_type_id');
+            $table->unsignedBigInteger('residence_duration_id');
 
             $table->string('first_name');
             $table->string('last_name');
@@ -41,6 +43,8 @@ return new class extends Migration
             $table->foreign('gender_id')->references('id')->on('genders')->onDelete('restrict');
             $table->foreign('marital_status_id')->references('id')->on('marital_statuses')->onDelete('restrict');
             $table->foreign('nationality_id')->references('id')->on('nationalities')->onDelete('restrict');
+            $table->foreign('residence_type_id')->references('id')->on('residence_types')->onDelete('restrict');
+            $table->foreign('residence_duration_id')->references('id')->on('residence_durations')->onDelete('restrict');
         });
 
     }

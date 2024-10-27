@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,8 +15,8 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('employment_status_id');
             $table->unsignedBigInteger('income_source_id');
+            $table->unsignedBigInteger('job_title_id');
             $table->string('current_employer')->nullable();
-            $table->string('job_title')->nullable();
             $table->string('employment_duration')->nullable();
             $table->decimal('gross_income', 15, 2)->nullable(); // For gross income
             $table->decimal('net_income', 15, 2)->nullable();   // For net income
@@ -38,6 +37,11 @@ return new class extends Migration
             $table->foreign('income_source_id')
                 ->references('id')
                 ->on('income_sources')
+                ->onDelete('cascade');
+
+            $table->foreign('job_title_id')
+                ->references('id')
+                ->on('job_titles')
                 ->onDelete('cascade');
         });
     }
