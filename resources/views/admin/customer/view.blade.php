@@ -84,7 +84,8 @@
                         <p><strong>Alternate Mobile No:</strong> {{ $customer->profile->alternate_mobile_no }}</p>
                         <p><strong>Permanent Address:</strong> {{ $customer->profile->permanent_address }}</p>
                         <p><strong>Current Address:</strong> {{ $customer->profile->current_address }}</p>
-                        <p><strong>Current Address Duration:</strong> {{ $customer->profile->current_address_duration }}
+                        <p><strong>Current Address Duration:</strong> {{ $customer->profile->residenceDuration->name }}
+                        <p><strong>Current Residence:</strong> {{ $customer->profile->residenceType->name }}
                         </p>
                     </div>
 
@@ -110,11 +111,11 @@
                         <p><strong>Employment Status:</strong> {{ $customer->employment->employmentStatus->status }}</p>
                         <p><strong>Income Source:</strong> {{ $customer->employment->incomeSource->source }}</p>
                         <p><strong>Current Employer:</strong> {{ $customer->employment->current_employer }}</p>
-                        <p><strong>Job Title:</strong> {{ $customer->employment->job_title }}</p>
+                        <p><strong>Job Title:</strong> {{ $customer->employment->job_title->name }}</p>
                         <p><strong>Employment Duration:</strong> {{ $customer->employment->employment_duration }}</p>
                         <p><strong>Gross Income:</strong> {{ $customer->employment->gross_income }}</p>
                         <p><strong>Net Income:</strong> {{ $customer->employment->net_income }}</p>
-                        <p><strong>Existing Loan:</strong> {{ $customer->employment->existing_loans }}</p>
+                        <p><strong>Existing Loan:</strong> {{ $customer->employment->existingLoan->name }}</p>
                         <br>
                         <h1>Education Background Information</h1>
                         <p><strong>Highest Education:</strong> {{ $customer->education->education->name }}</p>

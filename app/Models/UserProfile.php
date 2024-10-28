@@ -14,6 +14,8 @@ class UserProfile extends Model
         'gender_id',
         'marital_status_id',
         'nationality_id',
+        'residence_type_id',
+        'residence_duration_id',
         'first_name',
         'last_name',
         'father_name',

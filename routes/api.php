@@ -30,6 +30,7 @@ Route::get('dropdown/relationships', [DropdownController::class, 'getRelationShi
 Route::get('dropdown/getJobTitle', [DropdownController::class, 'getJobTitle']);
 Route::get('dropdown/getResidenceTypes', [DropdownController::class, 'getResidenceTypes']);
 Route::get('dropdown/getResidenceDuration', [DropdownController::class, 'getResidenceDuration']);
+Route::get('dropdown/getExistingLoans', [DropdownController::class, 'getExistingLoans']);
 
 Route::post('user/loan-calculator', [LoanApplicationController::class, 'calculateLoan']);
 

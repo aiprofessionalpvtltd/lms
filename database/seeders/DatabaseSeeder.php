@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             JobTitleSeeder::class,
             ResidenceTypeSeeder::class,
             ResidenceDurationSeeder::class,
+            ExistingLoanSeeder::class,
 
         ]);
 

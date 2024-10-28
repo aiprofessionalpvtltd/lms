@@ -42,6 +42,8 @@ class RegisterController extends BaseController
             'gender_id' => 'required|exists:genders,id',
             'marital_status_id' => 'required|exists:marital_statuses,id',
             'nationality_id' => 'required|exists:nationalities,id',
+            'residence_type_id' => 'required|exists:residence_types,id',
+            'residence_duration_id' => 'required|exists:residence_durations,id',
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'father_name' => 'required|string|max:255',
@@ -76,7 +78,7 @@ class RegisterController extends BaseController
                 'gender_id', 'marital_status_id', 'nationality_id', 'first_name',
                 'last_name', 'father_name', 'cnic_no', 'issue_date', 'expire_date',
                 'dob', 'mobile_no', 'alternate_mobile_no', 'permanent_address',
-                'current_address', 'current_address_duration'
+                'current_address', 'current_address_duration' ,'residence_type_id' ,'residence_duration_id'
             ]);
 
             $profileData['dob'] = dateInsert($request->dob);

@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->string('employment_duration')->nullable();
             $table->decimal('gross_income', 15, 2)->nullable(); // For gross income
             $table->decimal('net_income', 15, 2)->nullable();   // For net income
-            $table->text('existing_loans')->nullable(); // For details of current liabilities
+            $table->unsignedBigInteger('existing_loans_id');
             $table->timestamps();
 
             // Foreign key constraints
@@ -42,6 +42,11 @@ return new class extends Migration {
             $table->foreign('job_title_id')
                 ->references('id')
                 ->on('job_titles')
+                ->onDelete('cascade');
+
+            $table->foreign('existing_loans_id')
+                ->references('id')
+                ->on('existing_loans')
                 ->onDelete('cascade');
         });
     }

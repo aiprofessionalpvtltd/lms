@@ -20,6 +20,7 @@ class EducationSeeder extends Seeder
             ['name' => 'Vocational Training/Technical Certification'],
             ['name' => 'Diploma'],
             ['name' => 'Associate Degree'],
+            ['name' => 'Post Graduate'],
             ['name' => 'Bachelor’s Degree'],
             ['name' => 'Master’s Degree'],
             ['name' => 'Doctorate (PhD)'],

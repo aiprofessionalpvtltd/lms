@@ -91,9 +91,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(UserFamilyDependent::class)->withDefault();
     }
 
-    public function education()
+    public function educations()
     {
-        return $this->hasOne(UserEducation::class)->withDefault();
+        return $this->hasMany(UserEducation::class);
     }
 
 

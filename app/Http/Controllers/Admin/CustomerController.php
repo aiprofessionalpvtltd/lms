@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 
+use App\Http\Controllers\API\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
 
 
-class CustomerController extends Controller
+class CustomerController extends BaseController
 {
 
     public function __construct()
@@ -46,9 +47,13 @@ class CustomerController extends Controller
     public function view($id)
     {
         $title = 'Edit User';
-        $customer = User::with('roles', 'profile','bank_account' ,'tracking' ,'employment.employmentStatus','employment.incomeSource',
-        'familyDependent','education.education','references.relationship')
+        $customer = User::with('roles', 'profile','bank_account' ,'tracking' ,
+            'employment.employmentStatus','employment.incomeSource','employment.existingLoan',
+        'familyDependent','educations.education','references.relationship')
             ->find($id);
+
+        $score = $this->calculateUserScore($customer);
+//        dd($score);
         return view('admin.customer.view', compact('title', 'customer'));
     }
 

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\DocumentTypeResource;
 use App\Http\Resources\EducationResource;
 use App\Http\Resources\EmploymentStatusResource;
+use App\Http\Resources\ExistingLoanResource;
 use App\Http\Resources\GenderResource;
 use App\Http\Resources\IncomeSourceResource;
 use App\Http\Resources\JobTitleResource;
@@ -20,6 +21,7 @@ use App\Http\Resources\ResidenceTypeResource;
 use App\Models\DocumentType;
 use App\Models\Education;
 use App\Models\EmploymentStatus;
+use App\Models\ExistingLoan;
 use App\Models\Gender;
 use App\Models\IncomeSource;
 use App\Models\JobTitle;
@@ -294,6 +296,21 @@ class DropdownController extends BaseController
         } catch (\Exception $e) {
             // Handle any exceptions
             return $this->sendError('Error retrieving Residence Duration .', $e->getMessage());
+
+
+        }
+    }
+    public function getExistingLoans()
+    {
+        try {
+
+            $loans = ExistingLoan::all();
+
+            return $this->sendResponse(ExistingLoanResource::collection($loans), ' Loans  retrieved successfully.');
+
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return $this->sendError('Error retrieving Loan .', $e->getMessage());
 
 
         }

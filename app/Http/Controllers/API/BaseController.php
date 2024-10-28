@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Illuminate\Support\Facades\Storage;
@@ -74,7 +75,8 @@ class BaseController extends Controller
         $score = 0;
 
         // Personal Information - Age
-        $age = now()->diffInYears($user->dob);
+        $age = Carbon::parse($user->profile->dob)->diffInYears(now());
+
         if ($age >= 20 && $age <= 40) {
             $score += 5;
         } elseif ($age >= 41 && $age <= 60) {
@@ -84,137 +86,166 @@ class BaseController extends Controller
         }
 
         // Employment and Financial Information
-        switch ($user->employment->employment_status_id) {
-            case 'Employed':
-                $score += 5;
-                break;
-            case 'Self-employed':
-                $score += 4;
-                break;
-            default:
-                $score += 1;
-                break;
-        }
+        if ($employment = optional($user->employment)) {
+            switch ($employment->employmentStatus->status) {
+                case 'Employed':
+                    $score += 5;
+                    break;
+                case 'Self-employed':
+                    $score += 4;
+                    break;
+                default:
+                    $score += 1;
+                    break;
+            }
 
-        switch ($user->employment->job_title_id) {
-            case 'Senior/Managerial':
-                $score += 5;
-                break;
-            case 'Mid-level':
+            switch ($employment->job_title->name) {
+                case 'Senior/Managerial':
+                    $score += 5;
+                    break;
+                case 'Mid-level':
+                    $score += 3;
+                    break;
+                default:
+                    $score += 1;
+                    break;
+            }
+
+
+            if ($employment->gross_income > 150000) {
+                $score += 10;
+            } elseif ($employment->gross_income >= 50000) {
+                $score += 7;
+            } else {
                 $score += 3;
-                break;
-            default:
-                $score += 1;
-                break;
-        }
+            }
 
-        if ($user->employment->gross_income > 150000) {
-            $score += 10;
-        } elseif ($user->gross_income >= 50000) {
-            $score += 7;
-        } else {
-            $score += 3;
-        }
+            switch ($employment->incomeSource->name) {
+                case 'Salary':
+                    $score += 5;
+                    break;
+                case 'Business income':
+                    $score += 4;
+                    break;
+                case 'Rental income':
+                    $score += 3;
+                    break;
+                default:
+                    $score += 2;
+                    break;
+            }
 
-        switch ($user->employment->income_source_id) {
-            case 'Salary':
-                $score += 5;
-                break;
-            case 'Business income':
-                $score += 4;
-                break;
-            case 'Rental income':
-                $score += 3;
-                break;
-            default:
-                $score += 2;
-                break;
-        }
 
-        if ($user->employment->existing_loans == 0) {
-            $score += 5;
-        } elseif ($user->existing_loans < 0.2 * $user->gross_income) {
-            $score += 3;
-        } else {
-            $score += 1;
+            switch ($employment->existingLoan->id) {
+                case '1':
+                    $score += 5;
+                    break;
+                case '2':
+                    $score += 3;
+                    break;
+                case '3':
+                    $score += 1;
+                    break;
+                default:
+                    $score += 0;
+                    break;
+            }
+
+
         }
 
         // Family and Dependents Information
-        if ($user->number_of_dependents == 0) {
-            $score += 5;
-        } elseif ($user->number_of_dependents <= 2) {
-            $score += 3;
+        if ($user->familyDependent->number_of_dependents == 0) {
+            $score += 5; // No dependents
+        } elseif ($user->familyDependent->number_of_dependents <= 2) {
+            $score += 3; // 1-2 dependents
         } else {
-            $score += 1;
+            $score += 1; // More than 2 dependents
         }
 
-        $score += $user->familyDependent->spouse_employment_details == 'Employed' ? 5 : 2;
+        $score += optional($user->employment->employmentStatus)->status == 'Employed' ? 5 : 2;
 
         // Background Information
-        switch ($user->education->education_id) {
-            case 'Graduate':
-            case 'Post-graduate':
-                $score += 5;
-                break;
-            case 'High school diploma':
-                $score += 3;
-                break;
-            default:
-                $score += 1;
-                break;
+        $maxEducationScore = 0;
+
+        if ($educations = $user->educations) {
+            foreach ($educations as $education) {
+                switch ($education->education->name) {
+                    case "Bachelor’s Degree":
+                    case "Post Graduate":
+                        $maxEducationScore = max($maxEducationScore, 5);
+                        break;
+                    case 'Secondary Education (High School)':
+                        $maxEducationScore = max($maxEducationScore, 3);
+                        break;
+                    default:
+                        $maxEducationScore = max($maxEducationScore, 1);
+                        break;
+                }
+            }
+            $score += $maxEducationScore;
         }
 
-        if ($user->references->guarantor_contact_name && $user->references->guarantor_contact_number) {
-            $score += $user->relationship_id == 'multiple' ? 5 : 3;
+
+        // Background Information - Guarantors
+        if ($references = optional($user->references)) {
+            $guarantorCount = $references->count();
+            if ($guarantorCount >= 2) {
+                $score += 5;
+            } elseif ($guarantorCount == 1) {
+                $score += 3;
+            } else {
+                $score += 0; // No guarantors
+            }
         }
 
         // Marital Status
-        switch ($user->profile->marital_status_id) {
-            case '1':
-                $score += 5;
-                break;
-            case '2':
-                $score += 3;
-                break;
-            default:
-                $score += 1;
-                break;
-        }
+        if ($profile = optional($user->profile)) {
+            switch ($profile->marital_status_id) {
+                case '1': // Married
+                    $score += 5;
+                    break;
+                case '2': // Single
+                    $score += 3;
+                    break;
+                default:
+                    $score += 1;
+                    break;
+            }
 
-        // Nationality
-        $score += $user->profile->nationality_id == '1' ? 5 : 2;
+            // Nationality
+            $score += $profile->nationality_id == '1' ? 5 : 2;
+
+            // Residential Information
+            switch ($profile->residence_type_id) {
+                case 'Own':
+                    $score += 10;
+                    break;
+                case 'Rented':
+                    $score += 5;
+                    break;
+                default:
+                    $score += 1;
+                    break;
+            }
+
+            switch ($profile->residence_duration_id) {
+                case '1': // More than 3 years
+                    $score += 5;
+                    break;
+                case '2': // 1-3 years
+                    $score += 3;
+                    break;
+                default: // Less than 1 year
+                    $score += 1;
+                    break;
+            }
+        }
 
         // Contact Information
         if ($user->mobile_no || $user->alternate_mobile_no) {
             $score += 5;
         }
-
-        // Residential Information
-        switch ($user->profile->residence_type_id) {
-            case 'Own':
-                $score += 10;
-                break;
-            case 'Rented':
-                $score += 5;
-                break;
-            default:
-                $score += 1;
-                break;
-        }
-
-
-        switch ($user->profile->residence_duration_id) {
-            case '1':
-                $score += 5;
-                break;
-            case '2':
-                $score += 3;
-                break;
-            default:
-                $score += 1;
-                break;
-        }
-
 
         return $score;
     }

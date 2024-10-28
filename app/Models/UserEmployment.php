@@ -15,10 +15,10 @@ class UserEmployment extends Model
         'income_source_id',
         'current_employer',
         'employment_duration',
-        'job_title',
+        'job_title_id',
         'gross_income',
         'net_income',
-        'existing_loans'
+        'existing_loans_id'
     ];
 
     public function user()
@@ -28,21 +28,21 @@ class UserEmployment extends Model
 
     public function employmentStatus()
     {
-        return $this->belongsTo(EmploymentStatus::class, 'employment_status_id');
+        return $this->belongsTo(EmploymentStatus::class, 'employment_status_id')->withDefault();
     }
 
     public function incomeSource()
     {
-        return $this->belongsTo(IncomeSource::class, 'income_source_id');
-    }
-
-    public function relationship()
-    {
-        return $this->belongsTo(Relationship::class, 'relationship_id');
+        return $this->belongsTo(IncomeSource::class, 'income_source_id')->withDefault();;
     }
 
     public function job_title()
     {
-        return $this->belongsTo(JobTitle::class, 'job_title_id');
+        return $this->belongsTo(JobTitle::class, 'job_title_id')->withDefault();
+    }
+
+    public function existingLoan()
+    {
+        return $this->belongsTo(ExistingLoan::class, 'existing_loans_id')->withDefault();
     }
 }
