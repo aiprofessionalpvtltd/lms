@@ -34,37 +34,41 @@
 
             <div class="card-body">
                 <table id="" class="table table-striped datatables-reponsive">
-                <thead>
-                <tr>
-                    <th>Customer Name</th>
-                    <th>Email</th>
-                    <th>Phone No</th>
-                    <th>CNIC</th>
-                      <th class="text-center">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($customers as $customer)
+                    <thead>
                     <tr>
-                        <td>{{$customer->name}}</td>
-                        <td>{{$customer->email}}</td>
-                        <td>{{$customer->profile->mobile_no}}</td>
-                        <td>{{$customer->profile->cnic_no}}</td>
-                          <td>`
-                            <div class="d-flex">
-                                @can('view-customer')
-                                    <a title="View" href="{{ route('view-customer', $customer->id) }}"
-                                       class="text-primary mr-1"><i
-                                            class="fas fa-eye"></i></a>
-                                @endcan
-
-
-                            </div>
-                        </td>
+                        <th>Customer Name</th>
+                        <th>Email</th>
+                        <th>Phone No</th>
+                        <th>CNIC</th>
+                        <th>Score Level</th>
+                        <th>Risk Assessment</th>
+                        <th class="text-center">Actions</th>
                     </tr>
-                @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    @foreach($customers as $customer)
+                        <tr>
+                            <td>{{$customer->name}}</td>
+                            <td>{{$customer->email}}</td>
+                            <td>{{$customer->profile->mobile_no}}</td>
+                            <td>{{$customer->profile->cnic_no}}</td>
+                            <td>{{$customer->tracking->score}}</td>
+                            <td title="{{ $customer->riskAssessment['loan_eligibility'] }}">
+                                {{ $customer->riskAssessment['risk_level'] }}
+                            </td>
+                            <td>`
+                                <div class="d-flex">
+                                    @can('view-customer')
+                                        <a title="View" href="{{ route('view-customer', $customer->id) }}"
+                                           class="text-primary mr-1"><i
+                                                class="fas fa-eye"></i></a>
+                                    @endcan
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
         <!-- /basic datatable -->

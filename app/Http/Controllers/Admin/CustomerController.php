@@ -34,12 +34,17 @@ class CustomerController extends BaseController
     {
         $data = array();
         $title = 'All Customers';
-        $customers = User::with('roles', 'profile')
+        $customers = User::with('roles', 'profile' ,'tracking')
             ->whereHas('roles', function ($query) {
                 $query->where('name', 'Customer');
             })
             ->orderBy('created_at', 'DESC')
             ->get();
+
+        foreach ($customers as $customer) {
+            $score = $customer->tracking->score ?? 0;
+            $customer->riskAssessment = $this->determineRiskLevel($score);
+        }
 //        dd($customers);
         return view('admin.customer.index', compact('title', 'customers', 'data'));
     }
@@ -47,13 +52,15 @@ class CustomerController extends BaseController
     public function view($id)
     {
         $title = 'Edit User';
-        $customer = User::with('roles', 'profile','bank_account' ,'tracking' ,
-            'employment.employmentStatus','employment.incomeSource','employment.existingLoan',
-        'familyDependent','educations.education','references.relationship')
+        $customer = User::with('roles', 'profile', 'bank_account', 'tracking',
+            'employment.employmentStatus', 'employment.incomeSource', 'employment.existingLoan',
+            'familyDependent', 'education.education', 'references.relationship')
             ->find($id);
 
-        $score = $this->calculateUserScore($customer);
-//        dd($score);
+        if ($customer->tracking->score == 0) {
+            $this->calculateUserScore($customer);
+        }
+
         return view('admin.customer.view', compact('title', 'customer'));
     }
 

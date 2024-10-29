@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LoanApplicationResource;
 use App\Http\Resources\LoanApplicationTrackingResource;
+use App\Models\Installment;
+use App\Models\InstallmentDetail;
 use App\Models\LoanApplication;
 use App\Models\LoanApplicationHistory;
 use App\Models\LoanAttachment;
@@ -614,6 +616,57 @@ class LoanApplicationController extends BaseController
             return $this->sendError('An error occurred.', ['error' => $e->getMessage()]);
         }
     }
+
+    public function approveLoan( $loanApplicationId)
+    {
+        // Fetch the loan application
+        $loanApplication = LoanApplication::findOrFail($loanApplicationId);
+
+        // Ensure the loan application has not already been approved
+        if ($loanApplication->status === 'accepted') {
+            return redirect()->back()->with('error', 'This loan application has already been accepted.');
+
+        }
+
+        // Set loan amount and duration for calculation
+        $loanAmount = $loanApplication->loan_amount;
+        $loanDuration = $loanApplication->loanDuration->value;
+
+        // Call calculateLoan to get loan details
+
+        $loanDetails = $this->calculateLoan(new Request([ 'loan_amount' => $loanAmount, 'months' => $loanDuration]))->getData(true);
+
+        $loanDetails = $loanDetails['data'];
+
+         // Mark the loan as approved
+        $loanApplication->status = 'accepted';
+        $loanApplication->approved_by = auth()->id(); // Approved by the logged-in user
+        $loanApplication->save();
+
+        // Insert calculated loan details into the installments table
+        $installmentData = [
+            'loan_application_id' => $loanApplication->id,
+            'user_id' => $loanApplication->user_id,
+            'total_amount' => $loanDetails['total_payable_amount'],
+            'monthly_installment' => $loanDetails['monthly_installment'],
+            'processing_fee' => $loanDetails['processing_fee'],
+            'total_markup' => $loanDetails['total_markup'],
+            'approved_by' => auth()->id(),
+        ];
+        $installment = Installment::create($installmentData);
+
+        // Generate individual monthly installments
+        $startDate = now();
+        for ($i = 1; $i <= $loanDuration; $i++) {
+            InstallmentDetail::create([
+                'installment_id' => $installment->id,
+                'due_date' => $startDate->copy()->addMonths($i),
+                'amount_due' => $loanDetails['monthly_installment'],
+             ]);
+        }
+        return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
+
+     }
 
 
 }

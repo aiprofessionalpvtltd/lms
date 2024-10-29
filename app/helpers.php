@@ -293,5 +293,25 @@ function generateTransactionCode(){
     return $number;
 }
 
+function determineRiskLevel($score)
+{
+    if ($score >= 85 && $score <= 100) {
+        return [
+            'risk_level' => 'Low Risk',
+            'loan_eligibility' => 'Eligible for larger loan amounts at lower interest rates.'
+        ];
+    } elseif ($score >= 65 && $score <= 84) {
+        return [
+            'risk_level' => 'Moderate Risk',
+            'loan_eligibility' => 'Eligible for moderate loan amounts with standard interest rates.'
+        ];
+    } else {
+        return [
+            'risk_level' => 'High Risk',
+            'loan_eligibility' => 'Eligible for small loan amounts with higher interest rates or may require stricter terms (e.g., collateral).'
+        ];
+    }
+}
+
 
 

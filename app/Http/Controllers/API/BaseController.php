@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
 use Illuminate\Support\Facades\Storage;
+use function Symfony\Component\String\s;
 
 class BaseController extends Controller
 {
@@ -163,26 +164,25 @@ class BaseController extends Controller
             $score += 1; // More than 2 dependents
         }
 
-        $score += optional($user->employment->employmentStatus)->status == 'Employed' ? 5 : 2;
+        $score += optional($user->employment->employmentStatus)->status === 'Employed' ? 5 : 2;
 
         // Background Information
         $maxEducationScore = 0;
 
-        if ($educations = $user->educations) {
-            foreach ($educations as $education) {
-                switch ($education->education->name) {
-                    case "Bachelor’s Degree":
-                    case "Post Graduate":
-                        $maxEducationScore = max($maxEducationScore, 5);
-                        break;
-                    case 'Secondary Education (High School)':
-                        $maxEducationScore = max($maxEducationScore, 3);
-                        break;
-                    default:
-                        $maxEducationScore = max($maxEducationScore, 1);
-                        break;
-                }
+        if ($educations = $user->education) {
+            switch ($educations->education->name) {
+                case "Bachelor’s Degree":
+                case "Post Graduate":
+                    $maxEducationScore = max($maxEducationScore, 5);
+                    break;
+                case 'Secondary Education (High School)':
+                    $maxEducationScore = max($maxEducationScore, 3);
+                    break;
+                default:
+                    $maxEducationScore = max($maxEducationScore, 1);
+                    break;
             }
+
             $score += $maxEducationScore;
         }
 
@@ -201,6 +201,7 @@ class BaseController extends Controller
 
         // Marital Status
         if ($profile = optional($user->profile)) {
+
             switch ($profile->marital_status_id) {
                 case '1': // Married
                     $score += 5;
@@ -217,8 +218,8 @@ class BaseController extends Controller
             $score += $profile->nationality_id == '1' ? 5 : 2;
 
             // Residential Information
-            switch ($profile->residence_type_id) {
-                case 'Own':
+            switch ($profile->residenceType->name) {
+                case 'Own house':
                     $score += 10;
                     break;
                 case 'Rented':
@@ -229,7 +230,7 @@ class BaseController extends Controller
                     break;
             }
 
-            switch ($profile->residence_duration_id) {
+            switch ($profile->residenceDuration->id) {
                 case '1': // More than 3 years
                     $score += 5;
                     break;
@@ -243,11 +244,103 @@ class BaseController extends Controller
         }
 
         // Contact Information
-        if ($user->mobile_no || $user->alternate_mobile_no) {
+        if ($user->profile->mobile_no || $user->profile->alternate_mobile_no) {
             $score += 5;
         }
 
-        return $score;
+        $user->tracking->score = $score;
+        $user->tracking->save(); // Save the updated score to the database
+
+        return $user;
     }
+
+    public function determineRiskLevel($score)
+    {
+        if ($score >= 85 && $score <= 100) {
+            return [
+                'risk_level' => 'Low Risk',
+                'loan_eligibility' => 'Eligible for larger loan amounts at lower interest rates.'
+            ];
+        } elseif ($score >= 65 && $score <= 84) {
+            return [
+                'risk_level' => 'Moderate Risk',
+                'loan_eligibility' => 'Eligible for moderate loan amounts with standard interest rates.'
+            ];
+        } elseif ($score < 65 && $score > 0) {
+            return [
+                'risk_level' => 'High Risk',
+                'loan_eligibility' => 'Eligible for small loan amounts with higher interest rates or may require stricter terms (e.g., collateral).'
+            ];
+        } else {
+            return [
+                'risk_level' => '',
+                'loan_eligibility' => ''
+            ];
+        }
+    }
+
+
+    public function calculateLoan(Request $request)
+    {
+        $loanAmount = $request->input('loan_amount');
+        $months = $request->input('months');
+
+        // Validate input
+        if (!in_array($months, [3, 6, 9, 12])) {
+            return response()->json(['error' => 'Invalid month duration. Choose from 3, 6, 9, or 12 months.'], 400);
+        }
+
+        // Constants
+        $processingFeeRate = 0.027;
+        $riskPremiumRate = 0.02;
+        $operatingCostsRate = 0.03;
+        $profitMarginRate = 0.20;
+        $costOfFundsRate = $this->getCostOfFundsRate($months);
+
+        // Calculate processing fee
+        $processingFee = $loanAmount * $processingFeeRate;
+
+        // Calculate total markup
+        $totalMarkup = ($costOfFundsRate + $riskPremiumRate + $operatingCostsRate + $profitMarginRate) * ($months / 12) * $loanAmount;
+
+        // Calculate total payable amount
+        $totalPayableAmount = $loanAmount + $processingFee + $totalMarkup;
+
+        // calculate overall markup
+        $overallMarkup = $processingFee + $totalMarkup;
+
+        // calculate Monthly Installment to Pay
+        $monthlyInstallment = $totalPayableAmount / $months;
+
+        return
+            [
+                'loan_amount' => $loanAmount,
+                'months' => $months,
+                'processing_fee' => round($processingFee),
+                'total_markup' => round($totalMarkup),
+                'over_markup' => round($overallMarkup),
+                'monthly_installment' => round($monthlyInstallment),
+                'total_payable_amount' => round($totalPayableAmount),
+            ];
+
+
+    }
+
+    private function getCostOfFundsRate($months)
+    {
+        switch ($months) {
+            case 6:
+                return 0.05; // 5% for 6 months
+            case 9:
+                return 0.075; // 7.5% for 9 months
+            case 12:
+                return 0.10; // 10% for 12 months
+            case 3:
+                return 0.05; // 5% for 3 months
+            default:
+                return 0; // No cost of funds for 3 months
+        }
+    }
+
 
 }

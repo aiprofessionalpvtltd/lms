@@ -20,6 +20,8 @@ return new class extends Migration
             $table->unsignedBigInteger('product_service_id');
             $table->unsignedBigInteger('loan_purpose_id');
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('approved_by');
+
             $table->text('address');
             $table->string('reference_contact_1');
             $table->string('reference_contact_2');
@@ -34,6 +36,8 @@ return new class extends Migration
             $table->foreign('product_service_id')->references('id')->on('product_services')->onDelete('cascade');
             $table->foreign('loan_purpose_id')->references('id')->on('loan_purposes')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('approved_by')->references('id')->on('users')->onDelete('set null');
+
         });
     }
 

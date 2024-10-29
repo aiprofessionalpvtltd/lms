@@ -267,6 +267,7 @@
                                 </div>
                             </div>
 
+                            <a  href="{{route('approve-loan',$loanApplication->id)}}" class="btn btn-outline-success float-start">Approved</a>
                             <button type="submit" class="btn btn-primary float-end">Proceed</button>
 
                         </form>
