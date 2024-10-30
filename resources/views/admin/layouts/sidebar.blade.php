@@ -116,9 +116,23 @@
 
             @endcan
 
+            @can('view-reports')
+
+                <li class="sidebar-item">
+                    <a data-bs-target="#reports" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="false">
+                         <span class="align-middle">Reports</span>
+                    </a>
+                    <ul id="reports" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar" style="">
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-disbursement-report')}}">Disbursement Report</a></li>
+                     </ul>
+                </li>
+
+            @endcan
 
 
-{{--            <li class="sidebar-item {{ request()->routeIs('recovery.create') ? 'active' : '' }}">--}}
+
+
+            {{--            <li class="sidebar-item {{ request()->routeIs('recovery.create') ? 'active' : '' }}">--}}
 {{--                <a class="sidebar-link" href="{{ route('recovery.create') }}">--}}
 {{--                    <i class="align-middle" data-feather="user"></i>--}}
 {{--                    <span class="align-middle">Recovery</span>--}}

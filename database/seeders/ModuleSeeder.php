@@ -23,6 +23,7 @@ class ModuleSeeder extends Seeder
             'Complaints',
             'Recoveries',
             'Products',
+            'Reports',
         );
 
         foreach ($modules as $row) {

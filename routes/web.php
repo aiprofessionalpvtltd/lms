@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InstallmentController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RecoveryController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
@@ -80,6 +81,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('product/{id}/edit', [ProductController::class, 'edit'])->name('edit-product');
     Route::put('update-product{id}', [ProductController::class, 'update'])->name('update-product');
     Route::post('destroy-product', [ProductController::class, 'destroy'])->name('destroy-product');
+
+
+    Route::get('show-disbursement-report', [ReportController::class, 'showDisbursementReport'])->name('show-disbursement-report');
+    Route::get('get-disbursement-report', [ReportController::class, 'getDisbursementReport'])->name('get-disbursement-report');
 
 
 });
