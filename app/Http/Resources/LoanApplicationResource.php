@@ -30,6 +30,7 @@ class LoanApplicationResource extends JsonResource
             'reference_contact_2' => $this->reference_contact_2,
             'reference_contact_1' => $this->reference_contact_1,
             'status' => $this->status,
+            'product' => new ProductResource($this->product),
             'loan_duration' => new LoanDurationResource($this->loanDuration),
             'product_service' => new ProductServiceResource($this->productService),
             'loan_purpose' => new LoanPurposeResource($this->loanPurpose),

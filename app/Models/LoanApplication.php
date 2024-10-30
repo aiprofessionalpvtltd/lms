@@ -11,14 +11,19 @@ class LoanApplication extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'email', 'loan_amount', 'loan_duration_id', 'user_id',
+        'name', 'email', 'loan_amount', 'loan_duration_id', 'user_id', 'product_id',
         'product_service_id', 'loan_purpose_id', 'address',
-        'reference_contact_1', 'reference_contact_2', 'documents' ,'status' , 'is_completed' ,'is_submitted'
+        'reference_contact_1', 'reference_contact_2', 'documents', 'status', 'is_completed', 'is_submitted'
     ];
 
     protected $casts = [
         'documents' => 'array',
     ];
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 
     public function loanDuration()
     {
@@ -65,6 +70,7 @@ class LoanApplication extends Model
     {
         return $this->hasMany(Installment::class);
     }
+
     public function transaction()
     {
         return $this->hasOne(Transaction::class);
