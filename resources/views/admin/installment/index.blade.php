@@ -54,14 +54,11 @@
                                 <a href="{{ route('view-installment', $installment->id) }}"
                                    class="btn btn-sm btn-info">View</a>
 
-                                @if($installment->loanApplication->transaction)
-                                    <a href="{{ route('view-installment', $installment->id) }}"
-                                       class="btn btn-sm  btn-success ">Paid</a>
-                                @else
+                                @if(!$installment->loanApplication->transaction)
                                     <form action="{{ route('transactions.store') }}" method="POST" class="d-inline">
                                     @csrf <!-- CSRF token for security -->
                                         <input type="hidden" name="loan_application_id" value="{{ $installment->loan_application_id }}">
-                                          <button type="submit" class="btn btn-sm btn-success">Pay</button>
+                                        <button type="submit" class="btn btn-sm btn-success">Disbursement Amount</button>
                                     </form>
 
                                 @endif

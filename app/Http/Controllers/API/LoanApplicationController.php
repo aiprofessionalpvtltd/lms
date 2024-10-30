@@ -24,10 +24,79 @@ class LoanApplicationController extends BaseController
 {
 
 
+//    public function calculateLoan(Request $request)
+//    {
+//        $loanAmount = $request->input('loan_amount');
+//        $months = $request->input('months');
+//        $processingFee  = $request->input('processing_fee') ?? '0.027';
+//        $interestRate = $request->input('interest_rate') ?? '0.3';
+//
+//        // Validate input
+//        if (!in_array($months, [3, 6, 9, 12])) {
+//            return response()->json(['error' => 'Invalid month duration. Choose from 3, 6, 9, or 12 months.'], 400);
+//        }
+//
+//        // Constants
+//        $processingFeeRate = $processingFee;
+//        $riskPremiumRate = 0.02;
+//        $operatingCostsRate = $interestRate;
+//        $profitMarginRate = 0.20;
+//        $costOfFundsRate = $this->getCostOfFundsRate($months);
+//
+//        // Calculate processing fee
+//        $processingFee = $loanAmount * $processingFeeRate;
+//
+//        // Calculate total markup
+//        $totalMarkup = ($costOfFundsRate + $riskPremiumRate + $operatingCostsRate + $profitMarginRate) * ($months / 12) * $loanAmount;
+//
+//        // Calculate total payable amount
+//        $totalPayableAmount = $loanAmount + $processingFee + $totalMarkup;
+//
+//        // calculate overall markup
+//        $overallMarkup = $processingFee + $totalMarkup;
+//
+//        // calculate Monthly Installment to Pay
+//        $monthlyInstallment = $totalPayableAmount / $months;
+//
+//        return $this->sendResponse(
+//            [
+//                'loan_amount' => $loanAmount,
+//                'months' => $months,
+//                'processing_fee' => round($processingFee),
+//                'total_markup' => round($totalMarkup),
+//                'over_markup' => round($overallMarkup),
+//                'monthly_installment' => round($monthlyInstallment),
+//                'total_payable_amount' => round($totalPayableAmount),
+//            ],
+//            'Loan calculated successfully.'
+//        );
+//
+//
+//    }
+//
+//    private function getCostOfFundsRate($months)
+//    {
+//        switch ($months) {
+//            case 6:
+//                return 0.05; // 5% for 6 months
+//            case 9:
+//                return 0.075; // 7.5% for 9 months
+//            case 12:
+//                return 0.10; // 10% for 12 months
+//            case 3:
+//                return 0.05; // 5% for 3 months
+//            default:
+//                return 0; // No cost of funds for 3 months
+//        }
+//    }
+
     public function calculateLoan(Request $request)
     {
         $loanAmount = $request->input('loan_amount');
         $months = $request->input('months');
+        $processingFee = $request->input('processing_fee') ?? '0.027';
+        $interestRate = $request->input('interest_rate') ?? '0.3';
+
 
         // Validate input
         if (!in_array($months, [3, 6, 9, 12])) {
@@ -35,57 +104,43 @@ class LoanApplicationController extends BaseController
         }
 
         // Constants
-        $processingFeeRate = 0.027;
-        $riskPremiumRate = 0.02;
-        $operatingCostsRate = 0.03;
-        $profitMarginRate = 0.20;
-        $costOfFundsRate = $this->getCostOfFundsRate($months);
+        $processingFeeRate = $processingFee; // 2.7%
+        $annualMarkupRate = $interestRate; // Assuming it's passed from the request
 
         // Calculate processing fee
         $processingFee = $loanAmount * $processingFeeRate;
 
-        // Calculate total markup
-        $totalMarkup = ($costOfFundsRate + $riskPremiumRate + $operatingCostsRate + $profitMarginRate) * ($months / 12) * $loanAmount;
+        // Calculate disbursement amount
+        $disbursementAmount = $loanAmount - $processingFee;
 
-        // Calculate total payable amount
-        $totalPayableAmount = $loanAmount + $processingFee + $totalMarkup;
+        // Calculate monthly interest rate
+        $monthlyInterestRate = $annualMarkupRate / 12;
 
-        // calculate overall markup
-        $overallMarkup = $processingFee + $totalMarkup;
+        // Calculate total interest for the loan term
+        $totalInterest = $loanAmount * ($annualMarkupRate) * ($months / 12);
 
-        // calculate Monthly Installment to Pay
+        // Calculate total amount payable
+        $totalPayableAmount = $loanAmount + $totalInterest;
+
+        // Calculate monthly installment
         $monthlyInstallment = $totalPayableAmount / $months;
+
+        // Calculate late fee (if needed; you can include this in your response if relevant)
+        $lateFee =  'days_delayed * 200';
 
         return $this->sendResponse(
             [
                 'loan_amount' => $loanAmount,
                 'months' => $months,
                 'processing_fee' => round($processingFee),
-                'total_markup' => round($totalMarkup),
-                'over_markup' => round($overallMarkup),
-                'monthly_installment' => round($monthlyInstallment),
+                'disbursement_amount' => round($disbursementAmount),
+                'total_markup' => round($totalInterest),
                 'total_payable_amount' => round($totalPayableAmount),
+                'monthly_installment' => round($monthlyInstallment),
+                'late_fee' => ($lateFee),
             ],
             'Loan calculated successfully.'
         );
-
-
-    }
-
-    private function getCostOfFundsRate($months)
-    {
-        switch ($months) {
-            case 6:
-                return 0.05; // 5% for 6 months
-            case 9:
-                return 0.075; // 7.5% for 9 months
-            case 12:
-                return 0.10; // 10% for 12 months
-            case 3:
-                return 0.05; // 5% for 3 months
-            default:
-                return 0; // No cost of funds for 3 months
-        }
     }
 
 
@@ -97,7 +152,7 @@ class LoanApplicationController extends BaseController
         try {
             $loanApplications = [];
 
-             $authUser = auth()->user();
+            $authUser = auth()->user();
 
             $loanApplications = LoanApplication::query()
                 ->when($status, function ($query, $status) {
@@ -111,7 +166,6 @@ class LoanApplicationController extends BaseController
                     });
                 })
                 ->get();
-
 
 
             // Check if any loan applications are found
@@ -176,16 +230,25 @@ class LoanApplicationController extends BaseController
                 $roleId = 4; // for loan onboarding
 
                 $toUsers = User::where('id', '!=', auth()->user()->id)
-                    ->whereHas('roles', function ($query) use ($roleId , $provinceID ,$districtID , $cityID ) {
+                    ->whereHas('roles', function ($query) use ($roleId, $provinceID, $districtID, $cityID) {
                         $query->where('id', '>=', $roleId)->where('province_id', $provinceID)
                             ->where('district_id', $districtID)
                             ->where('city_id', $cityID);;
                     })->with('roles:name,id')->get();
 
                 $loanApplication->load('loanDuration');
+
+                // get product detail
+                $product = $loanApplication->product;
+                $productProcessingFee = $product->processing_fee / 100;
+                $productInterestFee = $product->interest_rate / 100;
+
                 $extraParameterForLoan = [
                     'loan_amount' => $loanApplication->loan_amount,
-                    'months' => $loanApplication->loanDuration->value
+                    'months' => $loanApplication->loanDuration->value,
+                    'processing_fee' => $productProcessingFee,
+                    'interest_rate' => $productInterestFee,
+
                 ];
 
                 $request->merge($extraParameterForLoan);
@@ -194,7 +257,7 @@ class LoanApplicationController extends BaseController
 
                 $loanCalculatedDetail = $loanCalculator['data'];
 
-                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanCalculatedDetail'));
+                 return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanCalculatedDetail'));
             }
 
 
@@ -320,7 +383,7 @@ class LoanApplicationController extends BaseController
             $userID = $authUser->id;
             $userRoleID = $authUser->roles->first()->id;
 
-             $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_completed', 0)->count();
+            $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_completed', 0)->count();
 
             if ($runningLoanApplication > 0) {
                 return $this->sendError('An application is already in progress. A new application cannot be submitted.');

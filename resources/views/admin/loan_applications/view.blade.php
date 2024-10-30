@@ -99,7 +99,7 @@
             <div class="page-title d-flex">
                 <h4><span class="font-weight-semibold"></span> Loan Application Detail
                 </h4>
-             </div>
+            </div>
 
 
         </div>
@@ -129,14 +129,24 @@
                         <p><strong>Status:</strong> {{ $loanApplication->status }}</p>
 
                         <br>
+                        <h2>Applied for Product</h2>
+                        <p><strong>Product:</strong> {{ $loanApplication->product->name }}</p>
+                        <p><strong>Processing Fee:</strong> {{ $loanApplication->product->processing_fee }}</p>
+                        <p><strong>Interest Rate:</strong> {{ $loanApplication->product->interest_rate }}</p>
+                        <p><strong>Province:</strong> {{ $loanApplication->product->province->name }}</p>
+                        <p><strong>District:</strong> {{ $loanApplication->product->district->name }}</p>
+
+
+                        <br>
                         <h2>Calculated Loan</h2>
                         <p><strong>Loan Amount:</strong> {{ $loanCalculatedDetail['loan_amount'] }}</p>
                         <p><strong>Months:</strong> {{ $loanCalculatedDetail['months'] }}</p>
                         <p><strong>Processing Fee:</strong> {{ $loanCalculatedDetail['processing_fee'] }}</p>
                         <p><strong>Total Markup:</strong> {{ $loanCalculatedDetail['total_markup'] }}</p>
-                        <p><strong>Over Markup:</strong> {{ $loanCalculatedDetail['over_markup'] }}</p>
                         <p><strong>Monthly Installment:</strong> {{ $loanCalculatedDetail['monthly_installment'] }}</p>
-                        <p><strong>Total Payable Amount:</strong> {{ $loanCalculatedDetail['total_payable_amount'] }}</p>
+                        <p><strong>Total Payable Amount:</strong> {{ $loanCalculatedDetail['total_payable_amount'] }}
+                        <p><strong>Disbursement Amount :</strong> {{ $loanCalculatedDetail['disbursement_amount'] }}
+                        </p>
 
 
                     </div>
@@ -267,7 +277,8 @@
                                 </div>
                             </div>
 
-                            <a  href="{{route('approve-loan',$loanApplication->id)}}" class="btn btn-outline-success float-start">Approved</a>
+                            <a href="{{route('approve-loan',$loanApplication->id)}}"
+                               class="btn btn-outline-success float-start">Approved</a>
                             <button type="submit" class="btn btn-primary float-end">Proceed</button>
 
                         </form>
@@ -279,8 +290,6 @@
 
             </div>
         </div>
-
-
 
 
         <a href="{{ route('get-all-loan-applications') }}" class="btn btn-primary">Back to Application List</a>

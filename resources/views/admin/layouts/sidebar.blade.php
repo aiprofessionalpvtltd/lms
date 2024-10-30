@@ -74,7 +74,16 @@
                     </a>
                 </li>
             @endcan
+            @can('view-products')
 
+                <li class="sidebar-item {{ request()->routeIs('show-product') ? 'active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('show-product') }}">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">Product</span>
+                    </a>
+                </li>
+
+            @endcan
             @can('view-customer')
 
                 <li class="sidebar-item {{ request()->routeIs('show-customer') ? 'active' : '' }}">
@@ -107,16 +116,7 @@
 
             @endcan
 
-            @can('view-products')
 
-                <li class="sidebar-item {{ request()->routeIs('show-product') ? 'active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('show-product') }}">
-                        <i class="align-middle" data-feather="user"></i>
-                        <span class="align-middle">Product</span>
-                    </a>
-                </li>
-
-            @endcan
 
 {{--            <li class="sidebar-item {{ request()->routeIs('recovery.create') ? 'active' : '' }}">--}}
 {{--                <a class="sidebar-link" href="{{ route('recovery.create') }}">--}}

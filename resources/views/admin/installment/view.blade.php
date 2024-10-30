@@ -105,7 +105,7 @@
         <!-- Transaction details -->
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title">Transaction Details</h5>
+                <h5 class="card-title">Disbursement Amount Details</h5>
             </div>
             <div class="card-body">
                 <table class="table table-striped">
@@ -120,8 +120,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {{--                    @foreach($installment->loanApplication->transaction as $transaction)--}}
-                    <tr>
+                     <tr>
                         <td>{{ $installment->loanApplication->transaction->id }}</td>
                         <td>{{ $installment->loanApplication->transaction->amount }}</td>
                         <td>{{ ucfirst($installment->loanApplication->transaction->payment_method) }}</td>
@@ -129,8 +128,7 @@
                         <td>{{ $installment->loanApplication->transaction->remarks }}</td>
                         <td>{{ showDate($installment->loanApplication->transaction->created_at) }}</td>
                     </tr>
-                    {{--                    @endforeach--}}
-                    </tbody>
+                     </tbody>
                 </table>
             </div>
         </div>
