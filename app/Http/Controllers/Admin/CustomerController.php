@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
+use Yajra\DataTables\DataTables;
 
 
 class CustomerController extends BaseController
@@ -28,25 +29,58 @@ class CustomerController extends BaseController
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show()
+    public function show(Request $request)
     {
-        $data = array();
         $title = 'All Customers';
-        $customers = User::with('roles', 'profile' ,'tracking')
-            ->whereHas('roles', function ($query) {
-                $query->where('name', 'Customer');
-            })
-            ->orderBy('created_at', 'DESC')
-            ->get();
 
-        foreach ($customers as $customer) {
-            $score = $customer->tracking->score ?? 0;
-            $customer->riskAssessment = $this->determineRiskLevel($score);
+        if ($request->ajax()) {
+            $customers = User::with(['roles', 'profile', 'tracking'])
+                ->whereHas('roles', function ($query) {
+                    $query->where('name', 'Customer');
+                })
+                ->orderBy('created_at', 'DESC');
+
+            return DataTables::of($customers)
+                ->addColumn('phone_no', function ($customer) {
+                    return $customer->profile->mobile_no ?? '';
+                })
+                ->addColumn('gender', function ($customer) {
+                    return $customer->profile->gender->name ?? '';
+                })
+                ->addColumn('cnic', function ($customer) {
+                    return $customer->profile->cnic_no ?? '';
+                })
+                ->addColumn('province', function ($customer) {
+                    return $customer->province->name ?? '';
+                })
+                ->addColumn('district', function ($customer) {
+                    return $customer->district->name ?? '';
+                })
+                ->addColumn('city', function ($customer) {
+                    return $customer->city->name ?? '';
+                })
+                ->addColumn('score_level', function ($customer) {
+                    return $customer->tracking->score ?? 0;
+                })
+                ->addColumn('risk_assessment', function ($customer) {
+                    $score = $customer->tracking->score ?? 0;
+                    $riskAssessment = $this->determineRiskLevel($score);
+                    return '<span title="' . $riskAssessment['loan_eligibility'] . '">' . $riskAssessment['risk_level'] . '</span>';
+                })
+                ->addColumn('actions', function ($customer) {
+                    $actions = '';
+                    if (auth()->user()->can('view-customer')) {
+                        $actions .= '<a title="View" href="' . route('view-customer', $customer->id) . '" class="text-primary mr-1"><i class="fas fa-eye"></i></a>';
+                    }
+                    return '<div class="d-flex">' . $actions . '</div>';
+                })
+                ->rawColumns(['risk_assessment', 'actions'])
+                ->make(true);
         }
-//        dd($customers);
-        return view('admin.customer.index', compact('title', 'customers', 'data'));
+
+        return view('admin.customer.index', compact('title'));
     }
 
     public function view($id)

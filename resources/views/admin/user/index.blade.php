@@ -41,44 +41,20 @@
             </div>
 
             <div class="card-body">
-                <table id="" class="table table-striped datatables-reponsive">
-                <thead>
-                <tr>
-                    <th>User Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th class="text-center">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($users as $user)
+                <table id="users-table" class="table table-striped datatables-responsive">
+                    <thead>
                     <tr>
-                        <td>{{$user->name}}</td>
-                        <td>{{$user->email}}</td>
-                        <td>{{$user->roles[0]->name}}</td>
-                        <td>{{showStatus($user->status)}}</td>
-                        <td>`
-                            <div class="d-flex">
-                                @can('edit-users')
-                                    <a title="Edit" href="{{ route('edit-user', $user->id) }}"
-                                       class="text-primary mr-1"><i
-                                            class="fas fa-edit"></i></a>
-                                @endcan
-
-                                @can('delete-users')
-                                    <a href="javascript:void(0)" data-url="{{route('changeStatus-user')}}"
-                                       data-status='0' data-label="delete"
-                                       data-id="{{$user->id}}"
-                                       class=" text-danger mr-1 change-status-record"
-                                       title="Suspend Record"><i class="fas fa-trash"></i></a>
-                                @endcan
-                            </div>
-                        </td>
+                        <th>User Name</th>
+                        <th>Email</th>
+                        <th>Province</th>
+                        <th>District</th>
+                        <th>City</th>
+                        <th>Role</th>
+                         <th class="text-center">Actions</th>
                     </tr>
-                @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                </table>
+
             </div>
         </div>
         <!-- /basic datatable -->
@@ -88,6 +64,24 @@
 @endsection
 
 @push('script')
-    <script src="{{asset('backend/js/datatables.js')}}"></script>
-
+    <script src="{{ asset('backend/js/datatables.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            $('#users-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route("show-user") }}', // replace 'your-route-name' with the correct route for loading data
+                columns: [
+                    {data: 'name', name: 'name'},
+                    {data: 'email', name: 'email'},
+                    {data: 'province.name', name: 'province.name'},
+                    {data: 'district.name', name: 'district.name'},
+                    {data: 'city.name', name: 'city.name'},
+                    {data: 'role', name: 'role', orderable: false, searchable: false},
+                     {data: 'actions', name: 'actions', orderable: false, searchable: false, class: 'text-center'}
+                ]
+            });
+        });
+    </script>
 @endpush
+

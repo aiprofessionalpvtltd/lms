@@ -42,7 +42,7 @@
                             <div class="card-body">
 
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-4">
                                         <label class="col-form-label  ">Name <span
                                                 class="text-danger">*</span> </label>
                                         <div
@@ -62,7 +62,7 @@
                                     </div>
 
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-4">
                                         <label class="col-form-label  ">Email </label>
                                         <div
                                             class="form-group form-group-feedback form-group-feedback-right">
@@ -81,14 +81,87 @@
                                     </div>
 
 
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-4">
+                                        <label class="col-form-label">Select Role <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Role"
+                                                    name="role_id" id="role_id"
+                                                    class="form-control select2"
+                                                    data-fouc>
+                                                <option></option>
+                                                @foreach($roles as $key => $row)
+                                                    <option value="{{ $row->id }}">{{ $row->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if ($errors->has('role_id'))
+                                                <span class="text-danger">{{ $errors->first('role_id') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-4 mt-4">
+                                        <label class="col-form-label">Select Province <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Province"
+                                                    name="province_id" id="province_id"
+                                                    data-type="registration"
+                                                    class="form-control select2 province"
+                                                    data-fouc>
+                                                <option></option>
+                                                @foreach($provinces as $key => $row)
+                                                    <option value="{{ $row->id }}">{{ $row->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if ($errors->has('province_id'))
+                                                <span class="text-danger">{{ $errors->first('province_id') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 mt-4">
+                                        <label class="col-form-label">Select District <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select District"
+                                                    name="district_id" id="registration_district"
+                                                    data-type="registration"
+                                                    class="form-control select2"
+                                                    data-fouc>
+                                                <option></option>
+
+                                            </select>
+                                            @if ($errors->has('role_id'))
+                                                <span class="text-danger">{{ $errors->first('role_id') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 mt-4">
+                                        <label class="col-form-label">Select City <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select City"
+                                                    name="city_id" id="registration_city"
+                                                    data-type="registration"
+                                                    class="form-control select2"
+                                                    data-fouc>
+                                                <option></option>
+
+                                            </select>
+                                            @if ($errors->has('city_id'))
+                                                <span class="text-danger">{{ $errors->first('city_id') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-4 mt-4">
                                         <label class="col-form-label  ">Password <span
                                                 class="text-danger">*</span> </label>
                                         <div
                                             class="form-group form-group-feedback form-group-feedback-right">
                                             <input   type="password" name="password"
-                                                   class="form-control" id="password"
-                                                   placeholder="Create password">
+                                                     class="form-control" id="password"
+                                                     placeholder="Create password">
                                             <div class="form-control-feedback">
                                                 <i class="icon-user-lock text-muted"></i>
                                             </div>
@@ -98,14 +171,14 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-4 mt-4">
                                         <label class="col-form-label  ">Repeat Password <span
                                                 class="text-danger">*</span> </label>
                                         <div
                                             class="form-group form-group-feedback form-group-feedback-right">
                                             <input   type="password" name="password_confirmation"
-                                                   class="form-control"
-                                                   placeholder="Create password">
+                                                     class="form-control"
+                                                     placeholder="Create password">
                                             <div class="form-control-feedback">
                                                 <i class="icon-user-lock text-muted"></i>
                                             </div>
@@ -113,24 +186,6 @@
                                                 <span
                                                     class="text-danger">{{ $errors->first('password_confirmation') }}</span>
                                             @endif
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <label class="col-form-label">Select Role <span class="text-danger">*</span></label>
-                                        <div class="form-group form-group-feedback form-group-feedback-right">
-                                            <select data-placeholder="Select Role"
-                                                    name="role_id" id="role_id"
-                                                    class="form-control select2"
-                                            data-fouc>
-                                            <option></option>
-                                            @foreach($roles as $key => $row)
-                                                <option value="{{ $row->id }}">{{ $row->name }}</option>
-                                                @endforeach
-                                                </select>
-                                                @if ($errors->has('role_id'))
-                                                    <span class="text-danger">{{ $errors->first('role_id') }}</span>
-                                                @endif
                                         </div>
                                     </div>
 

@@ -33,42 +33,23 @@
             </div>
 
             <div class="card-body">
-                <table id="" class="table table-striped datatables-reponsive">
+                <table id="customers-table" class="table table-striped datatables-responsive">
                     <thead>
                     <tr>
                         <th>Customer Name</th>
-                        <th>Email</th>
                         <th>Phone No</th>
                         <th>CNIC</th>
+                        <th>Gender</th>
+                        <th>Province</th>
+                        <th>District</th>
+                        <th>City</th>
                         <th>Score Level</th>
                         <th>Risk Assessment</th>
                         <th class="text-center">Actions</th>
                     </tr>
                     </thead>
-                    <tbody>
-                    @foreach($customers as $customer)
-                        <tr>
-                            <td>{{$customer->name}}</td>
-                            <td>{{$customer->email}}</td>
-                            <td>{{$customer->profile->mobile_no}}</td>
-                            <td>{{$customer->profile->cnic_no}}</td>
-                            <td>{{$customer->tracking->score}}</td>
-                            <td title="{{ $customer->riskAssessment['loan_eligibility'] }}">
-                                {{ $customer->riskAssessment['risk_level'] }}
-                            </td>
-                            <td>`
-                                <div class="d-flex">
-                                    @can('view-customer')
-                                        <a title="View" href="{{ route('view-customer', $customer->id) }}"
-                                           class="text-primary mr-1"><i
-                                                class="fas fa-eye"></i></a>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
                 </table>
+
             </div>
         </div>
         <!-- /basic datatable -->
@@ -78,6 +59,27 @@
 @endsection
 
 @push('script')
-    <script src="{{asset('backend/js/datatables.js')}}"></script>
+    <script src="{{ asset('backend/js/datatables.js') }}"></script>
+    <script>
+        $(document).ready(function () {
+            $('#customers-table').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '{{ route("show-customer") }}',
+                columns: [
+                    {data: 'name', name: 'name'},
+                    {data: 'phone_no', name: 'profile.mobile_no'},
+                    {data: 'cnic', name: 'profile.cnic_no'},
+                    {data: 'gender', name: 'genders.name' ,searchable: false},
+                    {data: 'province', name: 'provinces.name',searchable: false},
+                    {data: 'district', name: 'districts.name',searchable: false},
+                    {data: 'city', name: 'cities.name',searchable: false},
+                    {data: 'score_level', name: 'tracking.score',searchable: false},
+                    {data: 'risk_assessment', name: 'risk_assessment', orderable: false, searchable: false},
+                    {data: 'actions', name: 'actions', orderable: false, searchable: false, class: 'text-center'}
+                ]
+            });
 
+        });
+    </script>
 @endpush

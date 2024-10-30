@@ -23,6 +23,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/get-province-by-country', [AjaxController::class, 'getProvinceByCountryAjax']);
 Route::get('/get-district-by-province', [AjaxController::class, 'getDistrictByProvinceAjax']);
 Route::get('/get-city-by-province', [AjaxController::class, 'getCityByProvinceAjax']);
+
 Route::middleware(['auth'])->group(function () {
 
     Route::get('our-dashboard', [SuperAdminDashboardController::class, 'index'])->name('our-dashboard');

@@ -20,7 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('product_service_id');
             $table->unsignedBigInteger('loan_purpose_id');
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('approved_by');
+            $table->unsignedBigInteger('approved_by')->nullable();
 
             $table->text('address');
             $table->string('reference_contact_1');

@@ -26,6 +26,18 @@ function showStatus($status)
 
 }
 
+function showStatusBoostrap($status)
+{
+
+    if ($status == 1) {
+        return '<span class="badge bg-success">Active</span>';
+
+    } else {
+        return '<span class="badge bg-danger">InActive</span>';
+
+    }
+
+}
 
 function showCompleted($status)
 {

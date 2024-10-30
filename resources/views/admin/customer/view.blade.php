@@ -75,6 +75,9 @@
                         <p><strong>Last Name:</strong> {{ $customer->profile->last_name }}</p>
                         <p><strong>Gender:</strong> {{ $customer->profile->gender->name }}</p>
                         <p><strong>Nationality:</strong> {{ $customer->profile->nationality->name }}</p>
+                        <p><strong>Province:</strong> {{ $customer->province->name }}</p>
+                        <p><strong>District:</strong> {{ $customer->district->name }}</p>
+                        <p><strong>City:</strong> {{ $customer->city->name }}</p>
                         <p><strong>Email:</strong> {{ $customer->email }}</p>
                         <p><strong>CNIC No:</strong> {{ $customer->profile->cnic_no }}</p>
                         <p><strong>Issue Date:</strong> {{ showDate($customer->profile->issue_date) }}</p>

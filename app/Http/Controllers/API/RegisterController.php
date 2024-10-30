@@ -37,6 +37,9 @@ class RegisterController extends BaseController
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'confirmation_password' => 'required|same:password',
+            'province_id' => 'required|exists:provinces,id',
+            'city_id' => 'required|exists:cities,id',
+            'district_id' => 'required|exists:districts,id',
 
             // User Profile validation
             'gender_id' => 'required|exists:genders,id',
@@ -69,7 +72,7 @@ class RegisterController extends BaseController
 
         try {
             // Step 1: Create User
-            $userInput = $request->only(['name', 'email', 'password']);
+            $userInput = $request->only(['name', 'email', 'password' ,'province_id','district_id','city_id']);
             $userInput['password'] = $userInput['password']; // Hash password
             $user = User::create($userInput);
 

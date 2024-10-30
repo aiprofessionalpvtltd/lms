@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 
 use App\Http\Controllers\Controller;
+use App\Models\City;
+use App\Models\District;
+use App\Models\Province;
 use App\Models\User;
 use Carbon\Carbon;
 use DB;
@@ -13,6 +16,7 @@ use Illuminate\Support\Facades\Validator;
 use pdf;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Middlewares\PermissionMiddleware;
+use Yajra\DataTables\DataTables;
 
 
 class UserController extends Controller
@@ -30,19 +34,39 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show()
+    public function show(Request $request)
     {
-        $data = array();
         $title = 'Add User';
-        $users = User::with('roles')
-            ->where('id', '>', auth()->user()->id)
-            ->orderBy('created_at', 'DESC')
-            ->get();
 
-        return view('admin.user.index', compact('title', 'users', 'data'));
+        if ($request->ajax()) {
+            $users = User::with(['roles', 'province', 'district', 'city'])
+                ->where('id', '>', auth()->user()->id)
+                ->orderBy('created_at', 'DESC');
+
+            return DataTables::of($users)
+                ->addColumn('role', function ($user) {
+                    return $user->roles->isNotEmpty() ? $user->roles[0]->name : '';
+                })
+
+                ->addColumn('actions', function ($user) {
+                    $actions = '';
+                    if (auth()->user()->can('edit-users')) {
+                        $actions .= '<a title="Edit" href="' . route('edit-user', $user->id) . '" class="text-primary mr-1"><i class="fas fa-edit"></i></a>';
+                    }
+                    if (auth()->user()->can('delete-users')) {
+                        $actions .= '<a href="javascript:void(0)" data-url="' . route('changeStatus-user') . '" data-status="0" data-label="delete" data-id="' . $user->id . '" class="text-danger mr-1 change-status-record" title="Suspend Record"><i class="fas fa-trash"></i></a>';
+                    }
+                    return '<div class="d-flex">' . $actions . '</div>';
+                })
+                ->rawColumns(['actions' ,'status'])
+                ->make(true);
+        }
+
+        return view('admin.user.index', compact('title'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -52,8 +76,10 @@ class UserController extends Controller
     public function index()
     {
         $roles = Role::where('id', '!=', 1)->get();
+        $provinces = Province::all();
+
         $title = 'Add User';
-        return view('admin.user.create', compact('roles', 'title'));
+        return view('admin.user.create', compact('roles', 'title' ,'provinces'));
     }
 
     /**
@@ -68,6 +94,9 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'role_id' => 'required|exists:roles,id',
+            'province_id' => 'required|exists:provinces,id',
+            'district_id' => 'required|exists:districts,id',
+            'city_id' => 'required|exists:cities,id',
             'password' => 'required|min:8|confirmed',
             'password_confirmation' => 'required'
         ]);
@@ -127,7 +156,11 @@ class UserController extends Controller
         $title = 'Edit User';
         $user = User::with('roles')->find($id);
         $roles = Role::where('id', '!=', 1)->get();
-        return view('admin.user.edit', compact('title', 'user', 'roles'));
+        $provinces = Province::all();
+        $districts = District::where('province_id',$user->province_id)->get();
+        $cities = City::where('province_id',$user->province_id)->get();
+
+        return view('admin.user.edit', compact('title', 'user', 'roles' ,'provinces','districts','cities'));
     }
 
     /**
@@ -152,6 +185,9 @@ class UserController extends Controller
                 'name' => 'required',
                 'email' => 'required|email|unique:users,email,' . $user->id,
                 'role_id' => 'required|exists:roles,id',
+                'province_id' => 'required|exists:provinces,id',
+                'city_id' => 'required|exists:cities,id',
+                'district_id' => 'required|exists:districts,id',
             ]);
 
             if ($validator->fails()) {

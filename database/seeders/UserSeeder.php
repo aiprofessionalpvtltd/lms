@@ -32,6 +32,9 @@ class UserSeeder extends Seeder
             'name' => 'Management',
             'email' => 'management@admin.com',
             'password' => '123456',
+            'province_id' => 156,
+            'district_id' => 220,
+            'city_id' => 10,
             'email_verified_at' => currentDateTimeInsert(),
         ]);
 
@@ -42,6 +45,9 @@ class UserSeeder extends Seeder
             'name' => 'loanonboarding',
             'email' => 'loanonboarding@admin.com',
             'password' => '123456',
+            'province_id' => 156,
+            'district_id' => 220,
+            'city_id' => 10,
             'email_verified_at' => currentDateTimeInsert(),
         ]);
 

@@ -49,6 +49,60 @@ $(document).ready(function () {
         });
     });
 
+    $('.province').on('select2:select', function (e) {
+        e.preventDefault();
+        var selectedData = e.params.data;
+        var provinceID = selectedData.id
+        var method = 'GET';
+        var type = $(this).data('type');
+        $.ajax({
+            type: method,
+            url: getDistrictByProvince,
+            data: {provinceID: provinceID},
+            dataType: 'json',
+            success: function (data, status, xhr) {
+                const responsedata = data;
+                $('#' + type + '_district').empty();
+                $('#' + type + '_district').append('<option></option>');
+                if (responsedata) {
+                    $.each(responsedata, function (key, value) {
+                        $('#' + type + '_district').append($("<option/>", {
+                            value: value.id,
+                            text: value.name
+                        }));
+                    });
+                    $('#' + type + '_district').focus();
+
+                }
+            },
+            error: function (jqXhr, textStatus, errorMessage) {
+            }
+        });
+
+        $.ajax({
+            type: method,
+            url: getCityByProvince,
+            data: {provinceID: provinceID},
+            dataType: 'json',
+            success: function (data, status, xhr) {
+                const responsedata = data;
+                $('#' + type + '_city').empty();
+                $('#' + type + '_city').append('<option></option>');
+                if (responsedata) {
+                    $.each(responsedata, function (key, value) {
+                        $('#' + type + '_city').append($("<option/>", {
+                            value: value.id,
+                            text: value.name
+                        }));
+                    });
+                }
+            },
+            error: function (jqXhr, textStatus, errorMessage) {
+            }
+        });
+    });
+
+
 
 });
 

@@ -15,7 +15,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasRoles,SoftDeletes, HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes, HasApiTokens;
+
     protected $guard_name = 'web';
 
     /**
@@ -30,6 +31,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'email',
         'image',
+        'province_id',
+        'district_id',
+        'city_id',
     ];
 
     /**
@@ -67,6 +71,21 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->attributes['password'] = Hash::make($value);
     }
 
+    public function province()
+    {
+        return $this->belongsTo(Province::class)->withDefault();
+    }
+
+    public function district()
+    {
+        return $this->belongsTo(District::class)->withDefault();
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class)->withDefault();
+    }
+
     public function profile()
     {
         return $this->hasOne(UserProfile::class)->withDefault();
@@ -86,6 +105,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(UserEmployment::class)->withDefault();
     }
+
     public function familyDependent()
     {
         return $this->hasOne(UserFamilyDependent::class)->withDefault();

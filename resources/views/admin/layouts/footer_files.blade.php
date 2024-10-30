@@ -11,7 +11,9 @@
 <script>
     var urlPath = '<?php echo url(""); ?>';
     var CSRF_TOKEN = '<?php echo csrf_token(); ?>';
-
+    var getProvinceByCountry = '{{url('get-province-by-country')}}';
+    var getDistrictByProvince = '{{url('get-district-by-province')}}';
+    var getCityByProvince = '{{url('get-city-by-province')}}';
 
     window.sessionMessages = {
         success: @json(session('success')),

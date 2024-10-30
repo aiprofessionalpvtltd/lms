@@ -16,6 +16,11 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
+            CountrySeeder::class,
+            ProvinceSeeder::class,
+            DistrictSeeder::class,
+            CitySeeder::class,
+
             ModuleSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
@@ -26,10 +31,7 @@ class DatabaseSeeder extends Seeder
             LoanPurposeSeeder::class,
             DocumentTypeSeeder::class,
 
-            CountrySeeder::class,
-            ProvinceSeeder::class,
-            DistrictSeeder::class,
-            CitySeeder::class,
+
 
 
             GenderSeeder::class,
