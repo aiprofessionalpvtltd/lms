@@ -102,5 +102,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(UserGuarantor::class);
     }
 
+    public function installments()
+    {
+        return $this->hasMany(Installment::class);
+    }
+
 
 }

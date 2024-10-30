@@ -61,4 +61,13 @@ class LoanApplication extends Model
         return $this->hasMany(Guarantor::class);
     }
 
+    public function installments()
+    {
+        return $this->hasMany(Installment::class);
+    }
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class);
+    }
+
 }

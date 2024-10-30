@@ -21,6 +21,7 @@ class ModuleSeeder extends Seeder
             'Loan Management',
             'Installments',
             'Complaints',
+            'Recoveries',
         );
 
         foreach ($modules as $row) {

@@ -94,6 +94,25 @@
                     </a>
                 </li>
             @endcan
+
+
+            @can('view-installments')
+
+                <li class="sidebar-item {{ request()->routeIs('show-installment') ? 'active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('show-installment') }}">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">Installments</span>
+                    </a>
+                </li>
+
+            @endcan
+
+{{--            <li class="sidebar-item {{ request()->routeIs('recovery.create') ? 'active' : '' }}">--}}
+{{--                <a class="sidebar-link" href="{{ route('recovery.create') }}">--}}
+{{--                    <i class="align-middle" data-feather="user"></i>--}}
+{{--                    <span class="align-middle">Recovery</span>--}}
+{{--                </a>--}}
+{{--            </li>--}}
         </ul>
     </div>
 </nav>

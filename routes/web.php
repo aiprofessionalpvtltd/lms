@@ -4,7 +4,10 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\Dashboard\SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\InstallmentController;
+use App\Http\Controllers\Admin\RecoveryController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\API\LoanApplicationController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +55,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('loan-application/{id}/complete', [LoanApplicationController::class, 'completeApplication'])->name('complete-loan-application');
     Route::put('loan-applications/{id}/status', [LoanApplicationController::class, 'updateStatus'])->name('update-loan-application-status');
     Route::get('loan-applications/{id}/approved', [LoanApplicationController::class, 'approveLoan'])->name('approve-loan');
+
+
+    Route::get('show-installment', [InstallmentController::class, 'index'])->name('show-installment');
+    Route::get('show-installment/{id}/view', [InstallmentController::class, 'view'])->name('view-installment');
+     Route::get('pay-installment', [InstallmentController::class, 'index'])->name('pay-installment');
+
+    Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+
+    Route::prefix('recovery')->group(function () {
+        Route::get('/create/{installmentDetailId}', [RecoveryController::class, 'create'])->name('recovery.create');
+        Route::post('/store', [RecoveryController::class, 'store'])->name('recovery.store');
+    });
+
 
 });
 
