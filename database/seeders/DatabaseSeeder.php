@@ -31,9 +31,7 @@ class DatabaseSeeder extends Seeder
             LoanPurposeSeeder::class,
             DocumentTypeSeeder::class,
 
-
-
-
+            ProductSeeder::class,
             GenderSeeder::class,
             MaritalStatusSeeder::class,
             NationalitySeeder::class,

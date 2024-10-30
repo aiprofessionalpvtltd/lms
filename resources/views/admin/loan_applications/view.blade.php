@@ -252,7 +252,7 @@
                                     <select class="form-select" id="to_user_id" name="to_user_id" required>
                                         @foreach($toUsers as $user)
                                             <option value="{{$user->id}}">
-                                                {{$user->name . ' (' . $user->getRoleNames()[0] .')'}}
+                                                {{$user->name . ' (' . $user->province->name . ' ' . $user->district->name  .')'}}
                                             </option>
                                         @endforeach
                                     </select>

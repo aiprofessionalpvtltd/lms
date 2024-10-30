@@ -50,16 +50,16 @@ class UserController extends Controller
                     return $user->roles->isNotEmpty() ? $user->roles[0]->name : '';
                 })
 
-                ->addColumn('actions', function ($user) {
-                    $actions = '';
-                    if (auth()->user()->can('edit-users')) {
-                        $actions .= '<a title="Edit" href="' . route('edit-user', $user->id) . '" class="text-primary mr-1"><i class="fas fa-edit"></i></a>';
-                    }
-                    if (auth()->user()->can('delete-users')) {
-                        $actions .= '<a href="javascript:void(0)" data-url="' . route('changeStatus-user') . '" data-status="0" data-label="delete" data-id="' . $user->id . '" class="text-danger mr-1 change-status-record" title="Suspend Record"><i class="fas fa-trash"></i></a>';
-                    }
-                    return '<div class="d-flex">' . $actions . '</div>';
-                })
+                    ->addColumn('actions', function ($user) {
+                        $actions = '';
+                        if (auth()->user()->can('edit-users')) {
+                            $actions .= '<a title="Edit" href="' . route('edit-user', $user->id) . '" class="text-primary mr-1"><i class="fas fa-edit"></i></a>';
+                        }
+                        if (auth()->user()->can('delete-users')) {
+                            $actions .= '<a href="javascript:void(0)" data-url="' . route('changeStatus-user') . '" data-status="0" data-label="delete" data-id="' . $user->id . '" class="text-danger mr-1 change-status-record" title="Suspend Record"><i class="fas fa-trash"></i></a>';
+                        }
+                        return '<div class="d-flex">' . $actions . '</div>';
+                    })
                 ->rawColumns(['actions' ,'status'])
                 ->make(true);
         }

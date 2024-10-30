@@ -18,7 +18,7 @@ class CreateProvincesTable extends Migration
             $table->timestamps();
             $table->tinyInteger('is_active')->default(1);
 
-            $table->foreignId("country_id")->nullable()->constrained('countries')->onDelete('set null')->onUpdate('set null');
+            $table->foreignId("country_id")->default(168)->constrained('countries')->onDelete('set null')->onUpdate('set null');
         });
     }
 

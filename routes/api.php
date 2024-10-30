@@ -67,4 +67,9 @@ Route::middleware('auth:api')->group(function () {
 
     Route::post('user/loan-applications/guarantors', [GuarantorController::class, 'store']);
     Route::get('user/loan-applications/guarantors/{id}', [GuarantorController::class, 'show']);
+
+    Route::get('dropdown/getProducts', [DropdownController::class, 'getProducts']);
+
+
+
 });

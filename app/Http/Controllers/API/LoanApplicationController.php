@@ -96,13 +96,22 @@ class LoanApplicationController extends BaseController
 
         try {
             $loanApplications = [];
-            if ($status) {
-                // Fetch loan applications based on the status
-                $loanApplications = LoanApplication::where('status', $status)->get();
-            } else {
-                $loanApplications = LoanApplication::all();
 
-            }
+             $authUser = auth()->user();
+
+            $loanApplications = LoanApplication::query()
+                ->when($status, function ($query, $status) {
+                    // Apply the status filter only if $status is provided
+                    return $query->where('status', $status);
+                })
+                ->when(!$authUser->hasRole(['Management', 'Super Admin']), function ($query) use ($authUser) {
+                    // If the user is not management or admin, check the latest history's to_user_id
+                    return $query->whereHas('getLatestHistory', function ($historyQuery) use ($authUser) {
+                        $historyQuery->where('to_user_id', $authUser->id);
+                    });
+                })
+                ->get();
+
 
 
             // Check if any loan applications are found
@@ -159,12 +168,18 @@ class LoanApplicationController extends BaseController
                     'Loan Applications retrieved successfully.'
                 );
             } else {
+                $appUser = $loanApplication->user;
+                $provinceID = $appUser->province_id;
+                $districtID = $appUser->district_id;
+                $cityID = $appUser->city_id;
 
                 $roleId = 4; // for loan onboarding
 
                 $toUsers = User::where('id', '!=', auth()->user()->id)
-                    ->whereHas('roles', function ($query) use ($roleId) {
-                        $query->where('id', '>=', $roleId);
+                    ->whereHas('roles', function ($query) use ($roleId , $provinceID ,$districtID , $cityID ) {
+                        $query->where('id', '>=', $roleId)->where('province_id', $provinceID)
+                            ->where('district_id', $districtID)
+                            ->where('city_id', $cityID);;
                     })->with('roles:name,id')->get();
 
                 $loanApplication->load('loanDuration');
@@ -205,7 +220,7 @@ class LoanApplicationController extends BaseController
 //                // Fetch loan applications based on the status
 //                $loanApplications = LoanApplication::where('status', $status)->where('user_id', $userID)->get();
 //            } else {
-                $loanApplications = LoanApplication::where('user_id', $userID)->get();
+            $loanApplications = LoanApplication::where('user_id', $userID)->get();
 
 //            }
 
@@ -241,7 +256,7 @@ class LoanApplicationController extends BaseController
                 ['user_id', '=', $userID]
             ])->latest()->first();
 
-             // Check if a loan application is found
+            // Check if a loan application is found
             if (!$loanApplication) {
                 return $this->sendResponse(
                     ['loan_application' => [
@@ -254,7 +269,7 @@ class LoanApplicationController extends BaseController
                 );
             }
 
-             // Return the loan application as a response
+            // Return the loan application as a response
             return $this->sendResponse(
                 ['loan_application' => new LoanApplicationTrackingResource($loanApplication)],
                 'Loan application retrieved successfully.'
@@ -296,27 +311,39 @@ class LoanApplicationController extends BaseController
 
         try {
 
-            if($request->loan_amount > $maxAmount){
+            $authUser = auth::user();
+            if ($request->loan_amount > $maxAmount) {
                 return $this->sendError('Loan Amount Limit', 'The loan amount cannot exceed ' . number_format($maxAmount) . ' PKR.');
 
             }
-            $userID = auth::user()->id;
-            $userRoleID = auth()->user()->roles->first()->id;
+            $userID = $authUser->id;
+            $userRoleID = $authUser->roles->first()->id;
 
-            $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_completed', 0)->count();
+             $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_completed', 0)->count();
 
             if ($runningLoanApplication > 0) {
                 return $this->sendError('An application is already in progress. A new application cannot be submitted.');
             }
 
+            $provinceID = $authUser->province_id;
+            $districtID = $authUser->district_id;
+            $cityID = $authUser->city_id;
+
             $roleId = 4; // for Loan Onboarding
 
-            $toUsers = User::whereHas('roles', function ($query) use ($roleId) {
-                $query->where('id', $roleId);
+            $toUsers = User::whereHas('roles', function ($query) use ($roleId, $provinceID, $districtID, $cityID) {
+                $query->where('id', $roleId)
+                    ->where('province_id', $provinceID)
+                    ->where('district_id', $districtID)
+                    ->where('city_id', $cityID);
             })->first();
 
+//            dd($toUsers);
             if (!$toUsers) {
-                return $this->sendError('Loan Onboarding user not found');
+
+                $toUsers = User::whereHas('roles', function ($query) use ($roleId, $provinceID, $districtID, $cityID) {
+                    $query->where('id', 2);
+                })->first();
 
             }
 
@@ -439,7 +466,6 @@ class LoanApplicationController extends BaseController
 
         $loanApplication->is_completed = true;
         $loanApplication->save();
-
 
 
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application Completed successfully.');
@@ -576,7 +602,7 @@ class LoanApplicationController extends BaseController
 
             // Check if the user already has a submitted loan application
             $existingLoanApplication = LoanApplication::
-                    where('user_id', $userID)
+            where('user_id', $userID)
                 ->where('is_submitted', 1)
                 ->where('id', $applicationID)
                 ->first(); // Get the first existing loan application
@@ -617,7 +643,7 @@ class LoanApplicationController extends BaseController
         }
     }
 
-    public function approveLoan( $loanApplicationId)
+    public function approveLoan($loanApplicationId)
     {
         // Fetch the loan application
         $loanApplication = LoanApplication::findOrFail($loanApplicationId);
@@ -634,11 +660,11 @@ class LoanApplicationController extends BaseController
 
         // Call calculateLoan to get loan details
 
-        $loanDetails = $this->calculateLoan(new Request([ 'loan_amount' => $loanAmount, 'months' => $loanDuration]))->getData(true);
+        $loanDetails = $this->calculateLoan(new Request(['loan_amount' => $loanAmount, 'months' => $loanDuration]))->getData(true);
 
         $loanDetails = $loanDetails['data'];
 
-         // Mark the loan as approved
+        // Mark the loan as approved
         $loanApplication->status = 'accepted';
         $loanApplication->approved_by = auth()->id(); // Approved by the logged-in user
         $loanApplication->save();
@@ -662,11 +688,11 @@ class LoanApplicationController extends BaseController
                 'installment_id' => $installment->id,
                 'due_date' => $startDate->copy()->addMonths($i),
                 'amount_due' => $loanDetails['monthly_installment'],
-             ]);
+            ]);
         }
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
 
-     }
+    }
 
 
 }

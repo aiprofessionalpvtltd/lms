@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\Dashboard\SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InstallmentController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RecoveryController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\TransactionController;
@@ -63,7 +64,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('show-installment', [InstallmentController::class, 'index'])->name('show-installment');
     Route::get('show-installment/{id}/view', [InstallmentController::class, 'view'])->name('view-installment');
-     Route::get('pay-installment', [InstallmentController::class, 'index'])->name('pay-installment');
+    Route::get('pay-installment', [InstallmentController::class, 'index'])->name('pay-installment');
 
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 
@@ -71,6 +72,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create/{installmentDetailId}', [RecoveryController::class, 'create'])->name('recovery.create');
         Route::post('/store', [RecoveryController::class, 'store'])->name('recovery.store');
     });
+
+
+    Route::get('show-product', [ProductController::class, 'show'])->name('show-product');
+    Route::get('add-product', [ProductController::class, 'index'])->name('add-product');
+    Route::post('store-product', [ProductController::class, 'store'])->name('store-product');
+    Route::get('product/{id}/edit', [ProductController::class, 'edit'])->name('edit-product');
+    Route::put('update-product{id}', [ProductController::class, 'update'])->name('update-product');
+    Route::post('destroy-product', [ProductController::class, 'destroy'])->name('destroy-product');
 
 
 });

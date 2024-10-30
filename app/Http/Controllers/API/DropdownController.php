@@ -14,6 +14,7 @@ use App\Http\Resources\LoanDurationResource;
 use App\Http\Resources\LoanPurposeResource;
 use App\Http\Resources\MaritalStatusResource;
 use App\Http\Resources\NationalityResource;
+use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductServiceResource;
 use App\Http\Resources\RelationshipResource;
 use App\Http\Resources\ResidenceDurationResource;
@@ -31,6 +32,7 @@ use App\Models\LoanDuration;
 use App\Models\LoanPurpose;
 use App\Models\MaritalStatus;
 use App\Models\Nationality;
+use App\Models\Product;
 use App\Models\ProductService;
 use App\Models\Province;
 use App\Models\Relationship;
@@ -303,6 +305,7 @@ class DropdownController extends BaseController
 
         }
     }
+
     public function getExistingLoans()
     {
         try {
@@ -318,6 +321,7 @@ class DropdownController extends BaseController
 
         }
     }
+
     public function getProvinceByCountry(Request $request)
     {
         try {
@@ -361,6 +365,22 @@ class DropdownController extends BaseController
     }
 
 
+    public function getProducts()
+    {
+        $authUser = auth()->user();
+        $provinceID = $authUser->province_id;
+        $districtID = $authUser->district_id;
 
+        try {
+            $products = Product::where('province_id', $provinceID)
+                ->where('district_id', $districtID)
+                ->orderBy('name', 'ASC')
+                ->get();
+
+            return $this->sendResponse(ProductResource::collection($products), 'Products retrieved successfully.');
+        } catch (\Exception $e) {
+            return $this->sendError('Error retrieving Products.', $e->getMessage());
+        }
+    }
 
 }
