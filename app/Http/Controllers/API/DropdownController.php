@@ -18,6 +18,8 @@ use App\Http\Resources\ProductServiceResource;
 use App\Http\Resources\RelationshipResource;
 use App\Http\Resources\ResidenceDurationResource;
 use App\Http\Resources\ResidenceTypeResource;
+use App\Models\City;
+use App\Models\District;
 use App\Models\DocumentType;
 use App\Models\Education;
 use App\Models\EmploymentStatus;
@@ -30,6 +32,7 @@ use App\Models\LoanPurpose;
 use App\Models\MaritalStatus;
 use App\Models\Nationality;
 use App\Models\ProductService;
+use App\Models\Province;
 use App\Models\Relationship;
 use App\Models\ResidenceDuration;
 use App\Models\ResidenceType;
@@ -315,5 +318,49 @@ class DropdownController extends BaseController
 
         }
     }
+    public function getProvinceByCountry(Request $request)
+    {
+        try {
+            $provinces = Province::select('id', 'name')
+                ->where('country_id', $request->country_id)
+                ->orderBy('name', 'ASC')
+                ->get();
+
+            return $this->sendResponse($provinces, 'Provinces retrieved successfully.');
+        } catch (\Exception $e) {
+            return $this->sendError('Error retrieving Provinces.', $e->getMessage());
+        }
+    }
+
+    public function getDistrictByProvince(Request $request)
+    {
+        try {
+            $districts = District::select('id', 'name')
+                ->where('province_id', $request->province_id)
+                ->orderBy('name', 'ASC')
+                ->get();
+
+            return $this->sendResponse($districts, 'Districts retrieved successfully.');
+        } catch (\Exception $e) {
+            return $this->sendError('Error retrieving Districts.', $e->getMessage());
+        }
+    }
+
+    public function getCityByProvince(Request $request)
+    {
+        try {
+            $cities = City::select('id', 'name')
+                ->where('province_id', $request->province_id)
+                ->orderBy('name', 'ASC')
+                ->get();
+
+            return $this->sendResponse($cities, 'Cities retrieved successfully.');
+        } catch (\Exception $e) {
+            return $this->sendError('Error retrieving Cities.', $e->getMessage());
+        }
+    }
+
+
+
 
 }

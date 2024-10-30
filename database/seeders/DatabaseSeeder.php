@@ -26,6 +26,11 @@ class DatabaseSeeder extends Seeder
             LoanPurposeSeeder::class,
             DocumentTypeSeeder::class,
 
+            CountrySeeder::class,
+            ProvinceSeeder::class,
+            DistrictSeeder::class,
+            CitySeeder::class,
+
 
             GenderSeeder::class,
             MaritalStatusSeeder::class,

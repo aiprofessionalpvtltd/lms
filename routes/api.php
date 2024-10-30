@@ -31,6 +31,10 @@ Route::get('dropdown/getJobTitle', [DropdownController::class, 'getJobTitle']);
 Route::get('dropdown/getResidenceTypes', [DropdownController::class, 'getResidenceTypes']);
 Route::get('dropdown/getResidenceDuration', [DropdownController::class, 'getResidenceDuration']);
 Route::get('dropdown/getExistingLoans', [DropdownController::class, 'getExistingLoans']);
+Route::get('dropdown/getProvinceByCountry', [DropdownController::class, 'getProvinceByCountry']);
+Route::get('dropdown/getDistrictByProvince', [DropdownController::class, 'getDistrictByProvince']);
+Route::get('dropdown/getCityByProvince', [DropdownController::class, 'getCityByProvince']);
+
 
 Route::post('user/loan-calculator', [LoanApplicationController::class, 'calculateLoan']);
 

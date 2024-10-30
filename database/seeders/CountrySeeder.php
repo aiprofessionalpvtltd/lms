@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Country;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -271,6 +272,17 @@ class CountrySeeder extends Seeder
             ['name' => 'Zimbabwe'],
         ];
 
-        DB::table('countries')->insert($countries);
+        foreach ($countries as $a => $row) {
+            if($row['name'] == 'Pakistan'){
+                $status = 1;
+            }else{
+                $status = 0;
+            }
+            Country::create([
+                'name' => $row['name'],
+                'is_active' => $status,
+            ]);
+        }//end of foreach
+//        DB::table('countries')->insert($countries);
     }
 }

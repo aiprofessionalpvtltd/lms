@@ -98,6 +98,7 @@ class ProvinceSeeder extends Seeder
             Province::create([
                 'id' => $province['Id'],
                 'name' => $province['Code'],
+                'urdu' => $province['Name'],
             ]);
         }//end of foreach
 

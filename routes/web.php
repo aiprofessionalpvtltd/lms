@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AjaxController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\Dashboard\SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -19,7 +20,9 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
+Route::get('/get-province-by-country', [AjaxController::class, 'getProvinceByCountryAjax']);
+Route::get('/get-district-by-province', [AjaxController::class, 'getDistrictByProvinceAjax']);
+Route::get('/get-city-by-province', [AjaxController::class, 'getCityByProvinceAjax']);
 Route::middleware(['auth'])->group(function () {
 
     Route::get('our-dashboard', [SuperAdminDashboardController::class, 'index'])->name('our-dashboard');

@@ -5,29 +5,35 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\District;
+use App\Models\EmployerDemand;
+use App\Models\InternshipRoleLevel;
+use App\Models\LevelFour;
+use App\Models\LevelThree;
+use App\Models\LevelTwo;
 use App\Models\Province;
 use Illuminate\Http\Request;
 
 class AjaxController extends Controller
 {
 
-    public function getProvinceByCountryAjax(Request $request): \Illuminate\Http\JsonResponse
+    public function getProvinceByCountryAjax(Request $request)
     {
-        $responseData = Province::select('id','name')->where('country_id', '=', $request->countryID)->orderBy('name', 'ASC')->get();
-         return response()->json($responseData);
+        $responseData = Province::select('id', 'name')->where('country_id', '=', $request->countryID)->orderBy('name', 'ASC')->get();
+        return response()->json($responseData);
     }
 
-    public function getDistrictByProvinceAjax(Request $request): \Illuminate\Http\JsonResponse
+    public function getDistrictByProvinceAjax(Request $request)
     {
-        $responseData = District::select('id','name')->where('province_id', '=', $request->provinceID)->orderBy('name', 'ASC')->get();
-        return response()->json( $responseData);
+        $responseData = District::select('id', 'name')->where('province_id', '=', $request->provinceID)->orderBy('name', 'ASC')->get();
+        return response()->json($responseData);
     }
 
-    public function getCityByProvinceAjax(Request $request): \Illuminate\Http\JsonResponse
+    public function getCityByProvinceAjax(Request $request)
     {
-        $responseData = City::select('id','name')->where('province_id', '=', $request->provinceID)->orderBy('name', 'ASC')->get();
-        return response()->json( $responseData);
+        $responseData = City::select('id', 'name')->where('province_id', '=', $request->provinceID)->orderBy('name', 'ASC')->get();
+        return response()->json($responseData);
     }
+
 
 
 }
