@@ -126,7 +126,7 @@ class LoanApplicationController extends BaseController
         $monthlyInstallment = $totalPayableAmount / $months;
 
         // Calculate late fee (if needed; you can include this in your response if relevant)
-        $lateFee =  'days_delayed * 200';
+        $lateFee = 'days_delayed * 200';
 
         return $this->sendResponse(
             [
@@ -257,7 +257,7 @@ class LoanApplicationController extends BaseController
 
                 $loanCalculatedDetail = $loanCalculator['data'];
 
-                 return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanCalculatedDetail'));
+                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanCalculatedDetail'));
             }
 
 
@@ -758,6 +758,57 @@ class LoanApplicationController extends BaseController
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
 
     }
+
+    public function getDashboardData(Request $request)
+    {
+        try {
+            $authUser = auth()->user();
+
+            // Fetch total loan amount for the authenticated user
+            $totalLoans = Installment::where('user_id', $authUser->id)->sum('total_amount');
+
+            // Calculate paid loans by summing up all paid installments
+            $paidLoans = InstallmentDetail::whereHas('installment', function ($query) use ($authUser) {
+                $query->where('user_id', $authUser->id);
+            })
+                ->where('is_paid', 1)
+                ->sum('amount_due');
+
+            // Calculate remaining loans by subtracting paid loans from total loans
+            $remainingLoans = $totalLoans - $paidLoans;
+
+            // Retrieve all installments with payment status for the authenticated user
+            $installments = InstallmentDetail::whereHas('installment', function ($query) use ($authUser) {
+                $query->where('user_id', $authUser->id);
+            })
+                ->with(['installment' => function ($query) {
+                    $query->select('id', 'user_id', 'total_amount');
+                }])
+                ->get();
+
+            // Group installments by paid and unpaid status
+            $paidInstallments = $installments->where('is_paid', 1);
+            $unpaidInstallments = $installments->where('is_paid', 0);
+
+            // Return loan data, summary information, and all installments
+            return $this->sendResponse([
+                'totalLoans' => round($totalLoans),
+                'paidLoans' => round($paidLoans),
+                'remainingLoans' => round($remainingLoans),
+                'paidInstallments' => $paidInstallments->count(),
+                'unpaidInstallments' => $unpaidInstallments->count(),
+                'allInstallments' => $installments  // Return all installments with details
+            ], 'Loan data retrieved successfully.');
+
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
+
+            // Return a generic error response
+            return $this->sendError($e->getMessage());
+        }
+    }
+
 
 
 }
