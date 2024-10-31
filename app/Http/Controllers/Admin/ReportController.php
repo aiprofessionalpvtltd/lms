@@ -23,6 +23,7 @@ class ReportController extends Controller
     {
         $title = 'Disbursement Report';
         $provinces = Province::all();
+        $districts = District::all();
         $genders = Gender::all();
 
 
@@ -59,7 +60,19 @@ class ReportController extends Controller
             })
             ->get();
 
-        return view('admin.reports.disbursement', compact('title', 'result' ,'provinces', 'genders' ,'request'));
+        $totalAmount = $result->sum(function($transaction) {
+            return $transaction->loanApplication->transaction->amount ?? 0;
+        });
+
+        $totalMale = $result->filter(function($transaction) {
+            return $transaction->loanApplication->user->profile->gender->name === 'Male';
+        })->count();
+
+        $totalFemale = $result->filter(function($transaction) {
+            return $transaction->loanApplication->user->profile->gender->name === 'Female';
+        })->count();
+
+        return view('admin.reports.disbursement', compact('title', 'result' ,'provinces', 'genders' ,'request' ,'districts' ,'totalAmount', 'totalMale', 'totalFemale'));
     }
 
 }

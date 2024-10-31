@@ -2,7 +2,6 @@
 @push('style')
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
-
 @endpush
 @section('content')
 
@@ -37,11 +36,26 @@
                                             <select id="dateRangeSelector" name="dateRangeSelector"
                                                     class="form-control select2">
                                                 <option value="">Select a Custom Date</option>
-                                                <option value="currentWeek">Current Week</option>
-                                                <option value="currentMonth">Current Month</option>
-                                                <option value="last3Months">Last 3 Months</option>
-                                                <option value="last6Months">Last 6 Months</option>
-                                                <option value="currentYear">Current Year</option> <!-- New option -->
+                                                <option
+                                                    {{ request('dateRangeSelector') == 'currentWeek' ? 'selected' : '' }} value="currentWeek">
+                                                    Current Week
+                                                </option>
+                                                <option
+                                                    {{ request('dateRangeSelector') == 'currentMonth' ? 'selected' : '' }}  value="currentMonth">
+                                                    Current Month
+                                                </option>
+                                                <option
+                                                    {{ request('dateRangeSelector') == 'last3Months' ? 'selected' : '' }}  value="last3Months">
+                                                    Last 3 Months
+                                                </option>
+                                                <option
+                                                    {{ request('dateRangeSelector') == 'last6Months' ? 'selected' : '' }}  value="last6Months">
+                                                    Last 6 Months
+                                                </option>
+                                                <option
+                                                    {{ request('dateRangeSelector') == 'currentYear' ? 'selected' : '' }}  value="currentYear">
+                                                    Current Year
+                                                </option> <!-- New option -->
 
                                             </select>
                                         </div>
@@ -53,7 +67,7 @@
                                         <div class="form-group form-group-feedback form-group-feedback-right">
 
                                             <input type="text" name="date_range" class="form-control flatpickr-range"
-                                                   placeholder="Select Date Range "/>
+                                                   placeholder="Select Date Range " value="{{ request('date_range')}}"/>
 
                                         </div>
                                     </div>
@@ -68,7 +82,8 @@
                                                     data-fouc>
                                                 <option></option>
                                                 @foreach($genders as $key => $row)
-                                                    <option value="{{ $row->id }}">{{ $row->name }}</option>
+                                                    <option
+                                                        {{ request('gender_id') == $row->id ? 'selected' : '' }} value="{{ $row->id }}">{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('gender_id'))
@@ -88,7 +103,8 @@
                                                     data-fouc>
                                                 <option></option>
                                                 @foreach($provinces as $key => $row)
-                                                    <option value="{{ $row->id }}">{{ $row->name }}</option>
+                                                    <option
+                                                        {{ request('province_id') == $row->id ? 'selected' : '' }} value="{{ $row->id }}">{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('province_id'))
@@ -106,7 +122,12 @@
                                                     class="form-control select2"
                                                     data-fouc>
                                                 <option></option>
-
+                                                @if(request('province_id') )
+                                                    @foreach($districts as $key => $row)
+                                                        <option
+                                                            {{ request('district_id') == $row->id ? 'selected' : '' }} value="{{ $row->id }}">{{ $row->name }}</option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                             @if ($errors->has('district_id'))
                                                 <span class="text-danger">{{ $errors->first('district_id') }}</span>
@@ -115,9 +136,10 @@
                                     </div>
                                     <!-- Submit Button -->
                                     <div class="col-md-12 mt-4">
-                                        <button type="submit" class="btn btn-outline-primary float-end">Get Report
-                                        </button>
+                                        <button type="submit" class="btn btn-outline-primary float-end">Get Report</button>
+                                        <a href="{{ route('show-disbursement-report') }}" class="btn btn-outline-dark me-3 float-end">Reset</a>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
@@ -135,27 +157,47 @@
                     <table id="datatables-buttons" class="table table-striped">
                         <thead>
                         <tr>
-                            <th>Transaction ID</th>
-                            <th>User Name</th>
+                            <th>Name</th>
+                            <th>CNIC</th>
+                            <th>Gender</th>
                             <th>Province</th>
                             <th>District</th>
+                            <th>Product</th>
                             <th>Loan Amount</th>
                             <th>Date</th>
+                            <th>Disbursement By</th>
+                            <th>Mode of Payment</th>
                         </tr>
                         </thead>
                         <tbody>
                         @foreach($result as $transaction)
                             <tr>
-                                <td>{{ $transaction->id }}</td>
                                 <td>{{ $transaction->loanApplication->user->name ?? 'N/A' }}</td>
+                                <td>{{ $transaction->loanApplication->user->profile->cnic_no ?? 'N/A' }}</td>
+                                <td>{{ $transaction->loanApplication->user->profile->gender->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->province->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->district->name ?? 'N/A' }}</td>
-                                <td>{{ number_format($transaction->loanApplication->amount, 2) }}</td> <!-- Format amount -->
+                                <td>{{ $transaction->loanApplication->product->name ?? 'N/A' }}</td>
+                                <td>{{ number_format($transaction->loanApplication->transaction->amount, 2) }}</td>
                                 <td>{{ $transaction->created_at->format('Y-m-d') }}</td>
+                                <td>{{ $transaction->loanApplication->transaction->user->name ?? 'N/A' }}</td>
+                                <td>Disbursement</td>
                             </tr>
                         @endforeach
                         </tbody>
+                        <tfoot>
+                        <tr>
+                            <th colspan="2" class="text-end">Total Male:</th>
+                            <td>{{ $totalMale }}</td>
+                            <th colspan="2" class="text-end">Total Female:</th>
+                            <td>{{ $totalFemale }}</td>
+
+                            <th colspan="2" class="text-end">Total Amount:</th>
+                            <td colspan="2">{{ number_format($totalAmount, 2) }}</td>
+                        </tr>
+                        </tfoot>
                     </table>
+
                 </div>
             </div>
             <!-- /basic datatable -->
@@ -167,8 +209,6 @@
 
 @push('script')
     <!-- Required Scripts -->
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Bootstrap 5 JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
     <!-- DataTables -->
@@ -181,54 +221,65 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 
+
     <script>
-        $(document).ready(function() {
-            // Datatables with Buttons
+        $(document).ready(function () {
+            $('.select2').select2();
+
             var datatablesButtons = $("#datatables-buttons").DataTable({
                 responsive: true,
-                lengthChange: true,
+                scrollX: true, // Enable horizontal scrolling
+                lengthChange: false,
+                pageLength: 100,
                 buttons: [
                     {
                         extend: 'copy',
                         text: 'Copy',
-                        className: 'btn btn-primary', // Bootstrap class for button styling
+                        className: 'btn btn-primary',
                         titleAttr: 'Copy to clipboard'
                     },
                     {
                         extend: 'print',
                         text: 'Print',
-                        className: 'btn btn-secondary', // Bootstrap class for button styling
-                        titleAttr: 'Print table'
+                        className: 'btn btn-secondary',
+                        titleAttr: 'Print table',
+                        exportOptions: {
+                            columns: ':visible',
+                            footer: true // Include footer
+                        }
                     },
                     {
                         extend: 'pdf',
                         text: 'PDF',
-                        className: 'btn btn-danger', // Bootstrap class for button styling
+                        className: 'btn btn-danger',
                         titleAttr: 'Export to PDF',
-                        title: 'Disbursement Report', // Change this to your report title
+                        orientation: 'landscape', // Set PDF orientation to landscape
+                        title: 'Disbursement Report',
                         exportOptions: {
-                            columns: ':visible' // Export only visible columns
+                            columns: ':visible',
+                            footer: true // Include footer
                         }
                     },
                     {
                         extend: 'excel',
                         text: 'Excel',
-                        className: 'btn btn-success', // Bootstrap class for button styling
+                        className: 'btn btn-success',
                         titleAttr: 'Export to Excel',
-                        title: 'Disbursement Report', // Change this to your report title
+                        title: 'Disbursement Report',
                         exportOptions: {
-                            columns: ':visible' // Export only visible columns
+                            columns: ':visible',
+                            footer: true // Include footer
                         }
                     }
                 ],
+                dom: 'Bfrtip' // Position buttons above the table with search and length change controls
             });
 
-            // Append buttons to the desired container
+            // Append buttons to a specific container if needed
             datatablesButtons.buttons().container().appendTo("#datatables-buttons_wrapper .col-md-6:eq(0)");
         });
 
         document.addEventListener("DOMContentLoaded", function () {
-
 
 
 // Initialize Flatpickr
