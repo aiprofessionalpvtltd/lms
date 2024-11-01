@@ -784,11 +784,26 @@ class LoanApplicationController extends BaseController
                 ->with(['installment' => function ($query) {
                     $query->select('id', 'user_id', 'total_amount');
                 }])
+                ->orderBy('due_date')  // Assuming you have a 'due_date' column in InstallmentDetail
                 ->get();
 
             // Group installments by paid and unpaid status
             $paidInstallments = $installments->where('is_paid', 1);
             $unpaidInstallments = $installments->where('is_paid', 0);
+
+            // Get the latest paid installment
+            $lastPaidInstallment = $paidInstallments->sortByDesc('due_date')->first();
+
+            // Get the next unpaid installment based on the due date
+            $nextUpcomingInstallment = $unpaidInstallments->filter(function ($installment) {
+                return $installment->due_date > now();
+            })->first();
+
+            // Collect both last paid and next unpaid into latestUpcomingInstallments
+            $latestUpcomingInstallments = collect([$lastPaidInstallment, $nextUpcomingInstallment])->filter();
+
+            // Filter for past installments (installment history)
+            $installmentHistory = $paidInstallments;
 
             // Return loan data, summary information, and all installments
             return $this->sendResponse([
@@ -797,7 +812,10 @@ class LoanApplicationController extends BaseController
                 'remainingLoans' => round($remainingLoans),
                 'paidInstallments' => $paidInstallments->count(),
                 'unpaidInstallments' => $unpaidInstallments->count(),
-                'allInstallments' => $installments  // Return all installments with details
+                'upcomingInstallments' => $unpaidInstallments->values(),  // All upcoming installments
+                'latestUpcomingInstallments' => $latestUpcomingInstallments->values(),  // Last paid and next unpaid
+                'installmentHistory' => $installmentHistory->values(),  // Installment history (paid)
+                'allInstallments' => $installments  // All installments with details
             ], 'Loan data retrieved successfully.');
 
         } catch (\Exception $e) {
