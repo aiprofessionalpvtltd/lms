@@ -20,13 +20,15 @@ class TransactionController extends Controller
         $request->payment_method = 'Bank';
         $request->remarks = 'Testing';
         // Find the loan application to ensure it's valid and can be paid
-        $loanApplication = LoanApplication::findOrFail($request->loan_application_id);
+        $loanApplication = LoanApplication::with('getLatestInstallment')->findOrFail($request->loan_application_id);
+
+        $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
 
         // Create the transaction
         $transaction = Transaction::create([
             'loan_application_id' => $loanApplication->id,
             'user_id' => Auth::id(), // Get the authenticated user's ID
-            'amount' => $loanApplication->loan_amount,
+            'amount' => $disburseAmount,
             'payment_method' => $request->payment_method,
             'status' => 'pending', // Initially set to pending
             'remarks' => $request->remarks,

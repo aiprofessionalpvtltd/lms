@@ -50,15 +50,21 @@ class LoanApplication extends Model
         return $this->hasMany(LoanApplicationHistory::class);
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(LoanAttachment::class);
+    }
+
+
 
     public function getLatestHistory()
     {
         return $this->hasOne(LoanApplicationHistory::class)->latestOfMany();
     }
 
-    public function attachments()
+    public function getLatestInstallment()
     {
-        return $this->hasMany(LoanAttachment::class);
+        return $this->hasOne(Installment::class)->latestOfMany();
     }
 
     public function guarantors()

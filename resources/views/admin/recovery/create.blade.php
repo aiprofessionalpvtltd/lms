@@ -44,7 +44,7 @@
                                                 class="text-danger">*</span> </label>
                                         <div
                                             class="form-group form-group-feedback form-group-feedback-right">
-                                            <select data-placeholder="Select Payment Method"
+                                            <select data-placeholder="Select Installment Mont"
                                                     name="installment_detail_id" id="installment_detail_id"
                                                     class="form-control select2"
                                                     data-fouc>
@@ -88,6 +88,8 @@
                                                 <option></option>
                                                 <option value="bank">Bank</option>
                                                 <option value="cash">Cash</option>
+                                                <option value="jazzcash">Jazz Cash</option>
+                                                <option value="easypaisa">easy Paisa</option>
                                             </select>
                                             @if ($errors->has('payment_method'))
                                                 <span class="text-danger">{{ $errors->first('payment_method') }}</span>
