@@ -827,6 +827,4 @@ class LoanApplicationController extends BaseController
         }
     }
 
-
-
 }

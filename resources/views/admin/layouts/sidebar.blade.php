@@ -125,6 +125,7 @@
                     <ul id="reports" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar" style="">
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-disbursement-report')}}">Disbursement Report</a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-overdue-report')}}">Overdue Report</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-collection-report')}}">Collection Report</a></li>
                      </ul>
                 </li>
 

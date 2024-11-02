@@ -89,6 +89,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-overdue-report', [ReportController::class, 'showOverdueReport'])->name('show-overdue-report');
     Route::get('get-overdue-report', [ReportController::class, 'getOverdueReport'])->name('get-overdue-report');
 
+    Route::get('show-collection-report', [ReportController::class, 'showCollectionReport'])->name('show-collection-report');
+    Route::get('get-collection-report', [ReportController::class, 'getCollectionReport'])->name('get-collection-report');
+
 
 });
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\RecoveryController;
 use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\GuarantorController;
 use App\Http\Controllers\API\LoanApplicationController;
@@ -71,6 +72,9 @@ Route::middleware('auth:api')->group(function () {
     Route::get('user/loan-applications/guarantors/{id}', [GuarantorController::class, 'show']);
 
     Route::get('dropdown/getProducts', [DropdownController::class, 'getProducts']);
+
+
+    Route::post('recovery/installment', [RecoveryController::class, 'instalmentRecovery']);
 
 
 
