@@ -784,7 +784,11 @@ class LoanApplicationController extends BaseController
                 ->with(['installment' => function ($query) {
                     $query->select('id', 'user_id', 'total_amount');
                 }])
-                ->orderBy('due_date')  // Assuming you have a 'due_date' column in InstallmentDetail
+                ->select(
+                    '*',
+                    DB::raw("CASE WHEN is_paid = 1 THEN updated_at ELSE NULL END as payment_date")
+                )
+                ->orderBy('due_date')
                 ->get();
 
             // Group installments by paid and unpaid status
@@ -794,28 +798,54 @@ class LoanApplicationController extends BaseController
             // Get the latest paid installment
             $lastPaidInstallment = $paidInstallments->sortByDesc('due_date')->first();
 
-            // Get the next unpaid installment based on the due date
+            // Get the next unpaid installment based on the due date, excluding paid installments
             $nextUpcomingInstallment = $unpaidInstallments->filter(function ($installment) {
                 return $installment->due_date > now();
             })->first();
 
-            // Collect both last paid and next unpaid into latestUpcomingInstallments
-            $latestUpcomingInstallments = collect([$lastPaidInstallment, $nextUpcomingInstallment])->filter();
+            // Collect both last paid (if exists) and next unpaid into latestUpcomingInstallments
+            $latestUpcomingInstallments = collect([$lastPaidInstallment, $nextUpcomingInstallment])
+                ->filter(function ($installment) {
+                    return $installment && $installment->is_paid == 0; // Skip if `is_paid` is 1
+                });
 
             // Filter for past installments (installment history)
             $installmentHistory = $paidInstallments;
 
-            // Return loan data, summary information, and all installments
+            // Late fee calculations
+            $lateFeePerDay = 200; // PKR per day late fee
+            $lateFeeData = [];
+
+            foreach ($unpaidInstallments as $installment) {
+                if ($installment->due_date < now()) {  // Only calculate if past due date
+                    $daysDelayed = abs(now()->diffInDays($installment->due_date));
+                    $totalLateFee = $daysDelayed * $lateFeePerDay;
+                    $totalAfterLateFee = $installment->amount_due + $totalLateFee;
+
+                    $lateFeeData[] = [
+                        'id' => $installment->id,
+                        'due_date' => $installment->due_date,
+                        'amount_due' => $installment->amount_due,
+                        'daysDelayed' => round($daysDelayed),
+                        'perDayLateFee' => round($lateFeePerDay),
+                        'totalLateFee' => round($totalLateFee),
+                        'totalAfterLateFee' => round($totalAfterLateFee),
+                    ];
+                }
+            }
+
+            // Return loan data, summary information, and all installments, including late fee data
             return $this->sendResponse([
                 'totalLoans' => round($totalLoans),
                 'paidLoans' => round($paidLoans),
                 'remainingLoans' => round($remainingLoans),
                 'paidInstallments' => $paidInstallments->count(),
                 'unpaidInstallments' => $unpaidInstallments->count(),
-                'upcomingInstallments' => $unpaidInstallments->values(),  // All upcoming installments
-                'latestUpcomingInstallments' => $latestUpcomingInstallments->values(),  // Last paid and next unpaid
-                'installmentHistory' => $installmentHistory->values(),  // Installment history (paid)
-                'allInstallments' => $installments  // All installments with details
+                'upcomingInstallments' => $unpaidInstallments->values(),
+                'latestUpcomingInstallments' => $latestUpcomingInstallments->values(),
+                'installmentHistory' => $installmentHistory->values(),
+                'allInstallments' => $installments,
+                'lateFeeSummary' => $lateFeeData  // Late fee details for overdue installments
             ], 'Loan data retrieved successfully.');
 
         } catch (\Exception $e) {

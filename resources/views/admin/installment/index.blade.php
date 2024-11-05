@@ -51,20 +51,22 @@
                             <td>{{ $installment->approvedBy->name ?? 'N/A' }}</td>
 
                             <td>
-                                <a href="{{ route('view-installment', $installment->id) }}"
-                                   class="btn btn-sm btn-info">View</a>
-
+                                @if($installment->loanApplication->transaction)
+                                    <a href="{{ route('view-installment', $installment->id) }}"
+                                       class="btn btn-sm btn-info m-2">View</a>
+                                @endif
                                 @if(!$installment->loanApplication->transaction)
                                     <form action="{{ route('transactions.store') }}" method="POST" class="d-inline">
                                     @csrf <!-- CSRF token for security -->
-                                        <input type="hidden" name="loan_application_id" value="{{ $installment->loan_application_id }}">
-                                        <button type="submit" class="btn btn-sm btn-success">Disbursement Amount</button>
+                                        <input type="hidden" name="loan_application_id"
+                                               value="{{ $installment->loan_application_id }}">
+                                        <button type="submit" class="btn btn-sm btn-success  m-2">Disbursement Amount
+                                        </button>
                                     </form>
 
                                 @endif
                                 <a href="{{ route('recovery.create', $installment->id) }}"
-                                   class="btn btn-sm btn-info">Recovery</a>
-
+                                   class="btn btn-sm btn-info  m-2">Recovery</a>
 
                             </td>
                         </tr>
