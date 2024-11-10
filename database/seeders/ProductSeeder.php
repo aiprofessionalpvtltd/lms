@@ -14,10 +14,11 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         Product::create([
-            'name' => 'Bike Financing',
+            'name' => 'Honda',
+            'price' => '157000',
             'detail' => 'This Bike Financing for Islamabad only',
-            'processing_fee' => 100.00,
-            'interest_rate' => 5.00,
+            'processing_fee' => 2.7,
+            'interest_rate' => 30.00,
             'province_id' => 156, // islamabad
             'district_id' => 220, //  islamabad
         ]);

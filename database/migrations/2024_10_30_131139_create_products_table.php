@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('price');
             $table->text('detail')->nullable();
             $table->decimal('processing_fee', 8, 2)->default(0.00);
             $table->decimal('interest_rate', 5, 2)->default(0.00);
-            $table->unsignedBigInteger('province_id');
-            $table->unsignedBigInteger('district_id');
+            $table->unsignedBigInteger('province_id')->nullable();
+            $table->unsignedBigInteger('district_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

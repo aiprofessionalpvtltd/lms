@@ -32,11 +32,25 @@
                                 <div class="row">
                                     <!-- Name -->
                                     <div class="col-md-4 mt-4">
-                                        <label class="col-form-label">Product Name <span class="text-danger">*</span></label>
+                                        <label class="col-form-label">Product Name <span
+                                                class="text-danger">*</span></label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
-                                            <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="Product Name">
+                                            <input type="text" name="name" class="form-control"
+                                                   value="{{ old('name') }}" placeholder="Product Name">
                                             <div class="form-control-feedback"><i class="icon-box text-muted"></i></div>
                                             @error('name') <span class="text-danger">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+
+                                    <!-- Price -->
+                                    <div class="col-md-4 mt-4">
+                                        <label class="col-form-label">Product Price <span
+                                                class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <input type="text" name="price" class="form-control"
+                                                   value="{{ old('price') }}" placeholder="Product Price">
+                                            <div class="form-control-feedback"><i class="icon-box text-muted"></i></div>
+                                            @error('price') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
 
@@ -44,8 +58,10 @@
                                     <div class="col-md-4 mt-4">
                                         <label class="col-form-label">Product Detail</label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
-                                            <textarea name="detail" class="form-control" placeholder="Product Detail">{{ old('detail') }}</textarea>
-                                            <div class="form-control-feedback"><i class="icon-file-text2 text-muted"></i></div>
+                                            <textarea name="detail" class="form-control"
+                                                      placeholder="Product Detail">{{ old('detail') }}</textarea>
+                                            <div class="form-control-feedback"><i
+                                                    class="icon-file-text2 text-muted"></i></div>
                                             @error('detail') <span class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
@@ -54,25 +70,34 @@
                                     <div class="col-md-4 mt-4">
                                         <label class="col-form-label">Processing Fee <span class="text-danger">*</span></label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
-                                            <input type="number" name="processing_fee" class="form-control" value="{{ old('processing_fee') }}" placeholder="Processing Fee" min="0" step="0.01">
-                                            <div class="form-control-feedback"><i class="icon-cash text-muted"></i></div>
-                                            @error('processing_fee') <span class="text-danger">{{ $message }}</span> @enderror
+                                            <input type="number" name="processing_fee" class="form-control"
+                                                   value="{{ old('processing_fee') }}" placeholder="Processing Fee"
+                                                   min="0" step="0.01">
+                                            <div class="form-control-feedback"><i class="icon-cash text-muted"></i>
+                                            </div>
+                                            @error('processing_fee') <span
+                                                class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
 
                                     <!-- Interest Rate -->
                                     <div class="col-md-4 mt-4">
-                                        <label class="col-form-label">Interest Rate <span class="text-danger">*</span></label>
+                                        <label class="col-form-label">Interest Rate <span
+                                                class="text-danger">*</span></label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
-                                            <input type="number" name="interest_rate" class="form-control" value="{{ old('interest_rate') }}" placeholder="Interest Rate" min="0" step="0.01">
-                                            <div class="form-control-feedback"><i class="icon-percent text-muted"></i></div>
-                                            @error('interest_rate') <span class="text-danger">{{ $message }}</span> @enderror
+                                            <input type="number" name="interest_rate" class="form-control"
+                                                   value="{{ old('interest_rate') }}" placeholder="Interest Rate"
+                                                   min="0" step="0.01">
+                                            <div class="form-control-feedback"><i class="icon-percent text-muted"></i>
+                                            </div>
+                                            @error('interest_rate') <span
+                                                class="text-danger">{{ $message }}</span> @enderror
                                         </div>
                                     </div>
 
                                     <!-- Province -->
                                     <div class="col-md-4 mt-4">
-                                        <label class="col-form-label">Select Province <span class="text-danger">*</span></label>
+                                        <label class="col-form-label">Select Province </label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
                                             <select data-placeholder="Select Province"
                                                     name="province_id" id="province_id"
@@ -91,7 +116,7 @@
                                     </div>
 
                                     <div class="col-md-4 mt-4">
-                                        <label class="col-form-label">Select District <span class="text-danger">*</span></label>
+                                        <label class="col-form-label">Select District  </label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
                                             <select data-placeholder="Select District"
                                                     name="district_id" id="product_district"
@@ -127,7 +152,7 @@
 @push('script')
     <script src="{{ asset('backend/vendor/select2/js/select2.min.js') }}"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('.select2').select2();
         });
     </script>

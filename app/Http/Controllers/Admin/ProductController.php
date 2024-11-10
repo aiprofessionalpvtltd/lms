@@ -59,11 +59,12 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
             'detail' => 'nullable|string',
             'processing_fee' => 'required|numeric|min:0',
             'interest_rate' => 'required|numeric|min:0',
-            'province_id' => 'required|exists:provinces,id',
-            'district_id' => 'required|exists:districts,id',
+            'province_id' => 'exists:provinces,id',
+            'district_id' => 'exists:districts,id',
         ]);
 
         DB::beginTransaction();
@@ -92,11 +93,12 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'name' => 'sometimes|required|string|max:255',
+            'price' => 'required|numeric',
             'detail' => 'nullable|string',
             'processing_fee' => 'sometimes|required|numeric|min:0',
             'interest_rate' => 'sometimes|required|numeric|min:0',
-            'province_id' => 'sometimes|required|exists:provinces,id',
-            'district_id' => 'sometimes|required|exists:districts,id',
+            'province_id' => 'sometimes',
+            'district_id' => 'sometimes',
         ]);
 
         $product = Product::find($id);

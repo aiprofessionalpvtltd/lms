@@ -11,6 +11,7 @@ use App\Models\LoanApplication;
 use App\Models\LoanApplicationHistory;
 use App\Models\LoanAttachment;
 use App\Models\LoanDuration;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -94,50 +95,66 @@ class LoanApplicationController extends BaseController
     {
         $loanAmount = $request->input('loan_amount');
         $months = $request->input('months');
-        $processingFee = $request->input('processing_fee') ?? '0.027';
-        $interestRate = $request->input('interest_rate') ?? '0.3';
-
+        $requestFor = $request->input('request_for');
+        $downPaymentPercentage = $request->input('down_payment_percentage', 10); // Default to 10% if not specified
 
         // Validate input
         if (!in_array($months, [3, 6, 9, 12])) {
             return response()->json(['error' => 'Invalid month duration. Choose from 3, 6, 9, or 12 months.'], 400);
         }
 
-        // Constants
-        $processingFeeRate = $processingFee; // 2.7%
-        $annualMarkupRate = $interestRate; // Assuming it's passed from the request
+        if ($requestFor === 'product') {
+            $productID = $request->input('product_id');
+            $product = Product::find($productID);
 
-        // Calculate processing fee
-        $processingFee = $loanAmount * $processingFeeRate;
+            if (!$product) {
+                return response()->json(['error' => 'Product not found.'], 404);
+            }
 
-        // Calculate disbursement amount
-        $disbursementAmount = $loanAmount - $processingFee;
+            $processingFeeRate = ($product->processing_fee / 100);
+            $annualMarkupRate = ($product->interest_rate / 100);
 
-        // Calculate monthly interest rate
-        $monthlyInterestRate = $annualMarkupRate / 12;
+            $downPayment = $loanAmount * ($downPaymentPercentage / 100);
+            $financeAmount = $loanAmount - round($downPayment);
+            $processingFee = $financeAmount * ($processingFeeRate );
+            $disbursementAmount = $financeAmount - $processingFee;
 
-        // Calculate total interest for the loan term
-        $totalInterest = $loanAmount * ($annualMarkupRate) * ($months / 12);
+            $totalInterest = $financeAmount * $annualMarkupRate ;
+            $totalPayableAmount = $financeAmount + $totalInterest;
+            $monthlyInstallment = $totalPayableAmount / $months;
 
-        // Calculate total amount payable
-        $totalPayableAmount = $loanAmount + $totalInterest;
+        } elseif ($requestFor === 'loan') {
+            $processingFeeRate = 0;
+            $annualMarkupRate = 35;
+            $downPaymentPercentage = 0;
 
-        // Calculate monthly installment
-        $monthlyInstallment = $totalPayableAmount / $months;
+            $processingFeeRate = ($processingFeeRate / 100);
+            $annualMarkupRate = ($annualMarkupRate / 100);
 
-        // Calculate late fee (if needed; you can include this in your response if relevant)
-        $lateFee = 'days_delayed * 200';
+            $downPayment = $loanAmount * ($downPaymentPercentage / 100);
+            $financeAmount = $loanAmount - round($downPayment);
+            $processingFee = $financeAmount * ($processingFeeRate );
+            $disbursementAmount = $financeAmount - $processingFee;
+
+            $totalInterest = $financeAmount * $annualMarkupRate ;
+            $totalPayableAmount = $financeAmount + $totalInterest;
+            $monthlyInstallment = $totalPayableAmount / $months;
+        } else {
+            return response()->json(['error' => 'Invalid request_for value.'], 400);
+        }
 
         return $this->sendResponse(
             [
                 'loan_amount' => $loanAmount,
                 'months' => $months,
+                'down_payment_percentage' => $downPaymentPercentage,
+                'financed_amount' => $loanAmount - round($downPayment),
                 'processing_fee' => round($processingFee),
+                'down_payment' => round($downPayment),
                 'disbursement_amount' => round($disbursementAmount),
                 'total_markup' => round($totalInterest),
                 'total_payable_amount' => round($totalPayableAmount),
                 'monthly_installment' => round($monthlyInstallment),
-                'late_fee' => ($lateFee),
             ],
             'Loan calculated successfully.'
         );

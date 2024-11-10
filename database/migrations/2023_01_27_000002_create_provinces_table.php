@@ -17,9 +17,10 @@ class CreateProvincesTable extends Migration
             $table->string('lng', 191)->nullable()->default('NULL');
             $table->timestamps();
             $table->tinyInteger('is_active')->default(1);
+            $table->unsignedBigInteger('country_id')->default(168);
+            $table->foreign('country_id')->references('id')->on('countries')->onDelete('cascade');
 
-            $table->foreignId("country_id")->default(168)->constrained('countries')->onDelete('set null')->onUpdate('set null');
-        });
+         });
     }
 
     public function down()

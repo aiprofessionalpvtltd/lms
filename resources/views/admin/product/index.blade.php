@@ -37,7 +37,7 @@
                     <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Detail</th>
+                        <th>Price</th>
                         <th>Processing Fee</th>
                         <th>Interest Rate</th>
                         <th>Province</th>
@@ -65,7 +65,7 @@
                 ajax: '{{ route("show-product") }}', // replace with your correct route for loading data
                 columns: [
                     {data: 'name', name: 'name'},
-                    {data: 'detail', name: 'detail'},
+                    {data: 'price', name: 'price'},
                     {data: 'processing_fee', name: 'processing_fee'},
                     {data: 'interest_rate', name: 'interest_rate'},
                     {data: 'province', name: 'province.name'}, // Adjust if necessary based on your relationship

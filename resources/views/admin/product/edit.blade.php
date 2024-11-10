@@ -51,6 +51,18 @@
                                         </div>
                                     </div>
 
+                                    <!-- Price -->
+                                    <div class="col-md-4 mt-4">
+                                        <label class="col-form-label">Product Price <span
+                                                class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <input type="text" name="price" class="form-control"
+                                                   value="{{ old('price',$product->price) }}" placeholder="Product Price">
+                                            <div class="form-control-feedback"><i class="icon-box text-muted"></i></div>
+                                            @error('price') <span class="text-danger">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+
                                     <!-- Detail -->
                                     <div class="col-md-4 mt-4">
                                         <label class="col-form-label">Product Detail</label>
@@ -83,7 +95,7 @@
 
                                     <!-- Province -->
                                     <div class="col-md-4 mt-4">
-                                        <label class="col-form-label">Select Province <span class="text-danger">*</span></label>
+                                        <label class="col-form-label">Select Province  </label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
                                             <select data-placeholder="Select Province"
                                                     name="province_id" id="province_id"
@@ -102,7 +114,7 @@
                                     </div>
 
                                     <div class="col-md-4 mt-4">
-                                        <label class="col-form-label">Select District <span class="text-danger">*</span></label>
+                                        <label class="col-form-label">Select District </label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
                                             <select data-placeholder="Select District"
                                                     name="district_id" id="product_district"
