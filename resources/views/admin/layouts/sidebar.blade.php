@@ -127,6 +127,7 @@
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-overdue-report')}}">Overdue Report</a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-collection-report')}}">Collection Report</a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-profit-report')}}">Service Charge/Profit Report</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-outstanding-report')}}">Outstanding Report</a></li>
                      </ul>
                 </li>
 

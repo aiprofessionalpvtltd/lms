@@ -10,7 +10,7 @@ class InstallmentDetail extends Model
     use HasFactory;
 
     protected $fillable = [
-        'installment_id', 'due_date', 'amount_due', 'amount_paid', 'is_paid',
+        'installment_id', 'due_date', 'amount_due', 'amount_paid', 'is_paid', 'paid_at'
     ];
 
     public function installment()

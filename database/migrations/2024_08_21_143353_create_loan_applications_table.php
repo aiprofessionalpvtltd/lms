@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email');
-            $table->decimal('loan_amount', 15, 2);
-            $table->unsignedBigInteger('loan_duration_id');
+            $table->decimal('loan_amount', 15, 2)->nullable();
+            $table->unsignedBigInteger('loan_duration_id')->nullable();
             $table->unsignedBigInteger('product_service_id');
             $table->unsignedBigInteger('loan_purpose_id');
             $table->unsignedBigInteger('user_id');

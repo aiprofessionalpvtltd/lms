@@ -95,6 +95,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-profit-report', [ReportController::class, 'showProfitReport'])->name('show-profit-report');
     Route::get('get-profit-report', [ReportController::class, 'getProfitReport'])->name('get-profit-report');
 
+    Route::get('show-outstanding-report', [ReportController::class, 'showOutstandingReport'])->name('show-outstanding-report');
+    Route::get('get-outstanding-report', [ReportController::class, 'getOutstandingReport'])->name('get-outstanding-report');
+
 });
 
 

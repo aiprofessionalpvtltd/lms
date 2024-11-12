@@ -389,9 +389,9 @@ class LoanApplicationController extends BaseController
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'loan_amount' => 'required|numeric',
+            'loan_amount' => 'sometimes|numeric',
             'product_id' => 'sometimes|exists:products,id',
-            'loan_duration_id' => 'required|exists:loan_durations,id',
+            'loan_duration_id' => 'sometimes|exists:loan_durations,id',
             'product_service_id' => 'required|exists:product_services,id',
             'loan_purpose_id' => 'required|exists:loan_purposes,id',
             'address' => 'required|string',
@@ -727,6 +727,7 @@ class LoanApplicationController extends BaseController
             $totalUpfrontPayment = $downPaymentAmount + $processingFeeAmount;
 
             $loanApplication->loan_amount =$loanAmount;
+            $loanApplication->product_id =$request->input('product_id');
             $loanApplication->loan_duration_id =$request->input('loan_duration_id');
             $loanApplication->save();
 

@@ -288,4 +288,113 @@ class ReportController extends Controller
     }
 
 
+    public function showOutstandingReport()
+    {
+        $title = 'Outstanding Report';
+        $provinces = Province::all();
+        $genders = Gender::all();
+        $products = Product::all();
+        return view('admin.reports.outstanding', compact('title', 'provinces', 'genders', 'products'));
+    }
+
+    public function getOutstandingReport(Request $request)
+    {
+        $title = 'Outstanding Report';
+        $provinces = Province::all();
+        $districts = District::all();
+        $genders = Gender::all();
+        $products = Product::all();
+
+        $dateRange = $request->date_range;
+        $gender_id = $request->gender_id;
+        $province_id = $request->province_id;
+        $district_id = $request->district_id;
+        $product_id = $request->product_id;
+
+        // Split the date range
+        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $startDate = $splitDate[0] ?? null;
+        $endDate = $splitDate[1] ?? null;
+
+        $result = LoanApplication::with([
+            'product',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'getLatestInstallment' => function ($query) {
+                $query->with('details'); // Load installment details for outstanding calculation
+            }
+        ])
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->when($gender_id, function ($query) use ($gender_id) {
+                return $query->whereHas('user.profile', function ($q) use ($gender_id) {
+                    $q->where('gender_id', $gender_id);
+                });
+            })
+            ->when($province_id, function ($query) use ($province_id) {
+                return $query->whereHas('user', function ($q) use ($province_id) {
+                    $q->where('province_id', $province_id);
+                });
+            })
+            ->when($district_id, function ($query) use ($district_id) {
+                return $query->whereHas('user', function ($q) use ($district_id) {
+                    $q->where('district_id', $district_id);
+                });
+            })
+            ->get();
+
+        // Process each loan application to retrieve required details
+        $outstandingData = $result->map(function ($loan) {
+            $userProfile = $loan->user->profile;
+            $loanApplicationID = $loan->id;
+            $latestInstallment = $loan->getLatestInstallment;
+
+            // Calculate outstanding amount based on unpaid installments
+            $outstandingAmount = $latestInstallment->details
+                ->where('is_paid', false)
+                ->sum('amount_due');
+
+            // Retrieve last payment and next due
+            $lastPayment = $latestInstallment->details
+                ->where('is_paid', true)
+                ->sortByDesc('paid_at')
+                ->first();
+
+            $nextDue = $latestInstallment->details
+                ->where('is_paid', false)
+                ->sortBy('due_date')
+                ->first();
+
+            // Determine status (Current if due date is not passed)
+            $status = optional($nextDue)->due_date >= now() ? 'Current' : 'Overdue';
+
+            return [
+                'id' => $loanApplicationID,
+                'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                'cnic' => $userProfile->cnic_no,
+                'original_loan_amount' => $loan->loan_amount,
+                'outstanding_amount' => $outstandingAmount,
+                'interest_accrued' => $latestInstallment->total_markup ?? 0,
+                'last_payment' => optional($lastPayment)->paid_at,
+                'next_due' => optional($nextDue)->due_date,
+                'status' => $status,
+            ];
+        });
+
+        // Calculate totals
+        $totalAmount = $result->sum('loan_amount');
+        $totalOutstanding = $outstandingData->sum('outstanding_amount');
+        $totalInterestAccrued = $result->sum(fn($loan) => $loan->getLatestInstallment->total_markup ?? 0);
+
+
+        return view('admin.reports.outstanding', compact(
+            'title', 'outstandingData', 'provinces', 'genders',
+            'request', 'districts', 'products', 'totalAmount',
+            'totalOutstanding', 'totalInterestAccrued'
+        ));
+    }
+
+
 }

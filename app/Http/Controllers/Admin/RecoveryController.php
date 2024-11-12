@@ -47,6 +47,7 @@ class RecoveryController extends Controller
             // Update installment detail
             $installmentDetail->is_paid = true;
             $installmentDetail->amount_paid = $request->amount;
+            $installmentDetail->paid_at = currentDateInsert();
             $installmentDetail->save();
 
             // Check if all installment details are paid
