@@ -9,6 +9,7 @@ use App\Models\Installment;
 use App\Models\InstallmentDetail;
 use App\Models\LoanApplication;
 use App\Models\LoanApplicationHistory;
+use App\Models\LoanApplicationProduct;
 use App\Models\LoanAttachment;
 use App\Models\LoanDuration;
 use App\Models\Product;
@@ -95,7 +96,7 @@ class LoanApplicationController extends BaseController
     {
         $loanAmount = $request->input('loan_amount');
         $months = $request->input('months');
-        $requestFor = $request->input('request_for');
+        $requestType = $request->input('request_for');
         $downPaymentPercentage = $request->input('down_payment_percentage', 10); // Default to 10% if not specified
 
         // Validate input
@@ -103,58 +104,68 @@ class LoanApplicationController extends BaseController
             return response()->json(['error' => 'Invalid month duration. Choose from 3, 6, 9, or 12 months.'], 400);
         }
 
-        if ($requestFor === 'product') {
-            $productID = $request->input('product_id');
-            $product = Product::find($productID);
+        if ($requestType === 'product') {
+            $productId = $request->input('product_id');
+            $product = Product::find($productId);
 
             if (!$product) {
                 return response()->json(['error' => 'Product not found.'], 404);
             }
 
-            $processingFeeRate = ($product->processing_fee / 100);
-            $annualMarkupRate = ($product->interest_rate / 100);
+            $productProcessingFeePercentage = $product->processing_fee;
+            $productInterestRate = $product->interest_rate;
+
+            $processingFeeRate = $productProcessingFeePercentage / 100;
+            $interestRate = $productInterestRate / 100;
 
             $downPayment = $loanAmount * ($downPaymentPercentage / 100);
-            $financeAmount = $loanAmount - round($downPayment);
-            $processingFee = $financeAmount * ($processingFeeRate );
-            $disbursementAmount = $financeAmount - $processingFee;
+            $processingFeeAmount = $loanAmount * $processingFeeRate;
+            $totalUpfrontPayment = $downPayment + $processingFeeAmount;
+            $financedAmount = $loanAmount - round($downPayment);
+            $disbursementAmount = $financedAmount - $processingFeeAmount;
 
-            $totalInterest = $financeAmount * $annualMarkupRate ;
-            $totalPayableAmount = $financeAmount + $totalInterest;
-            $monthlyInstallment = $totalPayableAmount / $months;
+            $totalInterestAmount = $financedAmount * $interestRate;
+            $totalRepayableAmount = $financedAmount + $totalInterestAmount;
+            $monthlyInstallmentAmount = $totalRepayableAmount / $months;
 
-        } elseif ($requestFor === 'loan') {
-            $processingFeeRate = 0;
-            $annualMarkupRate = 35;
+        } elseif ($requestType === 'loan') {
+            $standardProcessingFeePercentage = env('STANDARD_PROCESSING_FEE');
+            $standardInterestRate = env('STANDARD_INTEREST');
             $downPaymentPercentage = 0;
+            $totalUpfrontPayment = 0;
 
-            $processingFeeRate = ($processingFeeRate / 100);
-            $annualMarkupRate = ($annualMarkupRate / 100);
+            $processingFeeRate = $standardProcessingFeePercentage / 100;
+            $interestRate = $standardInterestRate / 100;
 
             $downPayment = $loanAmount * ($downPaymentPercentage / 100);
-            $financeAmount = $loanAmount - round($downPayment);
-            $processingFee = $financeAmount * ($processingFeeRate );
-            $disbursementAmount = $financeAmount - $processingFee;
+            $financedAmount = $loanAmount - round($downPayment);
+            $processingFeeAmount = $financedAmount * $processingFeeRate;
+            $disbursementAmount = $financedAmount - $processingFeeAmount;
 
-            $totalInterest = $financeAmount * $annualMarkupRate ;
-            $totalPayableAmount = $financeAmount + $totalInterest;
-            $monthlyInstallment = $totalPayableAmount / $months;
+            $totalInterestAmount = $financedAmount * $interestRate;
+            $totalRepayableAmount = $financedAmount + $totalInterestAmount;
+            $monthlyInstallmentAmount = $totalRepayableAmount / $months;
         } else {
             return response()->json(['error' => 'Invalid request_for value.'], 400);
         }
 
         return $this->sendResponse(
             [
+                'request_for' => $requestType,
+                'product_id' => $productId,
                 'loan_amount' => $loanAmount,
                 'months' => $months,
                 'down_payment_percentage' => $downPaymentPercentage,
-                'financed_amount' => $loanAmount - round($downPayment),
-                'processing_fee' => round($processingFee),
-                'down_payment' => round($downPayment),
+                'processing_fee_percentage' => round($productProcessingFeePercentage ?? $standardProcessingFeePercentage, 2),
+                'interest_rate_percentage' => round($productInterestRate ?? $standardInterestRate, 2),
+                'financed_amount' => $financedAmount,
+                'processing_fee_amount' => round($processingFeeAmount),
+                'down_payment_amount' => round($downPayment),
+                'total_upfront_payment' => round($totalUpfrontPayment),
                 'disbursement_amount' => round($disbursementAmount),
-                'total_markup' => round($totalInterest),
-                'total_payable_amount' => round($totalPayableAmount),
-                'monthly_installment' => round($monthlyInstallment),
+                'total_interest_amount' => round($totalInterestAmount),
+                'total_repayable_amount' => round($totalRepayableAmount),
+                'monthly_installment_amount' => round($monthlyInstallmentAmount),
             ],
             'Loan calculated successfully.'
         );
@@ -255,10 +266,15 @@ class LoanApplicationController extends BaseController
 
                 $loanApplication->load('loanDuration');
 
+                $productProcessingFee = 0;
+                $productInterestFee = 0;
                 // get product detail
                 $product = $loanApplication->product;
-                $productProcessingFee = $product->processing_fee / 100;
-                $productInterestFee = $product->interest_rate / 100;
+                if ($product) {
+                    $productProcessingFee = $product->processing_fee / 100;
+                    $productInterestFee = $product->interest_rate / 100;
+                }
+
 
                 $extraParameterForLoan = [
                     'loan_amount' => $loanApplication->loan_amount,
@@ -270,11 +286,11 @@ class LoanApplicationController extends BaseController
 
                 $request->merge($extraParameterForLoan);
 
-                $loanCalculator = $this->calculateLoan($request)->getData(true);
+                $loanApplication->load('calculatedProduct');
+                $loanApplicationProduct = $loanApplication->calculatedProduct;
 
-                $loanCalculatedDetail = $loanCalculator['data'];
 
-                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanCalculatedDetail'));
+                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanApplicationProduct'));
             }
 
 
@@ -374,7 +390,7 @@ class LoanApplicationController extends BaseController
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'loan_amount' => 'required|numeric',
-            'product_id' => 'required|exists:products,id',
+            'product_id' => 'sometimes|exists:products,id',
             'loan_duration_id' => 'required|exists:loan_durations,id',
             'product_service_id' => 'required|exists:product_services,id',
             'loan_purpose_id' => 'required|exists:loan_purposes,id',
@@ -662,6 +678,87 @@ class LoanApplicationController extends BaseController
 
         return $this->sendResponse('Eligible for Sarmaya Loan', 'You meet all the eligibility criteria.');
     }
+
+    public function storeCalculation(Request $request)
+    {
+        // Validate incoming request data
+        $validator = Validator::make($request->all(), [
+            'request_for' => 'required|string|in:product,loan',
+            'loan_application_id' => 'required|exists:loan_applications,id',
+            'product_id' => 'nullable|exists:products,id',
+            'loan_duration_id' => 'required|exists:loan_durations,id',
+            'loan_amount' => 'required|numeric|min:0',
+            'down_payment_percentage' => 'required|numeric|min:0|max:100',
+            'processing_fee_percentage' => 'required|numeric|min:0|max:100',
+            'interest_rate_percentage' => 'required|numeric|min:0|max:100',
+            'months' => 'required|integer|in:3,6,9,12',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error.', $validator->errors());
+        }
+
+        DB::beginTransaction();
+
+        try {
+
+            $loanApplication = LoanApplication::find($request->input('loan_application_id'));
+
+            if (!$loanApplication) {
+                return redirect()->back()->with('error', 'Loan Application not found.');
+            }
+
+            // Calculate loan details
+            $loanAmount = $request->input('loan_amount');
+            $months = $request->input('months');
+            $downPaymentPercentage = $request->input('down_payment_percentage');
+            $processingFeePercentage = $request->input('processing_fee_percentage');
+            $interestRatePercentage = $request->input('interest_rate_percentage');
+
+            $downPaymentAmount = $loanAmount * ($downPaymentPercentage / 100);
+            $financedAmount = $loanAmount - round($downPaymentAmount);
+            $processingFeeAmount = $financedAmount * ($processingFeePercentage / 100);
+            $disbursementAmount = $financedAmount - $processingFeeAmount;
+
+            $totalInterestAmount = $financedAmount * ($interestRatePercentage / 100);
+            $totalRepayableAmount = $financedAmount + $totalInterestAmount;
+            $monthlyInstallmentAmount = $totalRepayableAmount / $months;
+            $totalUpfrontPayment = $downPaymentAmount + $processingFeeAmount;
+
+            // Store the loan application product record
+            $loanApplicationProduct = LoanApplicationProduct::create([
+                'request_for' => $request->input('request_for'),
+                'loan_application_id' => $loanApplication->id,
+                'product_id' => $request->input('product_id'),
+                'loan_duration_id' => $request->input('loan_duration_id'),
+                'loan_amount' => $loanAmount,
+                'down_payment_percentage' => $downPaymentPercentage,
+                'processing_fee_percentage' => $processingFeePercentage,
+                'interest_rate_percentage' => $interestRatePercentage,
+                'financed_amount' => $financedAmount,
+                'processing_fee_amount' => round($processingFeeAmount, 2),
+                'down_payment_amount' => round($downPaymentAmount, 2),
+                'total_upfront_payment' => round($totalUpfrontPayment, 2),
+                'disbursement_amount' => round($disbursementAmount, 2),
+                'total_interest_amount' => round($totalInterestAmount, 2),
+                'total_repayable_amount' => round($totalRepayableAmount, 2),
+                'monthly_installment_amount' => round($monthlyInstallmentAmount, 2),
+            ]);
+
+            DB::commit();
+
+            // Return a successful response
+            return $this->sendResponse(
+                $loanApplicationProduct,
+                'Loan Application Product submitted successfully.'
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->sendError('An error occurred.', ['error' => $e->getMessage()]);
+        }
+    }
+
 
     public function storeAmountAndDurationAfterCalculation(Request $request)
     {

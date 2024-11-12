@@ -63,6 +63,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('user/loan-applications/documents', [LoanApplicationController::class, 'storeDocuments']);
     Route::post('user/loan-applications/calculation', [LoanApplicationController::class, 'storeAmountAndDurationAfterCalculation']);
     Route::get('user/loan-applications/checkEligibility', [LoanApplicationController::class, 'checkEligibility']);
+    Route::post('user/loan-applications/storeCalculation', [LoanApplicationController::class, 'storeCalculation']);
 
     Route::get('user/get-dashboard-data', [LoanApplicationController::class, 'getDashboardData']);
 

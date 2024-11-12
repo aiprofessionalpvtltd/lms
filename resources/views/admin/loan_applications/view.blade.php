@@ -119,8 +119,8 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Loan Amount:</strong> {{ $loanApplication->loan_amount }}</p>
-                        <p><strong>Loan Duration:</strong> {{ $loanApplication->loanDuration->name }}</p>
+{{--                        <p><strong>Loan Amount:</strong> {{ $loanApplication->loan_amount }}</p>--}}
+{{--                        <p><strong>Loan Duration:</strong> {{ $loanApplication->loanDuration->name }}</p>--}}
                         <p><strong>Product Service:</strong> {{ $loanApplication->productService->name }}</p>
                         <p><strong>Loan Purpose:</strong> {{ $loanApplication->loanPurpose->name }}</p>
                         <p><strong>Address:</strong> {{ $loanApplication->address }}</p>
@@ -130,23 +130,23 @@
 
                         <br>
                         <h2>Applied for Product</h2>
-                        <p><strong>Product:</strong> {{ $loanApplication->product->name }}</p>
-                        <p><strong>Processing Fee:</strong> {{ $loanApplication->product->processing_fee }}</p>
-                        <p><strong>Interest Rate:</strong> {{ $loanApplication->product->interest_rate }}</p>
-                        <p><strong>Province:</strong> {{ $loanApplication->product->province->name }}</p>
-                        <p><strong>District:</strong> {{ $loanApplication->product->district->name }}</p>
 
 
-                        <br>
-                        <h2>Calculated Loan</h2>
-                        <p><strong>Loan Amount:</strong> {{ $loanCalculatedDetail['loan_amount'] }}</p>
-                        <p><strong>Months:</strong> {{ $loanCalculatedDetail['months'] }}</p>
-                        <p><strong>Processing Fee:</strong> {{ $loanCalculatedDetail['processing_fee'] }}</p>
-                        <p><strong>Total Markup:</strong> {{ $loanCalculatedDetail['total_markup'] }}</p>
-                        <p><strong>Monthly Installment:</strong> {{ $loanCalculatedDetail['monthly_installment'] }}</p>
-                        <p><strong>Total Payable Amount:</strong> {{ $loanCalculatedDetail['total_payable_amount'] }}
-                        <p><strong>Disbursement Amount :</strong> {{ $loanCalculatedDetail['disbursement_amount'] }}
-                        </p>
+                        <p><strong>Loan Amount:</strong> {{ $loanApplicationProduct->loan_amount }}</p>
+                        <p><strong>Loan Type:</strong> {{ $loanApplicationProduct->request_for }}</p>
+                        <p><strong>Product:</strong> {{ $loanApplicationProduct->product->name ?? 'N/A' }}</p>
+                        <p><strong>Loan Duration :</strong> {{ $loanApplicationProduct->loanDuration->name }}</p>
+                        <p><strong>Down Payment Percentage:</strong> {{ $loanApplicationProduct->down_payment_percentage }}%</p>
+                        <p><strong>Processing Fee Percentage:</strong> {{ $loanApplicationProduct->processing_fee_percentage }}%</p>
+                        <p><strong>Interest Rate Percentage:</strong> {{ $loanApplicationProduct->interest_rate_percentage }}%</p>
+                        <p><strong>Financed Amount:</strong> {{ $loanApplicationProduct->financed_amount }}</p>
+                        <p><strong>Processing Fee Amount:</strong> {{ $loanApplicationProduct->processing_fee_amount }}</p>
+                        <p><strong>Down Payment Amount:</strong> {{ $loanApplicationProduct->down_payment_amount }}</p>
+                        <p><strong>Total Upfront Payment:</strong> {{ $loanApplicationProduct->total_upfront_payment }}</p>
+                        <p><strong>Disbursement Amount:</strong> {{ $loanApplicationProduct->disbursement_amount }}</p>
+                        <p><strong>Total Interest Amount:</strong> {{ $loanApplicationProduct->total_interest_amount }}</p>
+                        <p><strong>Total Repayable Amount:</strong> {{ $loanApplicationProduct->total_repayable_amount }}</p>
+                        <p><strong>Monthly Installment Amount:</strong> {{ $loanApplicationProduct->monthly_installment_amount }}</p>
 
 
                     </div>
@@ -166,8 +166,44 @@
                     </div>
 
                 </div>
+
+                <h2>Loan Application Guarantors</h2>
+
+                <table class="table" border="1" cellpadding="10" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>CNIC No</th>
+                        <th>Address</th>
+                        <th>Mobile No</th>
+                        <th>CNIC Attachment</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach($loanApplication->guarantors as $guarantor)
+                        <tr>
+                            <td>{{ $guarantor->first_name }}</td>
+                            <td>{{ $guarantor->last_name }}</td>
+                            <td>{{ $guarantor->cnic_no }}</td>
+                            <td>{{ $guarantor->address }}</td>
+                            <td>{{ $guarantor->mobile_no }}</td>
+                            <td>
+                                @if($guarantor->cnic_attachment)
+                                    <a href="{{ asset('storage/' . $guarantor->cnic_attachment) }}" target="_blank">View Attachment</a>
+                                @else
+                                    N/A
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
+
+
             </div>
         </div>
+
 
 
         <div class="card mb-4">

@@ -82,4 +82,9 @@ class LoanApplication extends Model
         return $this->hasOne(Transaction::class);
     }
 
+    public function calculatedProduct()
+    {
+        return $this->hasOne(LoanApplicationProduct::class);
+    }
+
 }
