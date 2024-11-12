@@ -368,13 +368,15 @@ class DropdownController extends BaseController
     public function getProducts()
     {
         $authUser = auth()->user();
-        $provinceID = $authUser->province_id;
-        $districtID = $authUser->district_id;
+//        $provinceID = $authUser->province_id;
+//        $districtID = $authUser->district_id;
 
         try {
-            $products = Product::where('province_id', $provinceID)
-                ->where('district_id', $districtID)
-                ->orderBy('name', 'ASC')
+//            $products = Product::where('province_id', $provinceID)
+//                ->where('district_id', $districtID)
+//                ->orderBy('name', 'ASC')
+//                ->get();
+            $products = Product::orderBy('name', 'ASC')
                 ->get();
 
             return $this->sendResponse(ProductResource::collection($products), 'Products retrieved successfully.');

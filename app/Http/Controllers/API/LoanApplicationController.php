@@ -708,6 +708,7 @@ class LoanApplicationController extends BaseController
                 return redirect()->back()->with('error', 'Loan Application not found.');
             }
 
+
             // Calculate loan details
             $loanAmount = $request->input('loan_amount');
             $months = $request->input('months');
@@ -724,6 +725,11 @@ class LoanApplicationController extends BaseController
             $totalRepayableAmount = $financedAmount + $totalInterestAmount;
             $monthlyInstallmentAmount = $totalRepayableAmount / $months;
             $totalUpfrontPayment = $downPaymentAmount + $processingFeeAmount;
+
+            $loanApplication->loan_amount =$loanAmount;
+            $loanApplication->loan_duration_id =$request->input('loan_duration_id');
+            $loanApplication->save();
+
 
             // Store the loan application product record
             $loanApplicationProduct = LoanApplicationProduct::create([
@@ -839,9 +845,12 @@ class LoanApplicationController extends BaseController
 
         // Call calculateLoan to get loan details
 
-        $loanDetails = $this->calculateLoan(new Request(['loan_amount' => $loanAmount, 'months' => $loanDuration]))->getData(true);
+        $loanApplication->load('calculatedProduct');
+        $loanDetails = $loanApplication->calculatedProduct;
 
-        $loanDetails = $loanDetails['data'];
+
+//        $loanDetails = $this->calculateLoan(new Request(['loan_amount' => $loanAmount, 'months' => $loanDuration]))->getData(true);
+//        $loanDetails = $loanDetails['data'];
 
         // Mark the loan as approved
         $loanApplication->status = 'accepted';
@@ -852,10 +861,10 @@ class LoanApplicationController extends BaseController
         $installmentData = [
             'loan_application_id' => $loanApplication->id,
             'user_id' => $loanApplication->user_id,
-            'total_amount' => $loanDetails['total_payable_amount'],
-            'monthly_installment' => $loanDetails['monthly_installment'],
-            'processing_fee' => $loanDetails['processing_fee'],
-            'total_markup' => $loanDetails['total_markup'],
+            'total_amount' => $loanDetails->total_repayable_amount,
+            'monthly_installment' => $loanDetails->monthly_installment_amount,
+            'processing_fee' => $loanDetails->processing_fee_amount,
+            'total_markup' => $loanDetails->total_interest_amount,
             'approved_by' => auth()->id(),
         ];
         $installment = Installment::create($installmentData);
@@ -866,7 +875,7 @@ class LoanApplicationController extends BaseController
             InstallmentDetail::create([
                 'installment_id' => $installment->id,
                 'due_date' => $startDate->copy()->addMonths($i),
-                'amount_due' => $loanDetails['monthly_installment'],
+                'amount_due' => $loanDetails->monthly_installment_amount,
             ]);
         }
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');

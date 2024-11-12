@@ -119,8 +119,8 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-{{--                        <p><strong>Loan Amount:</strong> {{ $loanApplication->loan_amount }}</p>--}}
-{{--                        <p><strong>Loan Duration:</strong> {{ $loanApplication->loanDuration->name }}</p>--}}
+                        {{--                        <p><strong>Loan Amount:</strong> {{ $loanApplication->loan_amount }}</p>--}}
+                        {{--                        <p><strong>Loan Duration:</strong> {{ $loanApplication->loanDuration->name }}</p>--}}
                         <p><strong>Product Service:</strong> {{ $loanApplication->productService->name }}</p>
                         <p><strong>Loan Purpose:</strong> {{ $loanApplication->loanPurpose->name }}</p>
                         <p><strong>Address:</strong> {{ $loanApplication->address }}</p>
@@ -136,17 +136,25 @@
                         <p><strong>Loan Type:</strong> {{ $loanApplicationProduct->request_for }}</p>
                         <p><strong>Product:</strong> {{ $loanApplicationProduct->product->name ?? 'N/A' }}</p>
                         <p><strong>Loan Duration :</strong> {{ $loanApplicationProduct->loanDuration->name }}</p>
-                        <p><strong>Down Payment Percentage:</strong> {{ $loanApplicationProduct->down_payment_percentage }}%</p>
-                        <p><strong>Processing Fee Percentage:</strong> {{ $loanApplicationProduct->processing_fee_percentage }}%</p>
-                        <p><strong>Interest Rate Percentage:</strong> {{ $loanApplicationProduct->interest_rate_percentage }}%</p>
+                        <p><strong>Down Payment
+                                Percentage:</strong> {{ $loanApplicationProduct->down_payment_percentage }}%</p>
+                        <p><strong>Processing Fee
+                                Percentage:</strong> {{ $loanApplicationProduct->processing_fee_percentage }}%</p>
+                        <p><strong>Interest Rate
+                                Percentage:</strong> {{ $loanApplicationProduct->interest_rate_percentage }}%</p>
                         <p><strong>Financed Amount:</strong> {{ $loanApplicationProduct->financed_amount }}</p>
-                        <p><strong>Processing Fee Amount:</strong> {{ $loanApplicationProduct->processing_fee_amount }}</p>
+                        <p><strong>Processing Fee Amount:</strong> {{ $loanApplicationProduct->processing_fee_amount }}
+                        </p>
                         <p><strong>Down Payment Amount:</strong> {{ $loanApplicationProduct->down_payment_amount }}</p>
-                        <p><strong>Total Upfront Payment:</strong> {{ $loanApplicationProduct->total_upfront_payment }}</p>
+                        <p><strong>Total Upfront Payment:</strong> {{ $loanApplicationProduct->total_upfront_payment }}
+                        </p>
                         <p><strong>Disbursement Amount:</strong> {{ $loanApplicationProduct->disbursement_amount }}</p>
-                        <p><strong>Total Interest Amount:</strong> {{ $loanApplicationProduct->total_interest_amount }}</p>
-                        <p><strong>Total Repayable Amount:</strong> {{ $loanApplicationProduct->total_repayable_amount }}</p>
-                        <p><strong>Monthly Installment Amount:</strong> {{ $loanApplicationProduct->monthly_installment_amount }}</p>
+                        <p><strong>Total Interest Amount:</strong> {{ $loanApplicationProduct->total_interest_amount }}
+                        </p>
+                        <p><strong>Total Repayable
+                                Amount:</strong> {{ $loanApplicationProduct->total_repayable_amount }}</p>
+                        <p><strong>Monthly Installment
+                                Amount:</strong> {{ $loanApplicationProduct->monthly_installment_amount }}</p>
 
 
                     </div>
@@ -190,7 +198,8 @@
                             <td>{{ $guarantor->mobile_no }}</td>
                             <td>
                                 @if($guarantor->cnic_attachment)
-                                    <a href="{{ asset('storage/' . $guarantor->cnic_attachment) }}" target="_blank">View Attachment</a>
+                                    <a href="{{ asset('storage/' . $guarantor->cnic_attachment) }}" target="_blank">View
+                                        Attachment</a>
                                 @else
                                     N/A
                                 @endif
@@ -203,7 +212,6 @@
 
             </div>
         </div>
-
 
 
         <div class="card mb-4">
@@ -313,8 +321,10 @@
                                 </div>
                             </div>
 
-                            <a href="{{route('approve-loan',$loanApplication->id)}}"
-                               class="btn btn-outline-success float-start">Approved</a>
+                            @if ($loanApplication->status != 'accepted')
+                                <a href="{{route('approve-loan',$loanApplication->id)}}"
+                                   class="btn btn-outline-success float-start">Approved</a>
+                            @endif
                             <button type="submit" class="btn btn-primary float-end">Proceed</button>
 
                         </form>
