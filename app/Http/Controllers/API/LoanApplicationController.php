@@ -133,6 +133,7 @@ class LoanApplicationController extends BaseController
             $standardInterestRate = env('STANDARD_INTEREST');
             $downPaymentPercentage = 0;
             $totalUpfrontPayment = 0;
+            $productId = NULL;
 
             $processingFeeRate = $standardProcessingFeePercentage / 100;
             $interestRate = $standardInterestRate / 100;
