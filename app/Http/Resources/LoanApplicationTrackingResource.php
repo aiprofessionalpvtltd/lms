@@ -17,6 +17,7 @@ class LoanApplicationTrackingResource extends JsonResource
         // Check if all conditions are true
         $isApplicationSubmitted = true;
         $hasAttachments = $this->attachments && $this->attachments->isNotEmpty();
+        $hasGuarantors = $this->guarantors && $this->guarantors->isNotEmpty();
         $isProcessCompleted = ($this->is_submitted == 1)  ? true : false;
 
         // Determine if the message should be shown
@@ -32,6 +33,7 @@ class LoanApplicationTrackingResource extends JsonResource
             'is_application_submitted' => $isApplicationSubmitted,
             'is_documents_uploaded' => $hasAttachments ? true : false,  // Check if there are any attachments
             'is_process_completed' => $isProcessCompleted,
+            'is_loan_guarantor' => $hasGuarantors,
             'status' => $this->status,
             'message' => $showMessage ? "An application is already in progress. A new application cannot be submitted." : null
         ];
