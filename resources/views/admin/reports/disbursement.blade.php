@@ -154,7 +154,7 @@
         <!-- Basic datatable -->
             <div class="card">
                 <div class="card-body">
-                    <table id="datatables-buttons" class="table table-striped">
+                    <table id="datatables-buttons" class="table table-bordered">
                         <thead>
                         <tr>
                             <th>Name</th>
@@ -187,12 +187,14 @@
                         </tbody>
                         <tfoot>
                         <tr>
-                            <th colspan="2" class="text-end">Total Male:</th>
+                            <td></td>
+
+                            <td colspan="1" class="text-end">Total Male:</td>
                             <td>{{ $totalMale }}</td>
-                            <th colspan="2" class="text-end">Total Female:</th>
+                            <td colspan="2" class="text-end">Total Female:</td>
                             <td>{{ $totalFemale }}</td>
 
-                            <th colspan="2" class="text-end">Total Amount:</th>
+                            <td colspan="2" class="text-end">Total Amount:</td>
                             <td colspan="2">{{ number_format($totalAmount, 2) }}</td>
                         </tr>
                         </tfoot>
@@ -228,7 +230,7 @@
 
             var datatablesButtons = $("#datatables-buttons").DataTable({
                 responsive: true,
-                scrollX: true, // Enable horizontal scrolling
+                scrollX: false, // Enable horizontal scrolling
                 lengthChange: false,
                 pageLength: 100,
                 buttons: [

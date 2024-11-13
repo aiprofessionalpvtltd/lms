@@ -2,7 +2,7 @@
     <div class="sidebar-content js-simplebar">
         <a class="sidebar-brand" href="index.html">
 					<span class="sidebar-brand-text align-middle">
-						AdminKit
+						Admin Panel
 						<sup><small class="badge bg-primary text-uppercase">Pro</small></sup>
 					</span>
             <svg class="sidebar-brand-icon align-middle" width="32px" height="32px" viewBox="0 0 24 24" fill="none"
@@ -17,7 +17,7 @@
         <div class="sidebar-user">
             <div class="d-flex justify-content-center">
                 <div class="flex-shrink-0">
-                    <img src="{{asset('backend/img/avatars/avatar.jpg')}}" class="avatar img-fluid rounded me-1"
+                    <img src="{{asset('backend/img/avatars/new_logo.jpg')}}" style="width: 60px !important;" class="avatar img-fluid rounded me-1"
                          alt="{{ Auth::user()->name }}"/>
                 </div>
                 <div class="flex-grow-1 ps-2">

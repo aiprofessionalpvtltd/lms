@@ -202,7 +202,7 @@
                                 <td>{{   ($row['last_payment'])  }}</td>
                                 <td>{{   ($row['next_due'])  }}</td>
                                 <td>{{   ($row['status'])  }}</td>
-                                <td><a target="_blank" href="{{ route('view-installment', $row['id'] ) }}"
+                                <td><a target="_blank" href="{{ route('view-installment', $row['installment_id'] ) }}"
                                        class="btn btn-sm btn-info m-2">View</a></td>
 
                             </tr>

@@ -372,6 +372,7 @@ class ReportController extends Controller
 
             return [
                 'id' => $loanApplicationID,
+                'installment_id' => $latestInstallment->id,
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
                 'original_loan_amount' => $loan->loan_amount,
