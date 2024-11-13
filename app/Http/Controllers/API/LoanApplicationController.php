@@ -730,6 +730,7 @@ class LoanApplicationController extends BaseController
             $loanApplication->loan_amount =$loanAmount;
             $loanApplication->product_id =$request->input('product_id');
             $loanApplication->loan_duration_id =$request->input('loan_duration_id');
+            $loanApplication->is_submitted = true;
             $loanApplication->save();
 
 
