@@ -348,7 +348,7 @@ class LoanApplicationController extends BaseController
 
         try {
             // Fetch the first loan application that matches the status and user ID, and is not completed
-            $loanApplication = LoanApplication::where([
+            $loanApplication = LoanApplication::with('calculatedProduct')->where([
                 ['is_completed', '=', false],
                 ['user_id', '=', $userID]
             ])->latest()->first();

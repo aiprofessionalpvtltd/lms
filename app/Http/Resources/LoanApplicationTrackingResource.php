@@ -17,7 +17,7 @@ class LoanApplicationTrackingResource extends JsonResource
         // Check if all conditions are true
         $isApplicationSubmitted = true;
         $hasAttachments = $this->attachments && $this->attachments->isNotEmpty();
-        $hasCalculation = $this->calculatedProduct && $this->calculatedProduct->isNotEmpty();
+        $hasCalculation = $this->calculatedProduct;
         $hasGuarantors = $this->guarantors && $this->guarantors->isNotEmpty();
         $isProcessCompleted = ($this->is_submitted == 1)  ? true : false;
 
