@@ -91,6 +91,7 @@ class CustomerController extends BaseController
             'familyDependent', 'education.education', 'references.relationship')
             ->find($id);
 
+        
 //        if ($customer->tracking->score == 0) {
             $this->calculateUserScore($customer);
 //        }
