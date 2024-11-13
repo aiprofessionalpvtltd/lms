@@ -6,10 +6,12 @@ use App\Http\Resources\UserBankAccountResource;
 use App\Http\Resources\UserProfileResource;
 use App\Http\Resources\UserProfileTrackingResource;
 use App\Http\Resources\UserResource;
+use App\Models\FailedLoginAttempt;
 use App\Models\Otp;
 use App\Models\UserBankAccount;
 use App\Models\UserProfile;
 use App\Models\UserProfileTracking;
+use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
@@ -24,6 +26,10 @@ use Spatie\Permission\Models\Role;
 
 class RegisterController extends BaseController
 {
+
+    use ThrottlesLogins;
+
+
     /**
      * Register api
      *
@@ -142,8 +148,33 @@ class RegisterController extends BaseController
     /**
      * Login api
      *
-     * @return \Illuminate\Http\Response
+     * @return string
      */
+    protected function username()
+    {
+        return 'mobile_no';
+    }
+
+    protected function maxAttempts()
+    {
+        return 3; // Maximum of 3 attempts allowed
+    }
+
+    protected function decayMinutes()
+    {
+        return 15; // Lockout for 15 minutes after reaching max attempts
+    }
+
+    public function resetThrottle(Request $request)
+    {
+        $request->merge(['mobile_no' => $request->input('mobile_no')]);
+
+        // Clear the login attempts for the specified user
+        $this->clearLoginAttempts($request);
+
+        return response()->json(['message' => 'Throttle reset successfully.']);
+    }
+
     public function login(Request $request): JsonResponse
     {
         // Validate the request
@@ -152,39 +183,74 @@ class RegisterController extends BaseController
             'password' => 'required',
         ]);
 
+        $throttleKey = $this->throttleKey($request);
+
+
+        if ($this->hasTooManyLoginAttempts($request)) {
+            $lockoutTime = $this->limiter()->availableIn($throttleKey); // Remaining time in seconds
+            $remainingMinutes = ceil($lockoutTime / 60); // Convert to minutes
+
+            if ($remainingMinutes < 1) {
+                $remainingMessage = 'Please try again in less than a minute.';
+            } else {
+                $remainingMessage = "Please try again in $remainingMinutes minute(s).";
+            }
+
+            return $this->sendError('Too many attempts. Please try again later.', [
+                'error' => "Account locked due to too many failed login attempts. $remainingMessage"
+            ]);
+        }
+
+
+
         DB::beginTransaction();
 
         try {
-            // Find the UserProfile with the given mobile_no
             $userProfile = UserProfile::where('mobile_no', $request->mobile_no)->first();
 
             if ($userProfile) {
-                // Check if the provided password is correct
                 if (Auth::attempt(['id' => $userProfile->user_id, 'password' => $request->password])) {
                     $user = $userProfile->user;
 
-                    // Generate OTP
-                    $otpCode = rand(100000, 999999);
+                    // Clear failed login attempts on successful login
+                    $this->clearLoginAttempts($request);
 
-                    // Store OTP
+                    // Generate and store OTP
+                    $otpCode = rand(100000, 999999);
                     Otp::create([
                         'user_id' => $user->id,
                         'otp' => $otpCode,
                         'expires_at' => Carbon::now()->addMinutes(10),
                     ]);
 
-                    // Send OTP to the user's mobile number
-//            $this->sendSmsToUser($userProfile->mobile_no, "Your OTP is: {$otpCode}");
-
                     DB::commit();
 
                     return $this->sendResponse(['mobile_no' => $request->mobile_no, 'otp' => $otpCode], 'OTP sent to your mobile number.');
                 } else {
-                    // Password is incorrect
+                    // Log the failed login attempt
+                    $result = FailedLoginAttempt::create([
+                        'mobile_no' => $request->mobile_no,
+                        'ip_address' => $request->ip(),
+                        'attempted_at' => now(),
+                    ]);
+
+
+
+                     // Increment login attempts
+                    $this->incrementLoginAttempts($request);
+                    DB::commit();
                     return $this->sendError('Unauthorized.', ['error' => 'The password is incorrect.']);
                 }
             } else {
-                // Mobile number is incorrect
+                // Log the failed login attempt
+                $result = FailedLoginAttempt::create([
+                    'mobile_no' => $request->mobile_no,
+                    'ip_address' => $request->ip(),
+                    'attempted_at' => now(),
+                ]);
+
+                $this->incrementLoginAttempts($request);
+                DB::commit();
                 return $this->sendError('Unauthorized.', ['error' => 'The mobile number is not registered.']);
             }
         } catch (\Exception $e) {
@@ -192,7 +258,6 @@ class RegisterController extends BaseController
             return $this->sendError('Login failed.', ['error' => $e->getMessage()]);
         }
     }
-
     public function verifyOtp(Request $request): JsonResponse
     {
         // Validate the request
