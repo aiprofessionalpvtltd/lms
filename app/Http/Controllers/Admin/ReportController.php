@@ -398,4 +398,128 @@ class ReportController extends Controller
     }
 
 
+    public function showAgingReceivableReport()
+    {
+        $title = 'Outstanding Report';
+        $provinces = Province::all();
+        $genders = Gender::all();
+        $products = Product::all();
+        return view('admin.reports.aging_receivable', compact('title', 'provinces', 'genders', 'products'));
+    }
+
+    public function getAgingReceivableReport(Request $request)
+    {
+        $title = 'Aging Receivable Report';
+        $provinces = Province::all();
+        $districts = District::all();
+        $genders = Gender::all();
+        $products = Product::all();
+
+        $dateRange = $request->date_range;
+        $gender_id = $request->gender_id;
+        $province_id = $request->province_id;
+        $district_id = $request->district_id;
+        $product_id = $request->product_id;
+
+        // Split the date range
+        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $startDate = $splitDate[0] ?? null;
+        $endDate = $splitDate[1] ?? null;
+
+        $result = LoanApplication::with([
+            'product',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'getLatestInstallment' => function ($query) {
+                $query->with('details'); // Load installment details for outstanding calculation
+            }
+        ])
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->when($gender_id, function ($query) use ($gender_id) {
+                return $query->whereHas('user.profile', function ($q) use ($gender_id) {
+                    $q->where('gender_id', $gender_id);
+                });
+            })
+            ->when($province_id, function ($query) use ($province_id) {
+                return $query->whereHas('user', function ($q) use ($province_id) {
+                    $q->where('province_id', $province_id);
+                });
+            })
+            ->when($district_id, function ($query) use ($district_id) {
+                return $query->whereHas('user', function ($q) use ($district_id) {
+                    $q->where('district_id', $district_id);
+                });
+            })
+            ->get();
+
+        // Process each loan application to retrieve required details
+        $agingData = $result->map(function ($loan) {
+            $userProfile = $loan->user->profile;
+            $latestInstallment = $loan->getLatestInstallment;
+
+            // Calculate outstanding amount based on unpaid installments
+            $outstandingAmount = $latestInstallment->details
+                ->where('is_paid', false)
+                ->sum('amount_due');
+
+            // Retrieve next due date for aging calculation
+            $nextDue = $latestInstallment->details
+                ->where('is_paid', false)
+                ->sortBy('due_date')
+                ->first();
+
+            $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null; // Calculate days past due
+            $status = $this->getStatusFromDaysPastDue($daysPastDue); // Determine status based on days past due
+
+            return [
+                'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                'cnic' => $userProfile->cnic_no,
+                'original_loan_amount' => $loan->loan_amount,
+                'outstanding_balance' => $outstandingAmount,
+                'due_date' => optional($nextDue)->due_date,
+                'days_past_due' => $daysPastDue,
+                'status' => $status,
+            ];
+        });
+
+        // Calculate totals
+        $totalAmount = $result->sum('loan_amount');
+        $totalOutstanding = $agingData->sum('outstanding_balance');
+
+        return view('admin.reports.aging', compact(
+            'title', 'agingData', 'provinces', 'genders',
+            'request', 'districts', 'products', 'totalAmount',
+            'totalOutstanding'
+        ));
+    }
+
+    /**
+     * Determine status based on days past due.
+     *
+     * @param int|null $daysPastDue
+     * @return string
+     */
+    private function getStatusFromDaysPastDue($daysPastDue)
+    {
+        if (is_null($daysPastDue) || $daysPastDue <= 0) {
+            return 'Current';
+        } elseif ($daysPastDue <= 30) {
+            return 'Watchlist';
+        } elseif ($daysPastDue <= 60) {
+            return 'OAEM';
+        } elseif ($daysPastDue <= 90) {
+            return 'Substandard';
+        } elseif ($daysPastDue <= 179) {
+            return 'Doubtful';
+        } elseif ($daysPastDue <= 209) {
+            return 'Loss';
+        } else {
+            return 'Write Off';
+        }
+    }
+
+
 }

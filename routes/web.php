@@ -99,6 +99,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-outstanding-report', [ReportController::class, 'showOutstandingReport'])->name('show-outstanding-report');
     Route::get('get-outstanding-report', [ReportController::class, 'getOutstandingReport'])->name('get-outstanding-report');
 
+
+    Route::get('show-aging-receivable-report', [ReportController::class, 'showAgingReceivableReport'])->name('show-aging-receivable-report');
+    Route::get('get-aging-receivable-report', [ReportController::class, 'getAgingReceivableReport'])->name('get-aging-receivable-report');
+
 });
 
 

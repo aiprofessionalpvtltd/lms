@@ -902,7 +902,7 @@ class LoanApplicationController extends BaseController
             // Calculate remaining loans by subtracting paid loans from total loans
             $remainingLoans = $totalLoans - $paidLoans;
 
-            // Retrieve all installments with payment status for the authenticated user
+            // Retrieve all installments with payment status for the authenticated user, ordered by due_date
             $installments = InstallmentDetail::whereHas('installment', function ($query) use ($authUser) {
                 $query->where('user_id', $authUser->id);
             })
@@ -915,6 +915,11 @@ class LoanApplicationController extends BaseController
                 )
                 ->orderBy('due_date')
                 ->get();
+
+            // Generate installment numbers based on due_date order
+            $installments->each(function ($installment, $index) {
+                $installment->installment_number = $this->formatOrdinal($index + 1);
+            });
 
             // Group installments by paid and unpaid status
             $paidInstallments = $installments->where('is_paid', 1);
@@ -949,6 +954,7 @@ class LoanApplicationController extends BaseController
 
                     $lateFeeData[] = [
                         'id' => $installment->id,
+                        'installment_number' => $installment->installment_number,
                         'due_date' => $installment->due_date,
                         'amount_due' => $installment->amount_due,
                         'daysDelayed' => round($daysDelayed),
@@ -981,5 +987,19 @@ class LoanApplicationController extends BaseController
             return $this->sendError($e->getMessage());
         }
     }
+
+    /**
+     * Format an integer as an ordinal (e.g., 1st, 2nd, 3rd, etc.).
+     *
+     * @param int $number
+     * @return string
+     */
+    private function formatOrdinal($number)
+    {
+        $suffixes = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+        $mod = $number % 100;
+        return $number . ($suffixes[($mod - 20) % 10] ?? $suffixes[$mod] ?? 'th');
+    }
+
 
 }
