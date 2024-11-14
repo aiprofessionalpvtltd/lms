@@ -135,6 +135,9 @@
                                 Charge/Profit Report</a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-outstanding-report')}}">Outstanding
                                 Report</a></li>
+
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-aging-receivable-report')}}">Aging Receivable
+                                Report</a></li>
                     </ul>
                 </li>
 

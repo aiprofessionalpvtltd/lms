@@ -22,7 +22,7 @@
         <!-- Form validation -->
         <div class="card">
             <!-- Product form -->
-            <form action="{{ route('get-outstanding-report') }}" class="flex-fill form-validate-jquery">
+            <form action="{{ route('get-aging-receivable-report') }}" class="flex-fill form-validate-jquery">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -171,7 +171,7 @@
         </div>
         <!-- /form validation -->
 
-    @if(isset($outstandingData))
+    @if(isset($totalOutstanding))
         <!-- Basic datatable -->
             <div class="card">
                 <div class="card-body">
@@ -183,46 +183,37 @@
                             <th>CNIC</th>
                             <th>Original Loan Amount</th>
                             <th>Outstanding Principal</th>
-                            <th>Interest Accrued</th>
-                            <th>Last Payment Date</th>
-                            <th>Next Due Date</th>
-                            <th>Loan Status</th>
-                            <th>Action</th>
+                            <th>Due Date</th>
+                            <th>Days Past Due</th>
+                            <th>Provision Amount</th>
+                            <th>Status</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach($outstandingData as $row)
-                             <tr>
+                        @foreach($agingData as $row)
+                            <tr>
                                 <td>{{ $row['id'] ?? 'N/A' }}</td>
                                 <td>{{ $row['customer_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
-                                <td>{{  number_format($row['original_loan_amount']) }}</td>
-                                <td>{{  number_format($row['outstanding_amount']) }}</td>
-                                <td>{{  number_format($row['interest_accrued'])  }}</td>
-                                <td>{{   ($row['last_payment'])  }}</td>
-                                <td>{{   ($row['next_due'])  }}</td>
-                                <td>{{   ($row['status'])  }}</td>
-                                <td><a target="_blank" href="{{ route('view-installment', $row['installment_id'] ) }}"
-                                       class="btn btn-sm btn-info m-2">View</a></td>
-
+                                <td>{{ number_format($row['original_loan_amount'], 2) }}</td>
+                                <td>{{ number_format($row['outstanding_amount'], 2) }}</td>
+                                <td>{{ showDate($row['due_date']) }}</td>
+                                <td>{{ $row['days_past_due'] }}</td>
+                                <td></td>
+                                <td>{{ $row['status'] }}</td>
                             </tr>
                         @endforeach
                         </tbody>
                         <tfoot>
                         <tr>
                             <td colspan="3" class="text-end fw-bold">Total Amount:</td>
-
-                            <td>{{ number_format($totalAmount) }}</td>
-                            <td>{{ number_format($totalOutstanding) }}</td>
-                            <td>{{ number_format($totalInterestAccrued) }}</td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-
+                            <td>{{ number_format($totalAmount, 2) }}</td>
+                            <td>{{ number_format($totalOutstanding, 2) }}</td>
+                            <td colspan="4"></td>
                         </tr>
                         </tfoot>
                     </table>
+
 
                 </div>
             </div>

@@ -370,6 +370,7 @@ class ReportController extends Controller
             // Determine status (Current if due date is not passed)
             $status = optional($nextDue)->due_date >= now() ? 'Current' : 'Overdue';
 
+            $interestAccrued = $outstandingAmount * 0.30 * 30 / 365;
             return [
                 'id' => $loanApplicationID,
                 'installment_id' => $latestInstallment->id,
@@ -377,7 +378,7 @@ class ReportController extends Controller
                 'cnic' => $userProfile->cnic_no,
                 'original_loan_amount' => $loan->loan_amount,
                 'outstanding_amount' => $outstandingAmount,
-                'interest_accrued' => $latestInstallment->total_markup ?? 0,
+                'interest_accrued' => $interestAccrued,
                 'last_payment' => optional($lastPayment)->paid_at,
                 'next_due' => optional($nextDue)->due_date,
                 'status' => $status,
@@ -387,7 +388,7 @@ class ReportController extends Controller
         // Calculate totals
         $totalAmount = $result->sum('loan_amount');
         $totalOutstanding = $outstandingData->sum('outstanding_amount');
-        $totalInterestAccrued = $result->sum(fn($loan) => $loan->getLatestInstallment->total_markup ?? 0);
+        $totalInterestAccrued =$outstandingData->sum('interest_accrued');
 
 
         return view('admin.reports.outstanding', compact(
@@ -400,7 +401,7 @@ class ReportController extends Controller
 
     public function showAgingReceivableReport()
     {
-        $title = 'Outstanding Report';
+        $title = 'Aging ReceivableR Report';
         $provinces = Province::all();
         $genders = Gender::all();
         $products = Product::all();
@@ -471,25 +472,31 @@ class ReportController extends Controller
                 ->sortBy('due_date')
                 ->first();
 
-            $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null; // Calculate days past due
-            $status = $this->getStatusFromDaysPastDue($daysPastDue); // Determine status based on days past due
+            // Calculate days past due: positive for upcoming due dates, negative for overdue
+            $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null;
+
+            // Round and format days past due with a sign
+            $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
+
+             // Determine status based on whether due date has passed
+            $status = (int) $daysPastDue < 0 ? $this->getStatusFromDaysPastDue(abs((int) $daysPastDue)) : 'Upcoming';
 
             return [
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
                 'original_loan_amount' => $loan->loan_amount,
-                'outstanding_balance' => $outstandingAmount,
+                'outstanding_amount' => $outstandingAmount,
                 'due_date' => optional($nextDue)->due_date,
-                'days_past_due' => $daysPastDue,
+                'days_past_due' => $daysPastDue, // Days past due with sign
                 'status' => $status,
             ];
         });
 
         // Calculate totals
         $totalAmount = $result->sum('loan_amount');
-        $totalOutstanding = $agingData->sum('outstanding_balance');
+        $totalOutstanding = $agingData->sum('outstanding_amount');
 
-        return view('admin.reports.aging', compact(
+         return view('admin.reports.aging_receivable', compact(
             'title', 'agingData', 'provinces', 'genders',
             'request', 'districts', 'products', 'totalAmount',
             'totalOutstanding'
@@ -516,8 +523,10 @@ class ReportController extends Controller
             return 'Doubtful';
         } elseif ($daysPastDue <= 209) {
             return 'Loss';
-        } else {
+        } elseif ($daysPastDue > 210) {
             return 'Write Off';
+        } else {
+            return 'Regular';
         }
     }
 
