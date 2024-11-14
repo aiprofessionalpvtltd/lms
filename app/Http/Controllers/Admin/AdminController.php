@@ -3,33 +3,17 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreCandidate;
-use App\Http\Traits\CandidateTrait;
-use App\Http\Traits\EmployerTrait;
-use App\Http\Traits\MentorTrait;
-use App\Models\Complaint;
-use App\Models\Intern;
+use App\Models\FailedLoginAttempt;
 use App\Models\User;
-use Ichtrojan\Otp\Otp;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\DataTables;
 
-//use Laravie\Codex\Contracts\Response;
-//use Laravie\Codex\Transport\Curl;
 
 class AdminController extends Controller
 {
-
-    private $otp;
-
-    public function __construct(Otp $Otp)
-    {
-        $this->otp = $Otp;
-    }
 
 
     public function updatePassword()
@@ -67,6 +51,27 @@ class AdminController extends Controller
         } else {
             return redirect()->back()->with('error', "Old password doesnt matched");
         }
+    }
+
+    public function failedLogs(Request $request)
+    {
+        $title = 'Failed Login Attempt';
+
+        if ($request->ajax()) {
+            $logs = FailedLoginAttempt::orderBy('created_at', 'DESC')->get();
+
+            return DataTables::of($logs)
+                ->addColumn('mobile_no', function ($log) {
+                    return $log->mobile_no;
+                })->addColumn('ip_address', function ($log) {
+                    return $log->ip_address;
+                })->addColumn('attempted_at', function ($log) {
+                    return showDateTime($log->attempted_at);
+                })
+                ->make(true);
+        }
+
+        return view('auth.failed_attempt_logs', compact('title'));
     }
 }
 

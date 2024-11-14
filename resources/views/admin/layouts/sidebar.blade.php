@@ -17,7 +17,8 @@
         <div class="sidebar-user">
             <div class="d-flex justify-content-center">
                 <div class="flex-shrink-0">
-                    <img src="{{asset('backend/img/avatars/new_logo.jpg')}}" style="width: 60px !important;" class="avatar img-fluid rounded me-1"
+                    <img src="{{asset('backend/img/avatars/new_logo.jpg')}}" style="width: 60px !important;"
+                         class="avatar img-fluid rounded me-1"
                          alt="{{ Auth::user()->name }}"/>
                 </div>
                 <div class="flex-grow-1 ps-2">
@@ -119,29 +120,33 @@
             @can('view-reports')
 
                 <li class="sidebar-item">
-                    <a data-bs-target="#reports" data-bs-toggle="collapse" class="sidebar-link collapsed" aria-expanded="false">
-                         <span class="align-middle">Reports</span>
+                    <a data-bs-target="#reports" data-bs-toggle="collapse" class="sidebar-link collapsed"
+                       aria-expanded="false">
+                        <span class="align-middle">Reports</span>
                     </a>
                     <ul id="reports" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar" style="">
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-disbursement-report')}}">Disbursement Report</a></li>
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-overdue-report')}}">Overdue Report</a></li>
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-collection-report')}}">Collection Report</a></li>
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-profit-report')}}">Service Charge/Profit Report</a></li>
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-outstanding-report')}}">Outstanding Report</a></li>
-                     </ul>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-disbursement-report')}}">Disbursement
+                                Report</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-overdue-report')}}">Overdue
+                                Report</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-collection-report')}}">Collection
+                                Report</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-profit-report')}}">Service
+                                Charge/Profit Report</a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-outstanding-report')}}">Outstanding
+                                Report</a></li>
+                    </ul>
                 </li>
 
             @endcan
 
 
-
-
-            {{--            <li class="sidebar-item {{ request()->routeIs('recovery.create') ? 'active' : '' }}">--}}
-{{--                <a class="sidebar-link" href="{{ route('recovery.create') }}">--}}
-{{--                    <i class="align-middle" data-feather="user"></i>--}}
-{{--                    <span class="align-middle">Recovery</span>--}}
-{{--                </a>--}}
-{{--            </li>--}}
+            <li class="sidebar-item {{ request()->routeIs('failed-attempt-logs') ? 'active' : '' }}">
+                <a class="sidebar-link" href="{{ route('failed-attempt-logs') }}">
+                    <i class="align-middle" data-feather="user"></i>
+                    <span class="align-middle">Failed Attempt Logs</span>
+                </a>
+            </li>
         </ul>
     </div>
 </nav>
