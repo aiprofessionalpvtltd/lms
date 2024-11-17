@@ -22,7 +22,7 @@
         <!-- Form validation -->
         <div class="card">
             <!-- Product form -->
-            <form action="{{ route('get-aging-receivable-report') }}" class="flex-fill form-validate-jquery">
+            <form action="{{ route('get-financing-report') }}" class="flex-fill form-validate-jquery">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -175,18 +175,23 @@
         <!-- Basic datatable -->
             <div class="card">
                 <div class="card-body">
-                    <table id="datatables-buttons" class="table table-bordered">
+                    <table id="datatables-buttons" class="table table-bordered table-responsive">
                         <thead>
                         <tr>
                             <th>Loan ID</th>
                             <th>Borrower Name</th>
                             <th>CNIC</th>
-                            <th>Original Loan Amount</th>
-                            <th>Outstanding Principal</th>
-                            <th>Due Date</th>
-                            <th>Days Past Due</th>
-                            <th>Provision Amount</th>
-                            <th>Status</th>
+                            <th>Product</th>
+                            <th>Product Price</th>
+                            <th>Down Payment</th>
+                            <th>Finance Amount</th>
+                            <th>Loan Start Date</th>
+                            <th>Installment Amount</th>
+                            <th>Interest Rate</th>
+                            <th>Installment Due Date</th>
+                            <th>Installment Paid</th>
+                            <th>Remaining Installments</th>
+                            <th>Outstanding Amount</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -195,23 +200,29 @@
                                 <td>{{ $row['id'] ?? 'N/A' }}</td>
                                 <td>{{ $row['customer_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
-                                <td>{{ number_format($row['original_loan_amount'], 2) }}</td>
+                                <td>{{ $row['product'] ?? 'N/A' }}</td>
+                                <td>{{ number_format($row['product_price'], 2) }}</td>
+                                <td>{{ number_format($row['down_payment'], 2) }}</td>
+                                <td>{{ number_format($row['finance_amount'], 2) }}</td>
+                                <td>{{ showDate($row['loan_start_date']) }}</td>
+                                <td>{{ number_format($row['installment_amount'], 2) }}</td>
+                                <td>{{ $row['interest_rate'] }}</td>
+                                <td>{{ showDate($row['installment_due_date']) }}</td>
+                                <td>{{ $row['installment_paid'] }}</td>
+                                <td>{{ $row['remaining_installments'] }}</td>
                                 <td>{{ number_format($row['outstanding_amount'], 2) }}</td>
-                                <td>{{ showDate($row['due_date']) }}</td>
-                                <td>{{ $row['days_past_due'] }}</td>
-                                <td>{{ $row['provision_amount'] }}</td>
-                                <td>{{ $row['status'] }}</td>
+
                             </tr>
                         @endforeach
                         </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-end fw-bold">Total Amount:</td>
-                            <td>{{ number_format($totalAmount, 2) }}</td>
-                            <td>{{ number_format($totalOutstanding, 2) }}</td>
-                            <td colspan="4"></td>
-                        </tr>
-                        </tfoot>
+{{--                        <tfoot>--}}
+{{--                        <tr>--}}
+{{--                            <td colspan="3" class="text-end fw-bold">Total Amount:</td>--}}
+{{--                            <td>{{ number_format($totalAmount, 2) }}</td>--}}
+{{--                            <td>{{ number_format($totalOutstanding, 2) }}</td>--}}
+{{--                            <td colspan="7"></td>--}}
+{{--                        </tr>--}}
+{{--                        </tfoot>--}}
                     </table>
 
 
@@ -271,7 +282,7 @@
                         className: 'btn btn-danger',
                         titleAttr: 'Export to PDF',
                         orientation: 'landscape', // Set PDF orientation to landscape
-                        title: 'Profit Report',
+                        title: 'Product Financing Report',
                         exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer
@@ -282,7 +293,7 @@
                         text: 'Excel',
                         className: 'btn btn-success',
                         titleAttr: 'Export to Excel',
-                        title: 'Profit Report',
+                        title: 'Product Financing Report',
                         exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer

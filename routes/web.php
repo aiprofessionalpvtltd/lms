@@ -103,6 +103,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-aging-receivable-report', [ReportController::class, 'showAgingReceivableReport'])->name('show-aging-receivable-report');
     Route::get('get-aging-receivable-report', [ReportController::class, 'getAgingReceivableReport'])->name('get-aging-receivable-report');
 
+    Route::get('show-provision-report', [ReportController::class, 'showProvisionReport'])->name('show-provision-report');
+    Route::get('get-provision-report', [ReportController::class, 'getProvisionReport'])->name('get-provision-report');
+
+    Route::get('show-financing-report', [ReportController::class, 'showFinanceReport'])->name('show-financing-report');
+    Route::get('get-financing-report', [ReportController::class, 'getFinanceReport'])->name('get-financing-report');
+
+
 });
 
 

@@ -22,7 +22,7 @@
         <!-- Form validation -->
         <div class="card">
             <!-- Product form -->
-            <form action="{{ route('get-aging-receivable-report') }}" class="flex-fill form-validate-jquery">
+            <form action="{{ route('get-provision-report') }}" class="flex-fill form-validate-jquery">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -185,9 +185,12 @@
                             <th>Outstanding Principal</th>
                             <th>Due Date</th>
                             <th>Days Past Due</th>
+                            <th>Class</th>
+                            <th>Provision Percentage</th>
                             <th>Provision Amount</th>
-                            <th>Status</th>
-                        </tr>
+                            <th>NPL Status</th>
+                            <th>NPL Entry Date</th>
+                         </tr>
                         </thead>
                         <tbody>
                         @foreach($agingData as $row)
@@ -199,8 +202,11 @@
                                 <td>{{ number_format($row['outstanding_amount'], 2) }}</td>
                                 <td>{{ showDate($row['due_date']) }}</td>
                                 <td>{{ $row['days_past_due'] }}</td>
-                                <td>{{ $row['provision_amount'] }}</td>
                                 <td>{{ $row['status'] }}</td>
+                                <td>{{ $row['percentage'] }}</td>
+                                <td>{{ $row['provision_amount'] }}</td>
+                                <td>{{ $row['npl_status'] }}</td>
+                                <td>{{ $row['npl_entry_date'] }}</td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -209,7 +215,7 @@
                             <td colspan="3" class="text-end fw-bold">Total Amount:</td>
                             <td>{{ number_format($totalAmount, 2) }}</td>
                             <td>{{ number_format($totalOutstanding, 2) }}</td>
-                            <td colspan="4"></td>
+                            <td colspan="7"></td>
                         </tr>
                         </tfoot>
                     </table>
@@ -282,7 +288,7 @@
                         text: 'Excel',
                         className: 'btn btn-success',
                         titleAttr: 'Export to Excel',
-                        title: 'Profit Report',
+                        title: 'Provision Report',
                         exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer

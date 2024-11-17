@@ -478,17 +478,20 @@ class ReportController extends Controller
             // Round and format days past due with a sign
             $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
 
-             // Determine status based on whether due date has passed
-            $status = (int) $daysPastDue < 0 ? $this->getStatusFromDaysPastDue(abs((int) $daysPastDue)) : 'Upcoming';
-
+            $statusData = $this->getStatusFromDaysPastDue(abs((int) $daysPastDue));
+            $status = $statusData['status'];
+            $percentage = $statusData['percentage'];
             return [
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
+                'id' => $loan->id,
                 'original_loan_amount' => $loan->loan_amount,
                 'outstanding_amount' => $outstandingAmount,
                 'due_date' => optional($nextDue)->due_date,
+                'provision_amount' => optional($nextDue)->amount_due,
                 'days_past_due' => $daysPastDue, // Days past due with sign
                 'status' => $status,
+                'percentage' => $percentage,
             ];
         });
 
@@ -503,6 +506,136 @@ class ReportController extends Controller
         ));
     }
 
+
+
+    public function showProvisionReport()
+    {
+        $title = 'Provision Report';
+        $provinces = Province::all();
+        $genders = Gender::all();
+        $products = Product::all();
+        return view('admin.reports.provision', compact('title', 'provinces', 'genders', 'products'));
+    }
+
+    public function getProvisionReport(Request $request)
+    {
+        $title = 'Provision Report';
+        $provinces = Province::all();
+        $districts = District::all();
+        $genders = Gender::all();
+        $products = Product::all();
+
+        $dateRange = $request->date_range;
+        $gender_id = $request->gender_id;
+        $province_id = $request->province_id;
+        $district_id = $request->district_id;
+        $product_id = $request->product_id;
+
+        // Split the date range
+        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $startDate = $splitDate[0] ?? null;
+        $endDate = $splitDate[1] ?? null;
+
+        $result = LoanApplication::with([
+            'product',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'getLatestInstallment' => function ($query) {
+                $query->with('details'); // Load installment details for outstanding calculation
+            }
+        ])
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->when($gender_id, function ($query) use ($gender_id) {
+                return $query->whereHas('user.profile', function ($q) use ($gender_id) {
+                    $q->where('gender_id', $gender_id);
+                });
+            })
+            ->when($province_id, function ($query) use ($province_id) {
+                return $query->whereHas('user', function ($q) use ($province_id) {
+                    $q->where('province_id', $province_id);
+                });
+            })
+            ->when($district_id, function ($query) use ($district_id) {
+                return $query->whereHas('user', function ($q) use ($district_id) {
+                    $q->where('district_id', $district_id);
+                });
+            })
+            ->get();
+
+        // Process each loan application to retrieve required details
+        $agingData = $result->map(function ($loan) {
+            $userProfile = $loan->user->profile;
+            $latestInstallment = $loan->getLatestInstallment;
+
+            // Calculate outstanding amount based on unpaid installments
+            $outstandingAmount = $latestInstallment->details
+                ->where('is_paid', false)
+                ->sum('amount_due');
+
+            // Retrieve next due date for aging calculation
+            $nextDue = $latestInstallment->details
+                ->where('is_paid', false)
+                ->sortBy('due_date')
+                ->first();
+
+            // Calculate days past due: positive for upcoming due dates, negative for overdue
+            $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null;
+
+            // Round and format days past due with a sign
+            $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
+
+            $statusData = $this->getStatusFromDaysPastDue(abs((int) $daysPastDue));
+            $status = $statusData['status'];
+            $percentage = $statusData['percentage'];
+
+            // Determine if the loan is NPL or Not NPL
+            $isNPL = in_array($status, ['OAEM', 'Substandard', 'Doubtful', 'Loss']);
+            $nplStatus = $isNPL ? 'NPL' : 'Not NPL';
+
+            // Calculate the NPL entry date for Not NPL loans
+            $nplEntryDate = null;
+
+
+
+            if ($isNPL && $nextDue) {
+                $daysUntilNPL = 61 - abs($daysPastDue); // Days to OAEM (NPL entry)
+                $nplEntryDate = now()->addDays($daysUntilNPL)->toDateString();
+            }
+
+
+            return [
+                'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                'cnic' => $userProfile->cnic_no,
+                'id' => $loan->id,
+                'original_loan_amount' => $loan->loan_amount,
+                'outstanding_amount' => $outstandingAmount,
+                'due_date' => optional($nextDue)->due_date,
+                'provision_amount' => optional($nextDue)->amount_due,
+                'days_past_due' => $daysPastDue, // Days past due with sign
+                'status' => $status,
+                'percentage' => $percentage,
+                'npl_status' => $nplStatus,
+                'npl_entry_date' => $nplEntryDate,
+            ];
+        });
+
+
+        // Calculate totals
+        $totalAmount = $result->sum('loan_amount');
+        $totalOutstanding = $agingData->sum('outstanding_amount');
+
+        return view('admin.reports.provision', compact(
+            'title', 'agingData', 'provinces', 'genders',
+            'request', 'districts', 'products', 'totalAmount',
+            'totalOutstanding'
+        ));
+    }
+
+
+
     /**
      * Determine status based on days past due.
      *
@@ -512,23 +645,139 @@ class ReportController extends Controller
     private function getStatusFromDaysPastDue($daysPastDue)
     {
         if (is_null($daysPastDue) || $daysPastDue <= 0) {
-            return 'Current';
+            return ['status' => 'Current', 'percentage' => '0%'];
         } elseif ($daysPastDue <= 30) {
-            return 'Watchlist';
+            return ['status' => 'Watchlist', 'percentage' => '10%'];
         } elseif ($daysPastDue <= 60) {
-            return 'OAEM';
+            return ['status' => 'OAEM', 'percentage' => '30%'];
         } elseif ($daysPastDue <= 90) {
-            return 'Substandard';
+            return ['status' => 'Substandard', 'percentage' => '50%'];
         } elseif ($daysPastDue <= 179) {
-            return 'Doubtful';
+            return ['status' => 'Doubtful', 'percentage' => '70%'];
         } elseif ($daysPastDue <= 209) {
-            return 'Loss';
+            return ['status' => 'Loss', 'percentage' => '80%'];
         } elseif ($daysPastDue > 210) {
-            return 'Write Off';
+            return ['status' => 'Write Off', 'percentage' => '100%'];
         } else {
-            return 'Regular';
+            return ['status' => 'Regular', 'percentage' => '0%'];
         }
     }
+
+
+    public function showFinanceReport()
+    {
+        $title = 'Product Financing Report';
+        $provinces = Province::all();
+        $genders = Gender::all();
+        $products = Product::all();
+        return view('admin.reports.finance', compact('title', 'provinces', 'genders', 'products'));
+    }
+
+    public function getFinanceReport(Request $request)
+    {
+        $title = 'Product Financing Report';
+        $provinces = Province::all();
+        $districts = District::all();
+        $genders = Gender::all();
+        $products = Product::all();
+
+        $dateRange = $request->date_range;
+        $gender_id = $request->gender_id;
+        $province_id = $request->province_id;
+        $district_id = $request->district_id;
+        $product_id = $request->product_id;
+
+        // Split the date range
+        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $startDate = $splitDate[0] ?? null;
+        $endDate = $splitDate[1] ?? null;
+
+        $result = LoanApplication::with([
+            'product',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'getLatestInstallment' => function ($query) {
+                $query->with('details'); // Load installment details for outstanding calculation
+            }
+        ])
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->when($gender_id, function ($query) use ($gender_id) {
+                return $query->whereHas('user.profile', function ($q) use ($gender_id) {
+                    $q->where('gender_id', $gender_id);
+                });
+            })
+            ->when($province_id, function ($query) use ($province_id) {
+                return $query->whereHas('user', function ($q) use ($province_id) {
+                    $q->where('province_id', $province_id);
+                });
+            })
+            ->when($district_id, function ($query) use ($district_id) {
+                return $query->whereHas('user', function ($q) use ($district_id) {
+                    $q->where('district_id', $district_id);
+                });
+            })
+            ->when($product_id, function ($query) use ($product_id) {
+                return $query->where('product_id', $product_id);
+            })
+            ->get();
+
+        // Process each loan application
+        $agingData = $result->map(function ($loan) {
+            $userProfile = $loan->user->profile;
+            $latestInstallment = $loan->getLatestInstallment;
+            $installments = $latestInstallment->details;
+            $loanProducts = $loan->calculatedProduct;
+
+            // Calculate outstanding amount
+            $outstandingAmount = $installments->where('is_paid', false)->sum('amount_due');
+
+            // Retrieve next due date and installment details
+            $nextDue = $installments->where('is_paid', false)->sortBy('due_date')->first();
+
+            // Calculate remaining installments
+            $remainingInstallments = $installments->where('is_paid', false)->count();
+            $paidInstallments = $installments->where('is_paid', true)->count();
+
+            // Calculate installment amount
+            $installmentAmount = $installments->first()->amount_due ?? 0;
+
+            $firstInstallmentStarted = $installments->sortBy('due_date')->first();
+
+
+
+            return [
+                'id' => $loan->id,
+                'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                'cnic' => $userProfile->cnic_no,
+                'product' => $loan->product->name ?? 'Standard Loan',
+                'product_price' => $loan->product->price ??  $loanProducts->loan_amount,
+                'down_payment' => $loanProducts->down_payment_amount,
+                'finance_amount' => $loanProducts->financed_amount,
+                'loan_start_date' =>  optional($firstInstallmentStarted)->created_at,
+                'installment_amount' => $installmentAmount,
+                'interest_rate' => $loanProducts->total_interest_amount . '('.  round($loanProducts->interest_rate_percentage) .'%)',
+                'installment_due_date' => optional($nextDue)->due_date,
+                'installment_paid' => $paidInstallments,
+                'remaining_installments' => $remainingInstallments,
+                'outstanding_amount' => $outstandingAmount,
+
+            ];
+        });
+
+        // Calculate totals
+        $totalAmount = $result->sum('loan_amount');
+        $totalOutstanding = $agingData->sum('outstanding_amount');
+
+        return view('admin.reports.finance', compact(
+            'title', 'agingData', 'provinces', 'genders',
+            'request', 'districts', 'products', 'totalAmount',
+            'totalOutstanding'
+        ));
+    }
+
 
 
 }

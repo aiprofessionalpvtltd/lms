@@ -53,7 +53,12 @@
                     <span class="align-middle">Dashboard</span>
                 </a>
             </li>
-
+            <li class="sidebar-item {{ request()->routeIs('failed-attempt-logs') ? 'active' : '' }}">
+                <a class="sidebar-link" href="{{ route('failed-attempt-logs') }}">
+                    <i class="align-middle" data-feather="user"></i>
+                    <span class="align-middle">Failed Attempt Logs</span>
+                </a>
+            </li>
 
             @can('view-roles')
 
@@ -138,18 +143,21 @@
 
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-aging-receivable-report')}}">Aging Receivable
                                 Report</a></li>
+
+
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-provision-report')}}">Provisioning
+                                Report</a></li>
+
+
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-financing-report')}}">Product Financing
+                                Report</a></li>
                     </ul>
                 </li>
 
             @endcan
 
 
-            <li class="sidebar-item {{ request()->routeIs('failed-attempt-logs') ? 'active' : '' }}">
-                <a class="sidebar-link" href="{{ route('failed-attempt-logs') }}">
-                    <i class="align-middle" data-feather="user"></i>
-                    <span class="align-middle">Failed Attempt Logs</span>
-                </a>
-            </li>
+
         </ul>
     </div>
 </nav>
