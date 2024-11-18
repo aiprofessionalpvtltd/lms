@@ -67,9 +67,9 @@
                                        class="text-primary mr-1"><i
                                             class="fas fa-eye"></i></a>
 
-                                    <a title="Complete" href="{{ route('complete-loan-application', $loanApplication->id) }}"
-                                       class="text-primary mr-3 ml-3"><i
-                                            class="fas fa-check"></i></a>
+{{--                                    <a title="Complete" href="{{ route('complete-loan-application', $loanApplication->id) }}"--}}
+{{--                                       class="text-primary mr-3 ml-3"><i--}}
+{{--                                            class="fas fa-check"></i></a>--}}
                                 @endcan
 
 
