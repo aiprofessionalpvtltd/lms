@@ -56,10 +56,10 @@ function showBoolean($status)
 {
 
     if ($status == 1) {
-        echo '<span class="badge badge-success">YES</span>';
+        echo '<span class="badge bg-success">YES</span>';
 
     } else {
-        echo '<span class="badge badge-danger">NO</span>';
+        echo '<span class="badge bg-danger">NO</span>';
 
     }
 
@@ -69,10 +69,10 @@ function showBooleanStatus($status)
 {
 
     if ($status == 1) {
-        return '<span class="badge badge-success">YES</span>';
+        return '<span class="badge bg-success">YES</span>';
 
     } else {
-        return '<span class="badge badge-danger">NO</span>';
+        return '<span class="badge bg-danger">NO</span>';
 
     }
 

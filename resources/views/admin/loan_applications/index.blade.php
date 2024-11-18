@@ -44,7 +44,7 @@
                     <th>Service</th>
                     <th>Purpose</th>
                     <th>Address</th>
-                    <th>Status</th>
+                    <th>Completed</th>
                       <th class="text-center">Actions</th>
                 </tr>
                 </thead>
@@ -59,7 +59,7 @@
                         <td>{{$loanApplication->productService->name}}</td>
                         <td>{{$loanApplication->loanPurpose->name}}</td>
                         <td>{{$loanApplication->address}}</td>
-                        <td>{{showApprovalStatus($loanApplication->status)}}</td>
+                        <td>{{showBoolean($loanApplication->is_completed)}}</td>
                           <td>
                             <div class="d-flex">
                                 @can('view-loan-management')

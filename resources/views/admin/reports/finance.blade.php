@@ -283,7 +283,7 @@
                         titleAttr: 'Export to PDF',
                         orientation: 'landscape', // Set PDF orientation to landscape
                         title: 'Product Financing Report',
-                        exportOptions: {
+                                exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer
                         }
