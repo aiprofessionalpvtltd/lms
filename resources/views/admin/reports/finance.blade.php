@@ -207,7 +207,7 @@
                                 <td>{{ showDate($row['loan_start_date']) }}</td>
                                 <td>{{ number_format($row['installment_amount'], 2) }}</td>
                                 <td>{{ $row['interest_rate'] }}</td>
-                                <td>{{ showDate($row['installment_due_date']) }}</td>
+                                <td>{{ $row['installment_due_date'] ? showDate($row['installment_due_date']) : '' }}</td>
                                 <td>{{ $row['installment_paid'] }}</td>
                                 <td>{{ $row['remaining_installments'] }}</td>
                                 <td>{{ number_format($row['outstanding_amount'], 2) }}</td>
