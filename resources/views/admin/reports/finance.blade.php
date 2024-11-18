@@ -256,7 +256,7 @@
 
             var datatablesButtons = $("#datatables-buttons").DataTable({
                 responsive: true,
-                scrollX: false, // Enable horizontal scrolling
+                scrollX: true, // Enable horizontal scrolling
                 lengthChange: false,
                 pageLength: 100,
                 buttons: [
