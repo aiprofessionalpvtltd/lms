@@ -109,6 +109,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-financing-report', [ReportController::class, 'showFinanceReport'])->name('show-financing-report');
     Route::get('get-financing-report', [ReportController::class, 'getFinanceReport'])->name('get-financing-report');
 
+    Route::get('show-penalty-report', [ReportController::class, 'showPenaltyReport'])->name('show-penalty-report');
+    Route::get('get-penalty-report', [ReportController::class, 'getPenaltyReport'])->name('get-penalty-report');
+
 
 });
 

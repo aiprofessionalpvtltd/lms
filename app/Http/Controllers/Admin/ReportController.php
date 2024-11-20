@@ -778,6 +778,116 @@ class ReportController extends Controller
         ));
     }
 
+    public function showPenaltyReport()
+    {
+        $title = 'Penalty Report';
+        $provinces = Province::all();
+        $genders = Gender::all();
+        $products = Product::all();
+        return view('admin.reports.penalty', compact('title', 'provinces', 'genders', 'products'));
+    }
 
+    public function getPenaltyReport(Request $request)
+    {
+        $title = 'Penalty Report';
+        $provinces = Province::all();
+        $districts = District::all();
+        $genders = Gender::all();
+        $products = Product::all();
+
+        $dateRange = $request->date_range;
+        $gender_id = $request->gender_id;
+        $province_id = $request->province_id;
+        $district_id = $request->district_id;
+        $product_id = $request->product_id;
+
+        // Split the date range
+        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $startDate = $splitDate[0] ?? null;
+        $endDate = $splitDate[1] ?? null;
+
+        $result = LoanApplication::with([
+            'product',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'getLatestInstallment' => function ($query) {
+                $query->with('details'); // Load installment details for penalty calculation
+            }
+        ])
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->when($gender_id, function ($query) use ($gender_id) {
+                return $query->whereHas('user.profile', function ($q) use ($gender_id) {
+                    $q->where('gender_id', $gender_id);
+                });
+            })
+            ->when($province_id, function ($query) use ($province_id) {
+                return $query->whereHas('user', function ($q) use ($province_id) {
+                    $q->where('province_id', $province_id);
+                });
+            })
+            ->when($district_id, function ($query) use ($district_id) {
+                return $query->whereHas('user', function ($q) use ($district_id) {
+                    $q->where('district_id', $district_id);
+                });
+            })
+            ->when($product_id, function ($query) use ($product_id) {
+                return $query->where('product_id', $product_id);
+            })
+            ->get();
+
+        // Define penalty per day
+        $penaltyPerDay = env('LATE_FEE');
+
+        // Process each loan application
+        $penaltyData = $result->map(function ($loan) use ($penaltyPerDay) {
+            $userProfile = $loan->user->profile;
+            $installments = $loan->getLatestInstallment->details;
+            $penaltyEntries = [];
+
+            foreach ($installments as $installment) {
+                if (!$installment->is_paid && $installment->due_date < now()) {
+                    // Generate installment numbers based on due_date order
+                    $installments->each(function ($installment, $index) {
+                        $installment->installment_number = $this->formatOrdinal($index + 1);
+                    });
+
+                    // Calculate the absolute value of days late
+                    $daysLate = abs(now()->diffInDays($installment->due_date));
+                    $totalPenalty = $daysLate * $penaltyPerDay;
+
+                    $penaltyEntries[] = [
+                        'id' => $loan->id,
+                        'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                        'cnic' => $userProfile->cnic_no,
+                        'installment_number' =>  ($installment->installment_number),
+                        'installment_amount' => round($installment->amount_due),
+                        'installment_due_date' => $installment->due_date,
+                        'days_late' => round($daysLate,0),
+                        'penalty_per_day' => round($penaltyPerDay),
+                        'total_penalty' => round($totalPenalty),
+                        'total_payment' => round($installment->amount_due + $totalPenalty),
+                    ];
+                }
+            }
+
+
+            return $penaltyEntries;
+        })->flatten(1);
+
+//        dd($penaltyData);
+        return view('admin.reports.penalty', compact(
+            'title', 'penaltyData', 'provinces', 'genders',
+            'request', 'districts', 'products'
+        ));
+    }
+    private function formatOrdinal($number)
+    {
+        $suffixes = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+        $mod = $number % 100;
+        return $number . ($suffixes[($mod - 20) % 10] ?? $suffixes[$mod] ?? 'th');
+    }
 
 }

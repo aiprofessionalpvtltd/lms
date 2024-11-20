@@ -151,6 +151,9 @@
 
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-financing-report')}}">Product Financing
                                 Report</a></li>
+
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-penalty-report')}}">Penalty
+                                Report</a></li>
                     </ul>
                 </li>
 
