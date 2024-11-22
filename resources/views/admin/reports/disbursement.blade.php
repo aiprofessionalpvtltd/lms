@@ -165,6 +165,7 @@
                             <th>District</th>
                             <th>Product</th>
                             <th>Loan Amount</th>
+                            <th>Disbursed Amount</th>
                             <th>Date</th>
                             <th>Disbursement By</th>
                             <th>Mode of Payment</th>
@@ -180,6 +181,7 @@
                                 <td>{{ $transaction->loanApplication->user->province->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->district->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->product->name ?? 'N/A' }}</td>
+                                <td>{{ number_format($transaction->loanApplication->loan_amount, 2) }}</td>
                                 <td>{{ number_format($transaction->loanApplication->transaction->amount, 2) }}</td>
                                 <td>{{ $transaction->created_at->format('Y-m-d') }}</td>
                                 <td>{{ $transaction->loanApplication->transaction->user->name ?? 'N/A' }}</td>

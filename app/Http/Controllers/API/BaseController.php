@@ -284,7 +284,8 @@ class BaseController extends Controller
 
     function generateLoanApplicationId() {
 
-        $userId = auth()->user()->id;
+        $authUser = auth()->user();
+        $userId = $authUser->id;
 
         // Get the current year
         $year = date('Y');

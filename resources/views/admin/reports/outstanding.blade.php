@@ -193,7 +193,7 @@
                         <tbody>
                         @foreach($outstandingData as $row)
                              <tr>
-                                <td>{{ $row['id'] ?? 'N/A' }}</td>
+                                <td>{{ $row['application_id'] ?? 'N/A' }}</td>
                                 <td>{{ $row['customer_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
                                 <td>{{  number_format($row['original_loan_amount']) }}</td>

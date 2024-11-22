@@ -348,7 +348,7 @@ class ReportController extends Controller
         // Process each loan application to retrieve required details
         $outstandingData = $result->map(function ($loan) {
             $userProfile = $loan->user->profile;
-            $loanApplicationID = $loan->id;
+            $loanApplicationID = $loan->application_id;
             $latestInstallment = $loan->getLatestInstallment;
 
             // Calculate outstanding amount based on unpaid installments
@@ -372,7 +372,7 @@ class ReportController extends Controller
 
             $interestAccrued = $outstandingAmount * 0.30 * 30 / 365;
             return [
-                'id' => $loanApplicationID,
+                'application_id' => $loanApplicationID,
                 'installment_id' => $latestInstallment->id,
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
@@ -475,12 +475,18 @@ class ReportController extends Controller
             // Calculate days past due: positive for upcoming due dates, negative for overdue
             $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null;
 
+            // Skip if daysPastDue is positive (future due date)
+            if ($daysPastDue > 0) {
+                return null;
+            }
+
             // Round and format days past due with a sign
             $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
 
             $statusData = $this->getStatusFromDaysPastDue(abs((int)$daysPastDue));
             $status = $statusData['status'];
             $percentage = $statusData['percentage'];
+
             return [
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
@@ -493,7 +499,7 @@ class ReportController extends Controller
                 'status' => $status,
                 'percentage' => $percentage,
             ];
-        });
+        })->filter(); // Remove null entries from skipped loans
 
         // Calculate totals
         $totalAmount = $result->sum('loan_amount');
