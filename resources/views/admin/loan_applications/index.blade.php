@@ -36,6 +36,7 @@
                 <table id="" class="table table-striped datatables-reponsive">
                 <thead>
                 <tr>
+                    <th>Loan ID</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Asisgned To</th>
@@ -51,6 +52,7 @@
                 <tbody>
                 @foreach($loanApplications as $loanApplication)
                     <tr>
+                        <td>{{$loanApplication->application_id}}</td>
                         <td>{{$loanApplication->name}}</td>
                         <td>{{$loanApplication->email}}</td>
                         <td>{{$loanApplication->getLatestHistory->toUser->name}}</td>

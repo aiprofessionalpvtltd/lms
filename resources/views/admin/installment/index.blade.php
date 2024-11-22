@@ -27,6 +27,7 @@
                 <table class="table table-striped datatables-reponsive">
                     <thead>
                     <tr>
+                        <th>Loan ID</th>
                         <th>Application Name</th>
                         <th>Application Amount</th>
                         <th>Installment Duration</th>
@@ -41,6 +42,7 @@
                     <tbody>
                     @foreach($installments as $installment)
                         <tr>
+                            <td>{{ $installment->loanApplication->application_id ?? 'N/A' }}</td>
                             <td>{{ $installment->loanApplication->name ?? 'N/A' }}</td>
                             <td>{{ $installment->loanApplication->loan_amount ?? 'N/A' }}</td>
                             <td>{{ $installment->loanApplication->loanDuration->name ?? 'N/A' }}</td>

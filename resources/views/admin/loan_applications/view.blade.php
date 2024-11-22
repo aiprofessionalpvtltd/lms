@@ -97,7 +97,7 @@
     <div class="page-header page-header-light">
         <div class="page-header-content header-elements-md-inline">
             <div class="page-title d-flex">
-                <h4><span class="font-weight-semibold"></span> Loan Application Detail
+                <h4><span class="font-weight-semibold"></span> Loan Application Detail ({{ $loanApplication->application_id ?? 'N/A'}})
                 </h4>
             </div>
 
