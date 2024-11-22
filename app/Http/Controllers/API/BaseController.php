@@ -285,19 +285,32 @@ class BaseController extends Controller
     function generateLoanApplicationId() {
 
         $authUser = auth()->user();
+        $userProvince = $authUser->province->name;
+
         $userId = $authUser->id;
 
         // Get the current year
-        $year = date('Y');
-        $prefix = 'LOAN';
+        $year = date('y');
 
+        $provincePrefixes = [
+            'Punjab' => 'PJ',
+            'Sindh' => 'SN',
+            'KPK' => 'KP',
+            'Balochistan' => 'BL',
+            'Gilgit–Baltistan' => 'GB',
+            'AJK' => 'AJK',
+            'Federal' => 'ISB',
+        ];
+
+        // Get the prefix for the province
+        $prefix = $provincePrefixes[$userProvince] ?? 'X'; // Default to 'X' if not found
         // Count existing records for the user in the current year
         $applicationCount = LoanApplication::where('user_id', $userId)
                 ->whereYear('created_at', $year)
                 ->count() + 1; // Increment for the new application
 
         // Generate the application ID in the format: PREFIX-USERID-YEAR-COUNT
-        $applicationId = sprintf('%s-%d-%s-%03d', $prefix, $userId, $year, $applicationCount);
+        $applicationId = sprintf('%s%s%02d', $prefix, $year, $applicationCount);
 
         // Check for uniqueness
         $existingApplication = LoanApplication::where('application_id', $applicationId)

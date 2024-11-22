@@ -280,35 +280,7 @@ function calculatePercentage($score, $total)
     return $formatted_percentage;
 }
 
-function createLogs($generatedFor, $detail, $action): bool
-{
-    $generatedBy = Auth::user()->id;
-    $logData = [
-        'generated_by' => $generatedBy,
-        'generated_for' => $generatedFor,
-        'detail' => $detail,
-        'action' => $action
-    ];
-    InternLog::create($logData);
-    return true;
-}
 
-function createLogsWithOutAuth($generatedFor, $detail, $action): bool
-{
-    $logData = [
-        'generated_by' => 0,
-        'generated_for' => $generatedFor,
-        'detail' => $detail,
-        'action' => $action
-    ];
-    InternLog::create($logData);
-    return true;
-}
-
-function generateTransactionCode(){
-    $number = mt_rand(100000000000000, 999999999999999);
-    return $number;
-}
 
 function determineRiskLevel($score)
 {
