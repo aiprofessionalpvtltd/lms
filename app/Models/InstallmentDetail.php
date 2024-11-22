@@ -13,6 +13,27 @@ class InstallmentDetail extends Model
         'installment_id', 'due_date', 'amount_due', 'amount_paid', 'is_paid', 'paid_at'
     ];
 
+    // Append the installment_number attribute
+    protected $appends = ['installment_number'];
+
+    // Add the installment_number accessor
+    public function getInstallmentNumberAttribute()
+    {
+        // Find the parent Installment and get the index of this detail
+        $parent = $this->installment;
+        if ($parent) {
+            $sortedDetails = $parent->details->sortBy('due_date')->values();
+            $index = $sortedDetails->search(function ($item) {
+                return $item->id === $this->id;
+            });
+
+            return $index !== false ? formatOrdinal($index + 1) : null;
+        }
+
+        return null;
+    }
+    
+
     public function installment()
     {
         return $this->belongsTo(Installment::class);

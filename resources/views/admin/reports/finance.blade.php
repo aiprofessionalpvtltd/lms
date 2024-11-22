@@ -197,7 +197,7 @@
                         <tbody>
                         @foreach($agingData as $row)
                             <tr>
-                                <td>{{ $row['id'] ?? 'N/A' }}</td>
+                                <td>{{ $row['application_id'] ?? 'N/A' }}</td>
                                 <td>{{ $row['customer_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
                                 <td>{{ $row['product'] ?? 'N/A' }}</td>

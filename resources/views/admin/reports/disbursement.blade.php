@@ -157,6 +157,7 @@
                     <table id="datatables-buttons" class="table table-bordered">
                         <thead>
                         <tr>
+                            <th>Loan ID</th>
                             <th>Name</th>
                             <th>CNIC</th>
                             <th>Gender</th>
@@ -172,6 +173,7 @@
                         <tbody>
                         @foreach($result as $transaction)
                             <tr>
+                                <td>{{ $transaction->loanApplication->application_id ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->profile->cnic_no ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->profile->gender->name ?? 'N/A' }}</td>
@@ -189,7 +191,7 @@
                         <tr>
                             <td></td>
 
-                            <td colspan="1" class="text-end">Total Male:</td>
+                            <td colspan="2" class="text-end">Total Male:</td>
                             <td>{{ $totalMale }}</td>
                             <td colspan="2" class="text-end">Total Female:</td>
                             <td>{{ $totalFemale }}</td>
@@ -230,7 +232,7 @@
 
             var datatablesButtons = $("#datatables-buttons").DataTable({
                 responsive: true,
-                scrollX: false, // Enable horizontal scrolling
+                scrollX: true, // Enable horizontal scrolling
                 lengthChange: false,
                 pageLength: 100,
                 buttons: [

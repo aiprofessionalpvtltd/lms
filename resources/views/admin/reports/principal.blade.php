@@ -22,7 +22,7 @@
         <!-- Form validation -->
         <div class="card">
             <!-- Product form -->
-            <form action="{{ route('get-provision-report') }}" class="flex-fill form-validate-jquery">
+            <form action="{{ route('get-principal-report') }}" class="flex-fill form-validate-jquery">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -157,7 +157,7 @@
                                     <div class="col-md-12 mt-4">
                                         <button type="submit" class="btn btn-outline-primary float-end">Get Report
                                         </button>
-                                        <a href="{{ route('show-disbursement-report') }}"
+                                        <a href="{{ route('show-principal-report') }}"
                                            class="btn btn-outline-dark me-3 float-end">Reset</a>
                                     </div>
 
@@ -171,53 +171,45 @@
         </div>
         <!-- /form validation -->
 
-    @if(isset($totalOutstanding))
+    @if(isset($principalData))
         <!-- Basic datatable -->
             <div class="card">
                 <div class="card-body">
-                    <table id="datatables-buttons" class="table table-bordered">
+                    <table id="datatables-buttons" class="table table-bordered table-responsive">
                         <thead>
                         <tr>
                             <th>Loan ID</th>
-                            <th>Borrower Name</th>
+                             <th>Borrower Name</th>
                             <th>CNIC</th>
-                            <th>Original Loan Amount</th>
-                            <th>Outstanding Principal</th>
-                            <th>Due Date</th>
-                            <th>Days Past Due</th>
-                            <th>Class</th>
-                            <th>Provision Percentage</th>
-                            <th>Provision Amount</th>
-                            <th>NPL Status</th>
-                            <th>NPL Entry Date</th>
-                         </tr>
+                            <th>Loan Amount</th>
+                            <th>Principal Amount</th>
+                             <th>Interest Amount</th>
+                            <th>Interest + Principal</th>
+                            <th>Installment Amount</th>
+                            <th>Interest Received</th>
+                            <th>Principal Received</th>
+                            <th>Remaining Principal</th>
+
+
                         </thead>
                         <tbody>
-                        @foreach($agingData as $row)
+                        @foreach($principalData as $row)
                             <tr>
                                 <td>{{ $row['application_id'] ?? 'N/A' }}</td>
-                                <td>{{ $row['customer_name'] ?? 'N/A' }}</td>
+                                 <td>{{ $row['borrower_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
-                                <td>{{ number_format($row['original_loan_amount'], 2) }}</td>
-                                <td>{{ number_format($row['outstanding_amount'], 2) }}</td>
-                                <td>{{ showDate($row['due_date']) }}</td>
-                                <td>{{ $row['days_past_due'] }}</td>
-                                <td>{{ $row['status'] }}</td>
-                                <td>{{ $row['percentage'] }}</td>
-                                <td>{{ $row['provision_amount'] }}</td>
-                                <td>{{ $row['npl_status'] }}</td>
-                                <td>{{ $row['npl_entry_date'] }}</td>
-                            </tr>
+                                 <td>{{ number_format($row['loan_amount'], 2) }}</td>
+                                 <td>{{ number_format($row['principal'], 2) }}</td>
+                                <td>{{ ($row['interest_amount']) }}</td>
+                                <td>{{ number_format($row['principal_plus_interest'], 2) }}</td>
+                                <td>{{ number_format($row['installment_amount'], 2) }}</td>
+                                <td>{{ number_format($row['interest_received'], 2) }}</td>
+                                <td>{{ number_format($row['principal_received'], 2) }}</td>
+                                <td>{{ number_format($row['remaining_principal'], 2) }}</td>
+                             </tr>
                         @endforeach
                         </tbody>
-                        <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-end fw-bold">Total Amount:</td>
-                            <td>{{ number_format($totalAmount, 2) }}</td>
-                            <td>{{ number_format($totalOutstanding, 2) }}</td>
-                            <td colspan="7"></td>
-                        </tr>
-                        </tfoot>
+
                     </table>
 
 
@@ -251,7 +243,7 @@
 
             var datatablesButtons = $("#datatables-buttons").DataTable({
                 responsive: true,
-                scrollX: false, // Enable horizontal scrolling
+                scrollX: true, // Enable horizontal scrolling
                 lengthChange: false,
                 pageLength: 100,
                 buttons: [
@@ -277,8 +269,8 @@
                         className: 'btn btn-danger',
                         titleAttr: 'Export to PDF',
                         orientation: 'landscape', // Set PDF orientation to landscape
-                        title: 'Profit Report',
-                        exportOptions: {
+                        title: 'Penalty Report',
+                                exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer
                         }
@@ -288,7 +280,7 @@
                         text: 'Excel',
                         className: 'btn btn-success',
                         titleAttr: 'Export to Excel',
-                        title: 'Provision Report',
+                        title: 'Penalty Report',
                         exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer

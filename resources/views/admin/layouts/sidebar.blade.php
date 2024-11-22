@@ -154,6 +154,13 @@
 
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-penalty-report')}}">Penalty
                                 Report</a></li>
+
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-principal-report')}}">Principal Payment
+                                Report</a></li>
+
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-interest-income-report')}}">Interest Income
+                                Report</a></li>
+
                     </ul>
                 </li>
 

@@ -178,6 +178,7 @@
                     <table id="datatables-buttons" class="table table-bordered">
                         <thead>
                         <tr>
+                            <th>Loan ID</th>
                             <th>Name</th>
                             <th>CNIC</th>
                             <th>Gender</th>
@@ -194,6 +195,7 @@
                         <tbody>
                         @foreach($result as $row)
                             <tr>
+                                <td>{{ $row->application_id ?? 'N/A' }}</td>
                                 <td>{{ $row->user->name ?? 'N/A' }}</td>
                                 <td>{{ $row->user->profile->cnic_no ?? 'N/A' }}</td>
                                 <td>{{ $row->user->profile->gender->name ?? 'N/A' }}</td>
@@ -211,7 +213,7 @@
                         </tbody>
                         <tfoot>
                         <tr>
-                            <td colspan="6" class="text-end fw-bold">Total Amount:</td>
+                            <td colspan="7" class="text-end fw-bold">Total Amount:</td>
 
                             <td>{{ number_format($totalAmount) }}</td>
                             <td>{{ number_format($totalPayableAmount) }}</td>

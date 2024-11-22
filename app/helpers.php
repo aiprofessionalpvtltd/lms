@@ -11,7 +11,12 @@ function getSettingValue($val)
     return $settings->$val;
 }
 
-
+function formatOrdinal($number)
+{
+    $suffixes = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
+    $mod = $number % 100;
+    return $number . ($suffixes[($mod - 20) % 10] ?? $suffixes[$mod] ?? 'th');
+}
 
 function showStatus($status)
 {

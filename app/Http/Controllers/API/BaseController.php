@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Models\LoanApplication;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller as Controller;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use function Symfony\Component\String\s;
 
@@ -277,6 +279,35 @@ class BaseController extends Controller
                 'loan_eligibility' => ''
             ];
         }
+    }
+
+
+    function generateLoanApplicationId() {
+
+        $userId = auth()->user()->id;
+
+        // Get the current year
+        $year = date('Y');
+        $prefix = 'LOAN';
+
+        // Count existing records for the user in the current year
+        $applicationCount = LoanApplication::where('user_id', $userId)
+                ->whereYear('created_at', $year)
+                ->count() + 1; // Increment for the new application
+
+        // Generate the application ID in the format: PREFIX-USERID-YEAR-COUNT
+        $applicationId = sprintf('%s-%d-%s-%03d', $prefix, $userId, $year, $applicationCount);
+
+        // Check for uniqueness
+        $existingApplication = LoanApplication::where('application_id', $applicationId)
+            ->exists();
+
+        if ($existingApplication) {
+            // If ID exists (very rare due to incremental count), retry by incrementing the count
+            return $this->generateLoanApplicationId();
+        }
+
+        return $applicationId;
     }
 
 

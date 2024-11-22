@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 
 use App\Models\Installment;
+use App\Models\InstallmentDetail;
 use Illuminate\Http\Request;
 
 class InstallmentController extends Controller
@@ -31,4 +32,18 @@ class InstallmentController extends Controller
 //        dd($installment);
         return view("admin.installment.view", compact('installment'));
     }
+
+
+    public function updateDueDate(Request $request, $id)
+    {
+        $request->validate([
+            'due_date' => 'required|date',
+        ]);
+        $installmentDetail = InstallmentDetail::findOrFail($id);
+        $installmentDetail->due_date = $request->due_date;
+        $installmentDetail->save();
+
+        return response()->json(['message' => 'Due date updated successfully.'],200);
+    }
+
 }

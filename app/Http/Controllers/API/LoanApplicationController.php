@@ -448,6 +448,7 @@ class LoanApplicationController extends BaseController
             $toRoleID = $toUsers->roles->first()->id;
 
             $loanApplication = LoanApplication::create([
+                'application_id' => $this->generateLoanApplicationId(),
                 'name' => $request->name,
                 'email' => $request->email,
                 'loan_amount' => $request->loan_amount,

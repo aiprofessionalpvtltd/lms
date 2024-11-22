@@ -67,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-installment', [InstallmentController::class, 'index'])->name('show-installment');
     Route::get('show-installment/{id}/view', [InstallmentController::class, 'view'])->name('view-installment');
     Route::get('pay-installment', [InstallmentController::class, 'index'])->name('pay-installment');
+    Route::post('/installment/details/{id}/update-due-date', [InstallmentController::class, 'updateDueDate']);
 
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 
@@ -111,6 +112,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('show-penalty-report', [ReportController::class, 'showPenaltyReport'])->name('show-penalty-report');
     Route::get('get-penalty-report', [ReportController::class, 'getPenaltyReport'])->name('get-penalty-report');
+
+
+    Route::get('show-principal-report', [ReportController::class, 'showPrincipalReport'])->name('show-principal-report');
+    Route::get('get-principal-report', [ReportController::class, 'getPrincipalReport'])->name('get-principal-report');
+
+    Route::get('show-interest-income-report', [ReportController::class, 'showInterestIncomeReport'])->name('show-interest-income-report');
+    Route::get('get-interest-income-report', [ReportController::class, 'getInterestIncomeReport'])->name('get-interest-income-report');
 
 
 });

@@ -17,7 +17,7 @@ class Installment extends Model
 
     public function details()
     {
-        return $this->hasMany(InstallmentDetail::class);
+        return $this->hasMany(InstallmentDetail::class)->orderBy('due_date');
     }
 
     public function recoveries()

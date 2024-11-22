@@ -19,6 +19,7 @@ class LoanApplicationResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'application_id' => $this->application_id,
             'name' => $this->name,
             'email' => $this->email,
             'is_completed' => ($this->is_completed == 1) ? true : false,

@@ -157,7 +157,7 @@
                                     <div class="col-md-12 mt-4">
                                         <button type="submit" class="btn btn-outline-primary float-end">Get Report
                                         </button>
-                                        <a href="{{ route('show-disbursement-report') }}"
+                                        <a href="{{ route('show-aging-receivable-report') }}"
                                            class="btn btn-outline-dark me-3 float-end">Reset</a>
                                     </div>
 
@@ -192,7 +192,7 @@
                         <tbody>
                         @foreach($agingData as $row)
                             <tr>
-                                <td>{{ $row['id'] ?? 'N/A' }}</td>
+                                <td>{{ $row['application_id'] ?? 'N/A' }}</td>
                                 <td>{{ $row['customer_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
                                 <td>{{ number_format($row['original_loan_amount'], 2) }}</td>

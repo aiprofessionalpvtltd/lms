@@ -193,7 +193,7 @@
                         <tbody>
                         @foreach($penaltyData as $row)
                             <tr>
-                                <td>{{ $row['id'] ?? 'N/A' }}</td>
+                                <td>{{ $row['application_id'] ?? 'N/A' }}</td>
                                 <td>{{ $row['installment_number'] ?? 'N/A' }}</td>
                                 <td>{{ $row['borrower_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>

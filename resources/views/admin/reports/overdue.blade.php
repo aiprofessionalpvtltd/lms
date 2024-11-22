@@ -160,12 +160,14 @@
                     <table id="datatables-buttons" class="table table-bordered">
                         <thead>
                         <tr>
+                            <th>Loan ID</th>
                             <th>Name</th>
                             <th>CNIC</th>
                             <th>Gender</th>
                             <th>Province</th>
                             <th>District</th>
                             <th>Product</th>
+                            <th>Installment #</th>
                             <th>Over Due Date</th>
                             <th>Loan Amount</th>
                         </tr>
@@ -173,12 +175,14 @@
                         <tbody>
                         @foreach($result as $transaction)
                             <tr>
+                                <td>{{ $transaction->installment->loanApplication->application_id ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->profile->cnic_no ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->profile->gender->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->province->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->district->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->product->name ?? 'N/A' }}</td>
+                                <td>{{ ($transaction->installment_number) }}</td>
                                 <td>{{ showDate($transaction->due_date) }}</td>
                                 <td>{{ number_format($transaction->amount_due, 2) }}</td>
                             </tr>
@@ -186,6 +190,8 @@
                         </tbody>
                         <tfoot>
                         <tr>
+                            <td></td>
+                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -228,7 +234,7 @@
 
             var datatablesButtons = $("#datatables-buttons").DataTable({
                 responsive: true,
-                // scrollX: true, // Enable horizontal scrolling
+                scrollX: true, // Enable horizontal scrolling
                 lengthChange: false,
                 pageLength: 100,
                 buttons: [

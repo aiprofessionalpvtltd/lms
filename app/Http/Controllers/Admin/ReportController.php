@@ -388,7 +388,7 @@ class ReportController extends Controller
         // Calculate totals
         $totalAmount = $result->sum('loan_amount');
         $totalOutstanding = $outstandingData->sum('outstanding_amount');
-        $totalInterestAccrued =$outstandingData->sum('interest_accrued');
+        $totalInterestAccrued = $outstandingData->sum('interest_accrued');
 
 
         return view('admin.reports.outstanding', compact(
@@ -478,13 +478,13 @@ class ReportController extends Controller
             // Round and format days past due with a sign
             $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
 
-            $statusData = $this->getStatusFromDaysPastDue(abs((int) $daysPastDue));
+            $statusData = $this->getStatusFromDaysPastDue(abs((int)$daysPastDue));
             $status = $statusData['status'];
             $percentage = $statusData['percentage'];
             return [
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
-                'id' => $loan->id,
+                'application_id' => $loan->application_id,
                 'original_loan_amount' => $loan->loan_amount,
                 'outstanding_amount' => $outstandingAmount,
                 'due_date' => optional($nextDue)->due_date,
@@ -499,13 +499,12 @@ class ReportController extends Controller
         $totalAmount = $result->sum('loan_amount');
         $totalOutstanding = $agingData->sum('outstanding_amount');
 
-         return view('admin.reports.aging_receivable', compact(
+        return view('admin.reports.aging_receivable', compact(
             'title', 'agingData', 'provinces', 'genders',
             'request', 'districts', 'products', 'totalAmount',
             'totalOutstanding'
         ));
     }
-
 
 
     public function showProvisionReport()
@@ -587,7 +586,7 @@ class ReportController extends Controller
             // Round and format days past due with a sign
             $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
 
-            $statusData = $this->getStatusFromDaysPastDue(abs((int) $daysPastDue));
+            $statusData = $this->getStatusFromDaysPastDue(abs((int)$daysPastDue));
             $status = $statusData['status'];
             $percentage = $statusData['percentage'];
 
@@ -599,7 +598,6 @@ class ReportController extends Controller
             $nplEntryDate = null;
 
 
-
             if ($isNPL && $nextDue) {
                 $daysUntilNPL = 61 - abs($daysPastDue); // Days to OAEM (NPL entry)
                 $nplEntryDate = now()->addDays($daysUntilNPL)->toDateString();
@@ -609,7 +607,7 @@ class ReportController extends Controller
             return [
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
-                'id' => $loan->id,
+                'application_id' => $loan->application_id,
                 'original_loan_amount' => $loan->loan_amount,
                 'outstanding_amount' => $outstandingAmount,
                 'due_date' => optional($nextDue)->due_date,
@@ -633,7 +631,6 @@ class ReportController extends Controller
             'totalOutstanding'
         ));
     }
-
 
 
     /**
@@ -747,18 +744,17 @@ class ReportController extends Controller
             $firstInstallmentStarted = $installments->sortBy('due_date')->first();
 
 
-
             return [
-                'id' => $loan->id,
+                'application_id' => $loan->application_id,
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
                 'product' => $loan->product->name ?? 'Standard Loan',
-                'product_price' => $loan->product->price ??  $loanProducts->loan_amount,
+                'product_price' => $loan->product->price ?? $loanProducts->loan_amount,
                 'down_payment' => $loanProducts->down_payment_amount,
                 'finance_amount' => $loanProducts->financed_amount,
-                'loan_start_date' =>  optional($firstInstallmentStarted)->created_at,
+                'loan_start_date' => optional($firstInstallmentStarted)->created_at,
                 'installment_amount' => $installmentAmount,
-                'interest_rate' => $loanProducts->total_interest_amount . '('.  round($loanProducts->interest_rate_percentage) .'%)',
+                'interest_rate' => $loanProducts->total_interest_amount . '(' . round($loanProducts->interest_rate_percentage) . '%)',
                 'installment_due_date' => optional($nextDue)->due_date,
                 'installment_paid' => $paidInstallments,
                 'remaining_installments' => $remainingInstallments,
@@ -859,13 +855,13 @@ class ReportController extends Controller
                     $totalPenalty = $daysLate * $penaltyPerDay;
 
                     $penaltyEntries[] = [
-                        'id' => $loan->id,
+                        'application_id' => $loan->application_id,
                         'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                         'cnic' => $userProfile->cnic_no,
-                        'installment_number' =>  ($installment->installment_number),
+                        'installment_number' => ($installment->installment_number),
                         'installment_amount' => round($installment->amount_due),
                         'installment_due_date' => $installment->due_date,
-                        'days_late' => round($daysLate,0),
+                        'days_late' => round($daysLate, 0),
                         'penalty_per_day' => round($penaltyPerDay),
                         'total_penalty' => round($totalPenalty),
                         'total_payment' => round($installment->amount_due + $totalPenalty),
@@ -883,11 +879,221 @@ class ReportController extends Controller
             'request', 'districts', 'products'
         ));
     }
+
+
     private function formatOrdinal($number)
     {
         $suffixes = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
         $mod = $number % 100;
         return $number . ($suffixes[($mod - 20) % 10] ?? $suffixes[$mod] ?? 'th');
+    }
+
+    public function showPrincipalReport()
+    {
+        $title = 'Principal Payment Report';
+        $provinces = Province::all();
+        $genders = Gender::all();
+        $products = Product::all();
+        return view('admin.reports.principal', compact('title', 'provinces', 'genders', 'products'));
+    }
+
+    public function getPrincipalReport(Request $request)
+    {
+        $title = 'Principal Payment Report';
+        $provinces = Province::all();
+        $districts = District::all();
+        $genders = Gender::all();
+        $products = Product::all();
+
+        $dateRange = $request->date_range;
+        $gender_id = $request->gender_id;
+        $province_id = $request->province_id;
+        $district_id = $request->district_id;
+        $product_id = $request->product_id;
+
+        // Split the date range
+        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $startDate = $splitDate[0] ?? null;
+        $endDate = $splitDate[1] ?? null;
+
+        $result = LoanApplication::with([
+            'product',
+            'calculatedProduct',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'getLatestInstallment' => function ($query) {
+                $query->with('details'); // Load installment details
+            }
+        ])
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->when($gender_id, function ($query) use ($gender_id) {
+                return $query->whereHas('user.profile', function ($q) use ($gender_id) {
+                    $q->where('gender_id', $gender_id);
+                });
+            })
+            ->when($province_id, function ($query) use ($province_id) {
+                return $query->whereHas('user', function ($q) use ($province_id) {
+                    $q->where('province_id', $province_id);
+                });
+            })
+            ->when($district_id, function ($query) use ($district_id) {
+                return $query->whereHas('user', function ($q) use ($district_id) {
+                    $q->where('district_id', $district_id);
+                });
+            })
+            ->when($product_id, function ($query) use ($product_id) {
+                return $query->where('product_id', $product_id);
+            })
+            ->get();
+
+        // Process each loan application
+        $principalData = $result->map(function ($loan) {
+            $userProfile = $loan->user->profile;
+            $installment = $loan->getLatestInstallment;
+            $installmentDetail = $loan->calculatedProduct;
+
+            $totalPrincipalReceived = 0;
+            $principalEntries = [];
+
+// Interest received calculation
+            $interestReceived = $installment->monthly_installment / 12;
+
+            // Principal received calculation
+            $principalReceived = $installment->monthly_installment - $interestReceived;
+
+            // Remaining principal calculation
+            $remainingPrincipal = $loan->loan_amount - $principalReceived;
+
+            // Add to report data
+            $principalEntries[] = [
+                'application_id' => $loan->application_id,
+                'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                'cnic' => $userProfile->cnic_no,
+                'loan_amount' => round($loan->loan_amount, 2),
+                'principal' => round($loan->loan_amount, 2),
+                'interest_amount' => round($installment->total_markup, 2)  . ' (' .$installmentDetail->interest_rate_percentage.'%)',
+                'principal_plus_interest' => round($loan->loan_amount + $installment->total_markup, 2),
+                'installment_amount' => round($installmentDetail->monthly_installment_amount, 2),
+                'interest_received' => round($interestReceived, 2),
+                'principal_received' => round($principalReceived, 2),
+                'remaining_principal' => round($remainingPrincipal, 2),
+            ];
+
+
+            return $principalEntries;
+        })->flatten(1);
+
+//        dd($principalData);
+        return view('admin.reports.principal', compact(
+            'title', 'principalData', 'provinces', 'genders',
+            'request', 'districts', 'products'
+        ));
+    }
+
+
+    public function showInterestIncomeReport()
+    {
+        $title = 'Interest Income Report';
+        $provinces = Province::all();
+        $genders = Gender::all();
+        $products = Product::all();
+        return view('admin.reports.interest_income', compact('title', 'provinces', 'genders', 'products'));
+    }
+
+    public function getInterestIncomeReport(Request $request)
+    {
+        $title = 'Interest Income Report';
+        $provinces = Province::all();
+        $districts = District::all();
+        $genders = Gender::all();
+        $products = Product::all();
+
+        $dateRange = $request->date_range;
+        $gender_id = $request->gender_id;
+        $province_id = $request->province_id;
+        $district_id = $request->district_id;
+        $product_id = $request->product_id;
+
+        // Split the date range
+        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $startDate = $splitDate[0] ?? null;
+        $endDate = $splitDate[1] ?? null;
+
+        $result = LoanApplication::with([
+            'product',
+            'calculatedProduct',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'installments.details' => function ($query) {
+                $query->orderBy('due_date', 'asc'); // Ensure details are ordered by due date
+            },
+            'transaction' // Assuming this provides the disbursement date
+        ])
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->when($gender_id, function ($query) use ($gender_id) {
+                return $query->whereHas('user.profile', function ($q) use ($gender_id) {
+                    $q->where('gender_id', $gender_id);
+                });
+            })
+            ->when($province_id, function ($query) use ($province_id) {
+                return $query->whereHas('user', function ($q) use ($province_id) {
+                    $q->where('province_id', $province_id);
+                });
+            })
+            ->when($district_id, function ($query) use ($district_id) {
+                return $query->whereHas('user', function ($q) use ($district_id) {
+                    $q->where('district_id', $district_id);
+                });
+            })
+            ->when($product_id, function ($query) use ($product_id) {
+                return $query->where('product_id', $product_id);
+            })
+            ->get();
+
+        // Process each loan application
+        $interestIncomeData = $result->map(function ($loan) {
+            $userProfile = $loan->user->profile;
+            $calculatedProduct = $loan->calculatedProduct;
+
+            // Fetch installments and their details
+            $installments = $loan->installments;
+
+            // Get the start and end dates from installment details
+            $allDetails = $installments->flatMap->details; // Flatten all details across installments
+            $startDate = optional($allDetails->first())->due_date ?? 'N/A';
+            $endDate = optional($allDetails->last())->due_date ?? 'N/A';
+
+            // Extract necessary values
+            $loanAmount = $loan->loan_amount;
+            $interestRate = ($calculatedProduct->interest_rate_percentage ?? 0) / 100; // Convert percentage to decimal
+            $loanDurationMonths = $loan->loanDuration->value ?? 0; // Assuming this is in months
+
+            // Interest income calculation
+            $interestIncome = $loanAmount * $interestRate * ($loanDurationMonths / 12);
+
+            return [
+                'application_id' => $loan->application_id,
+                'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                'cnic' => $userProfile->cnic_no,
+                'loan_amount' => round($loanAmount, 2),
+                'interest_rate' => round($calculatedProduct->interest_rate_percentage ?? 0, 2) . '%',
+                'interest_income' => round($interestIncome, 2),
+                'disbursement_date' => optional($loan->transaction)->created_at ? showDate($loan->transaction->created_at) : 'N/A',
+                'installment_start_date' => $startDate,
+                'installment_end_date' => $endDate,
+            ];
+        });
+
+        return view('admin.reports.interest_income', compact(
+            'title', 'interestIncomeData', 'provinces', 'genders',
+            'request', 'districts', 'products'
+        ));
     }
 
 }
