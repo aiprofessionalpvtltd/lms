@@ -875,12 +875,16 @@ class LoanApplicationController extends BaseController
         // Generate individual monthly installments
         $startDate = now();
         for ($i = 1; $i <= $loanDuration; $i++) {
+            $dueDate = $startDate->copy()->addMonths(1); // Calculate the due date
             InstallmentDetail::create([
                 'installment_id' => $installment->id,
-                'due_date' => $startDate->copy()->addMonths($i),
+                'issue_date' => $startDate,
+                'due_date' => $dueDate,
                 'amount_due' => $loanDetails->monthly_installment_amount,
             ]);
+            $startDate = $dueDate->copy()->addDay();; // Update startDate for the next installment
         }
+
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
 
     }

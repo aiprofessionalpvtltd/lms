@@ -1072,7 +1072,7 @@ class ReportController extends Controller
 
             // Get the start and end dates from installment details
             $allDetails = $installments->flatMap->details; // Flatten all details across installments
-            $startDate = optional($allDetails->first())->due_date ?? 'N/A';
+            $startDate = optional($allDetails->first())->issue_date ?? 'N/A';
             $endDate = optional($allDetails->last())->due_date ?? 'N/A';
 
             // Extract necessary values

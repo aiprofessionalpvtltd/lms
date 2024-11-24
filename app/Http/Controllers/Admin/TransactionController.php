@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\LoanApplication;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
+
     public function store(Request $request)
     {
         // Validate the request
@@ -17,36 +20,69 @@ class TransactionController extends Controller
             'loan_application_id' => 'required|exists:loan_applications,id',
         ]);
 
-        $request->payment_method = 'Bank';
-        $request->remarks = 'Testing';
-        // Find the loan application to ensure it's valid and can be paid
-        $loanApplication = LoanApplication::with('getLatestInstallment')->findOrFail($request->loan_application_id);
-
-        $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
-
-        // Create the transaction
-        $transaction = Transaction::create([
-            'loan_application_id' => $loanApplication->id,
-            'user_id' => Auth::id(), // Get the authenticated user's ID
-            'amount' => $disburseAmount,
-            'payment_method' => $request->payment_method,
-            'status' => 'pending', // Initially set to pending
-            'remarks' => $request->remarks,
+        // Assign default values
+        $request->merge([
+            'payment_method' => 'Bank',
+            'remarks' => 'Testing',
         ]);
 
-        // Here you can call an API to process the payment if needed
-        // For now, we'll just simulate the payment process
+        DB::beginTransaction(); // Start the transaction
 
-        // Simulate payment processing (replace this with actual payment API integration)
-        // Assume payment is successful
-        $transaction->status = 'completed'; // Set the status to completed
-        $transaction->transaction_reference = 'REF-' . time(); // Set a mock transaction reference
-        $transaction->save();
+        try {
+            // Find the loan application and include the latest installment
+            $loanApplication = LoanApplication::with('getLatestInstallment.details')->findOrFail($request->loan_application_id);
 
-        // Optionally, you can update the loan application status or balance here
+            // Calculate the disbursement amount
+            $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
 
-        return redirect()->route('show-installment')->with('success', 'Transaction created successfully.');
+            // Create the transaction
+            $transaction = Transaction::create([
+                'loan_application_id' => $loanApplication->id,
+                'user_id' => Auth::id(), // Authenticated user's ID
+                'amount' => $disburseAmount,
+                'payment_method' => $request->payment_method,
+                'status' => 'pending', // Initially set to pending
+                'remarks' => $request->remarks,
+            ]);
 
+            // Simulate payment processing
+            $transaction->update([
+                'status' => 'completed', // Set status to completed
+                'transaction_reference' => 'REF-' . time(), // Mock transaction reference
+            ]);
 
+            // Retrieve all installment details for the loan application
+            $installments = $loanApplication->getLatestInstallment->details;
+
+            if ($installments->isEmpty()) {
+                throw new \Exception('No installments found for this loan application.');
+            }
+
+            // Initialize the start date
+            $startDate = Carbon::now();
+
+             // Update installments with new dates
+            foreach ($installments as $installment) {
+                $dueDate = $startDate->copy()->addMonths(1);
+
+                $installment->update([
+                    'issue_date' => $startDate,
+                    'due_date' => $dueDate,
+                ]);
+
+                $startDate = $dueDate->copy()->addDay(); // Start date for next installment is 1 day after due date
+            }
+
+            DB::commit(); // Commit the transaction
+
+            return redirect()->route('show-installment')->with('success', 'Transaction and installments updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack(); // Roll back the transaction on error
+
+            dd( $e->getMessage());
+            // Return an error response
+            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
     }
+
 }

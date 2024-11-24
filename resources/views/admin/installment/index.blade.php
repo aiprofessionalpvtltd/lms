@@ -56,6 +56,9 @@
                                 @if($installment->loanApplication->transaction)
                                     <a href="{{ route('view-installment', $installment->id) }}"
                                        class="btn btn-sm btn-info m-2">View</a>
+
+                                    <a href="{{ route('recovery.create', $installment->id) }}"
+                                       class="btn btn-sm btn-info  m-2">Recovery</a>
                                 @endif
                                 @if(!$installment->loanApplication->transaction)
                                     <form action="{{ route('transactions.store') }}" method="POST" class="d-inline">
@@ -67,8 +70,7 @@
                                     </form>
 
                                 @endif
-                                <a href="{{ route('recovery.create', $installment->id) }}"
-                                   class="btn btn-sm btn-info  m-2">Recovery</a>
+
 
                             </td>
                         </tr>

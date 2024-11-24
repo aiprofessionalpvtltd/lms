@@ -42,6 +42,7 @@
                     <thead>
                     <tr>
                         <th>#</th>
+                        <th>Issue Date</th>
                         <th>Due Date</th>
                         <th>Amount Due</th>
                         <th>Amount Paid</th>
@@ -56,6 +57,9 @@
                     @foreach($installment->details as $detail)
                         <tr data-id="{{ $detail->id }}">
                             <td>{{ $detail->installment_number }}</td>
+                            <td>
+                                <span >{{ showDate($detail->issue_date) }} </span>
+                             </td>
                             <td>
                                 <span class="due-date-text">{{ showDate($detail->due_date) }} </span>
                                 <input type="date" class="due-date-input d-none" value="{{ ($detail->due_date) }}"/>
