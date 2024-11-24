@@ -951,7 +951,6 @@ class LoanApplicationController extends BaseController
             $lateFeePerDay = env('LATE_FEE'); // PKR per day late fee
             $lateFeeData = [];
 
-            dd($lateFeePerDay);
             foreach ($unpaidInstallments as $installment) {
                 if ($installment->due_date < now()) {  // Only calculate if past due date
                     $daysDelayed = abs(now()->diffInDays($installment->due_date));
@@ -970,6 +969,7 @@ class LoanApplicationController extends BaseController
                     ];
                 }
             }
+            dd($lateFeeData);
 
             // Return loan data, summary information, and all installments, including late fee data
             return $this->sendResponse([
