@@ -951,6 +951,7 @@ class LoanApplicationController extends BaseController
             $lateFeePerDay = env('LATE_FEE'); // PKR per day late fee
             $lateFeeData = [];
 
+            dd($lateFeePerDay);
             foreach ($unpaidInstallments as $installment) {
                 if ($installment->due_date < now()) {  // Only calculate if past due date
                     $daysDelayed = abs(now()->diffInDays($installment->due_date));
@@ -988,6 +989,7 @@ class LoanApplicationController extends BaseController
             // Log the error for debugging purposes
             Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
 
+            dd($e->getMessage());
             // Return a generic error response
             return $this->sendError($e->getMessage());
         }
