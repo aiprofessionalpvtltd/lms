@@ -167,26 +167,32 @@
                             <th>Province</th>
                             <th>District</th>
                             <th>Product</th>
+                            <th>OverDue Days (PKR{{env('LATE_FEE')}}/day)</th>
+                            <th>Late Fee</th>
+                            <th>Installment Amount</th>
+                            <th>Total Collected Amount</th>
                             <th>Payment Method</th>
                             <th>Due Date</th>
                             <th>Collection Date</th>
-                            <th>Loan Amount</th>
                         </tr>
                         </thead>
                         <tbody>
                         @foreach($result as $transaction)
-                             <tr>
-                                 <td>{{ $transaction->installment->loanApplication->application_id ?? 'N/A' }}</td>
-                                 <td>{{ $transaction->installment->loanApplication->user->name ?? 'N/A' }}</td>
+                            <tr>
+                                <td>{{ $transaction->installment->loanApplication->application_id ?? 'N/A' }}</td>
+                                <td>{{ $transaction->installment->loanApplication->user->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->profile->cnic_no ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->profile->gender->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->province->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->user->district->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->installment->loanApplication->product->name ?? 'N/A' }}</td>
+                                <td>{{ $transaction->overdue_days ?? 'N/A' }}</td>
+                                <td>{{ $transaction->penalty_fee ?? 'N/A' }}</td>
+                                <td>{{ number_format($transaction->amount, 2) }}</td>
+                                <td>{{ ucfirst($transaction->total_amount) }}</td>
                                 <td>{{  $transaction->payment_method }}</td>
                                 <td>{{ showDate($transaction->installmentDetail->due_date) }}</td>
                                 <td>{{ showDate($transaction->created_at) }}</td>
-                                <td>{{ number_format($transaction->amount, 2) }}</td>
 
                             </tr>
                         @endforeach
@@ -204,6 +210,9 @@
                             <td></td>
                             <td>Total Amount:</td>
                             <td>{{ number_format($totalAmount, 2) }}</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                         </tfoot>
                     </table>

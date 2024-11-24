@@ -196,7 +196,7 @@ class ReportController extends Controller
 
         // Calculate totals for amount, male, and female
         $totalAmount = $result->sum(function ($transaction) {
-            return $transaction->amount ?? 0;
+            return $transaction->total_amount ?? 0;
         });
 
         $totalMale = $result->filter(function ($transaction) {

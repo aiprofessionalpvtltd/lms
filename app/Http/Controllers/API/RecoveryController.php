@@ -9,6 +9,7 @@ use App\Models\Installment;
 use App\Models\InstallmentDetail;
 use App\Models\LoanApplication;
 use App\Models\Recovery;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
@@ -35,15 +36,34 @@ class RecoveryController extends BaseController
         try {
             $installmentDetail = InstallmentDetail::find($request->installment_detail_id);
 
-            // Save recovery record
-            Recovery::create([
+            $amountDue = $installmentDetail->amount_due;
+            // Initialize penalty fee
+            $penaltyFee = 0;
+            $overdueDays = 0;
+
+            // Calculate penalty if the due date has passed
+            if (Carbon::now()->greaterThan($installmentDetail->due_date)) {
+                $overdueDays = ((Carbon::now()->diffInDays($installmentDetail->due_date)));
+                $overdueDays = abs($overdueDays);
+                $penaltyFee = (($overdueDays * env('LATE_FEE'))); // Calculate penalty at 250 per day
+                $penaltyFee = abs($penaltyFee);
+            }
+
+            $recoveryDetail = [
                 'installment_detail_id' => $installmentDetail->id,
                 'installment_id' => $installmentDetail->installment_id,
-                'amount' => $installmentDetail->amount_due,
+                'amount' => $amountDue,
+                'overdue_days' => round($overdueDays),
+                'penalty_fee' => round($penaltyFee), // New field for penalty fee
+                'total_amount' => round($amountDue + $penaltyFee), // Total amount including penalty
                 'payment_method' => $request->payment_method,
                 'status' => 'completed',
                 'remarks' => $request->remarks,
-            ]);
+            ];
+
+            // Save recovery record, including penalty fee
+            Recovery::create($recoveryDetail);
+
 
             // Update installment detail
             $installmentDetail->is_paid = true;

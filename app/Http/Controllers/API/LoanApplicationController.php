@@ -922,9 +922,9 @@ class LoanApplicationController extends BaseController
                 ->get();
 
             // Generate installment numbers based on due_date order
-            $installments->each(function ($installment, $index) {
-                $installment->installment_number = $this->formatOrdinal($index + 1);
-            });
+//            $installments->each(function ($installment, $index) {
+//                $installment->installment_number = $this->formatOrdinal($index + 1);
+//            });
 
             // Group installments by paid and unpaid status
             $paidInstallments = $installments->where('is_paid', 1);
@@ -948,7 +948,7 @@ class LoanApplicationController extends BaseController
             $installmentHistory = $paidInstallments;
 
             // Late fee calculations
-            $lateFeePerDay = 200; // PKR per day late fee
+            $lateFeePerDay = env('LATE_FEE'); // PKR per day late fee
             $lateFeeData = [];
 
             foreach ($unpaidInstallments as $installment) {

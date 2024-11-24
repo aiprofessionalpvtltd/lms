@@ -13,6 +13,9 @@ class Recovery extends Model
         'installment_detail_id',
         'installment_id',
         'amount',
+        'overdue_days',
+        'penalty_fee',
+        'total_amount',
         'payment_method',
         'status',
         'remarks'

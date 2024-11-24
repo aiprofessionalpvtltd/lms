@@ -58,8 +58,8 @@
                         <tr data-id="{{ $detail->id }}">
                             <td>{{ $detail->installment_number }}</td>
                             <td>
-                                <span >{{ showDate($detail->issue_date) }} </span>
-                             </td>
+                                <span>{{ showDate($detail->issue_date) }} </span>
+                            </td>
                             <td>
                                 <span class="due-date-text">{{ showDate($detail->due_date) }} </span>
                                 <input type="date" class="due-date-input d-none" value="{{ ($detail->due_date) }}"/>
@@ -67,13 +67,19 @@
                             <td>{{ $detail->amount_due }}</td>
                             <td>{{ $detail->amount_paid }}</td>
                             <td>{{ $detail->is_paid ? 'Paid' : 'Pending' }}</td>
-                            @can('edit-installments')
+                            @if($detail->is_paid == 0)
+                                @can('edit-installments')
 
+                                    <td>
+                                        <button class="btn btn-sm btn-primary edit-due-date">Edit</button>
+                                    </td>
+
+                                @endcan
+                            @else
                                 <td>
-                                    <button class="btn btn-sm btn-primary edit-due-date">Edit</button>
-                                </td>
 
-                            @endcan
+                            </td>
+                            @endif
                         </tr>
                     @endforeach
                     </tbody>
@@ -92,21 +98,25 @@
                 <table class="table table-striped">
                     <thead>
                     <tr>
-                        <th>Transaction ID</th>
-                        <th>Installment ID</th>
-                        <th>Amount</th>
+                        <th>Installment</th>
+                        <th>Installment Amount</th>
+                        <th>OverDue Days (PKR{{env('LATE_FEE')}}/day)</th>
+                        <th>Late Fee</th>
+                        <th>Total Amount</th>
                         <th>Payment Method</th>
                         <th>Status</th>
                         <th>Remarks</th>
-                        <th>Created At</th>
+                        <th>Date</th>
                     </tr>
                     </thead>
                     <tbody>
                     @foreach($installment->recoveries as $recovery)
                         <tr>
-                            <td>{{ $recovery->id }}</td>
-                            <td>{{ $recovery->installment_detail_id }}</td>
+                            <td>{{ $recovery->installmentDetail->installment_number }}</td>
                             <td>{{ $recovery->amount }}</td>
+                            <td>{{ $recovery->overdue_days ?? 'N/A' }}</td>
+                            <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>
+                            <td>{{ ucfirst($recovery->total_amount) }}</td>
                             <td>{{ ucfirst($recovery->payment_method) }}</td>
                             <td>{{ ucfirst($recovery->status) }}</td>
                             <td>{{ $recovery->remarks }}</td>
@@ -135,6 +145,7 @@
                         <th>Status</th>
                         <th>Remarks</th>
                         <th>Created At</th>
+                        <th>Disbursed By </th>
                     </tr>
                     </thead>
                     <tbody>
@@ -145,6 +156,7 @@
                         <td>{{ ucfirst($installment->loanApplication->transaction->status) }}</td>
                         <td>{{ $installment->loanApplication->transaction->remarks }}</td>
                         <td>{{ showDate($installment->loanApplication->transaction->created_at) }}</td>
+                        <td>{{ $installment->loanApplication->transaction->user->name }}</td>
                     </tr>
                     </tbody>
                 </table>
