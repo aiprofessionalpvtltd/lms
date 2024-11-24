@@ -901,34 +901,60 @@ class LoanApplicationController extends BaseController
                 ->where('user_id', $authUser->id)
                 ->get();
 
+            // Calculate totals
             $totalLoans = $installments->sum('total_amount');
             $paidLoans = $installments->flatMap->installmentDetails->where('is_paid', 1)->sum('amount_due');
             $remainingLoans = $totalLoans - $paidLoans;
 
+            // Separate paid and unpaid installments
             $paidInstallments = $installments->flatMap->installmentDetails->where('is_paid', 1);
             $unpaidInstallments = $installments->flatMap->installmentDetails->where('is_paid', 0);
 
-            // Late Fee Calculations
-            $lateFeeData = $unpaidInstallments->where('due_date', '<', now())->map(function ($installment) {
+            // Retrieve upcoming installments and sort unpaid by due_date
+            $upcomingInstallments = $unpaidInstallments->sortBy('due_date');
+            $latestUpcomingInstallments = collect([
+                $paidInstallments->sortByDesc('due_date')->first(), // Latest paid
+                $unpaidInstallments->filter(fn($installment) => $installment->due_date > now())->first(), // Next unpaid
+            ])->filter(); // Remove null values
+
+            // Installment history (paid installments)
+            $installmentHistory = $paidInstallments->sortByDesc('due_date');
+
+            // Late fee calculations
+            $lateFeePerDay = env('LATE_FEE', 0); // Default to 0 if not set
+            $lateFeeData = $unpaidInstallments->where('due_date', '<', now())->map(function ($installment) use ($lateFeePerDay) {
                 $daysDelayed = now()->diffInDays($installment->due_date);
-                $lateFee = $daysDelayed * env('LATE_FEE');
+                $totalLateFee = $daysDelayed * $lateFeePerDay;
+
                 return [
                     'id' => $installment->id,
+                    'due_date' => $installment->due_date,
                     'amount_due' => $installment->amount_due,
                     'daysDelayed' => $daysDelayed,
-                    'totalLateFee' => $lateFee,
-                    'totalAfterLateFee' => $installment->amount_due + $lateFee,
+                    'perDayLateFee' => $lateFeePerDay,
+                    'totalLateFee' => $totalLateFee,
+                    'totalAfterLateFee' => $installment->amount_due + $totalLateFee,
                 ];
             });
 
+            // Return all objects in the response
             return $this->sendResponse([
                 'totalLoans' => round($totalLoans),
                 'paidLoans' => round($paidLoans),
                 'remainingLoans' => round($remainingLoans),
-                'lateFeeSummary' => $lateFeeData,
-            ], 'Dashboard data retrieved successfully.');
+                'paidInstallments' => $paidInstallments->count(),
+                'unpaidInstallments' => $unpaidInstallments->count(),
+                'upcomingInstallments' => $upcomingInstallments->values(),
+                'latestUpcomingInstallments' => $latestUpcomingInstallments->values(),
+                'installmentHistory' => $installmentHistory->values(),
+                'allInstallments' => $installments->values(),
+                'lateFeeSummary' => $lateFeeData->values(),
+            ], 'Loan data retrieved successfully.');
         } catch (\Exception $e) {
-            Log::error('Error fetching dashboard data: ' . $e->getMessage());
+            // Log the error
+            Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
+
+            // Return error response
             return $this->sendError($e->getMessage());
         }
     }
