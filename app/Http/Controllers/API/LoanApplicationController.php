@@ -969,7 +969,7 @@ class LoanApplicationController extends BaseController
                     ];
                 }
             }
-            dd($lateFeeData);
+//            dd($lateFeeData);
 
             // Return loan data, summary information, and all installments, including late fee data
             return $this->sendResponse([
