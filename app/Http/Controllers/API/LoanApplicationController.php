@@ -923,8 +923,8 @@ class LoanApplicationController extends BaseController
 
             $remainingLoans = $totalAmount - $paidLoans;
 
-            $latestPaid = null;
-            $nextUnpaid = null;
+//            $latestPaid = [];
+//            $nextUnpaid = [];
 
             // Retrieve the latest paid installment
             $latestPaid = InstallmentDetail::where('is_paid', 1)
@@ -946,8 +946,8 @@ class LoanApplicationController extends BaseController
                 'remainingLoans' => round($remainingLoans),
                 'paidInstallmentsCount' => count($paidInstallments),
                 'unpaidInstallmentsCount' => count($unpaidInstallments),
-                'latestPaid' => new InstallmentDetailResource($latestPaid),
-                'nextUnpaid' =>  new InstallmentDetailResource($nextUnpaid),
+                'latestPaid' => $latestPaid ? new InstallmentDetailResource($latestPaid) : [],
+                'nextUnpaid' => $nextUnpaid ? new InstallmentDetailResource($nextUnpaid) : [],
                 'upcomingInstallments' =>  $this->getUpcomingInstallments(),
                 'installmentHistory' =>  $this->getInstallmentHistory(),
                 'allInstallments' =>  $this->getAllInstallments(),

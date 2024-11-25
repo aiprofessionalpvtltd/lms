@@ -25,4 +25,12 @@ class InstallmentDetailResource extends JsonResource
             'updated_at' => $this->updated_at,
         ];
     }
+
+    /**
+     * Customize the response for a null resource.
+     */
+    public function toResponse($request)
+    {
+        return $this->resource ? parent::toResponse($request) : response()->json([]);
+    }
 }
