@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InstallmentDetailResource;
 use App\Http\Resources\LoanApplicationResource;
 use App\Http\Resources\LoanApplicationTrackingResource;
 use App\Models\Installment;
@@ -728,9 +729,9 @@ class LoanApplicationController extends BaseController
             $monthlyInstallmentAmount = $totalRepayableAmount / $months;
             $totalUpfrontPayment = $downPaymentAmount + $processingFeeAmount;
 
-            $loanApplication->loan_amount =$loanAmount;
-            $loanApplication->product_id =$request->input('product_id');
-            $loanApplication->loan_duration_id =$request->input('loan_duration_id');
+            $loanApplication->loan_amount = $loanAmount;
+            $loanApplication->product_id = $request->input('product_id');
+            $loanApplication->loan_duration_id = $request->input('loan_duration_id');
             $loanApplication->save();
 
 
@@ -889,72 +890,167 @@ class LoanApplicationController extends BaseController
 
     }
 
-    public function getDashboardData(Request $request)
+    public function getDashboardData()
     {
         try {
             $authUser = auth()->user();
 
-            // Eager load Installments and related InstallmentDetails
-            $installments = Installment::with(['installmentDetails' => function ($query) {
-                $query->select('id', 'installment_id', 'is_paid', 'amount_due', 'due_date', 'updated_at');
-            }])
+            // Retrieve the loan application with its latest installment
+            $loanApplication = LoanApplication::with('getLatestInstallment.details')->where('is_completed', 0)
                 ->where('user_id', $authUser->id)
-                ->get();
+                ->first();
 
-            // Calculate totals
-            $totalLoans = $installments->sum('total_amount');
-            $paidLoans = $installments->flatMap->installmentDetails->where('is_paid', 1)->sum('amount_due');
-            $remainingLoans = $totalLoans - $paidLoans;
+            if (!$loanApplication || !$loanApplication->getLatestInstallment) {
+                return $this->sendResponse([], 'No active loan applications found.');
+            }
 
-            // Separate paid and unpaid installments
-            $paidInstallments = $installments->flatMap->installmentDetails->where('is_paid', 1);
-            $unpaidInstallments = $installments->flatMap->installmentDetails->where('is_paid', 0);
+            $installment = $loanApplication->getLatestInstallment;
 
-            // Retrieve upcoming installments and sort unpaid by due_date
-            $upcomingInstallments = $unpaidInstallments->sortBy('due_date');
-            $latestUpcomingInstallments = collect([
-                $paidInstallments->sortByDesc('due_date')->first(), // Latest paid
-                $unpaidInstallments->filter(fn($installment) => $installment->due_date > now())->first(), // Next unpaid
-            ])->filter(); // Remove null values
 
-            // Installment history (paid installments)
-            $installmentHistory = $paidInstallments->sortByDesc('due_date');
+            $details = InstallmentDetail::where('installment_id', $installment->id)->get();
 
-            // Late fee calculations
-            $lateFeePerDay = env('LATE_FEE', 0); // Default to 0 if not set
-            $lateFeeData = $unpaidInstallments->where('due_date', '<', now())->map(function ($installment) use ($lateFeePerDay) {
-                $daysDelayed = now()->diffInDays($installment->due_date);
-                $totalLateFee = $daysDelayed * $lateFeePerDay;
 
-                return [
-                    'id' => $installment->id,
-                    'due_date' => $installment->due_date,
-                    'amount_due' => $installment->amount_due,
-                    'daysDelayed' => $daysDelayed,
-                    'perDayLateFee' => $lateFeePerDay,
-                    'totalLateFee' => $totalLateFee,
-                    'totalAfterLateFee' => $installment->amount_due + $totalLateFee,
-                ];
-            });
+            $totalAmount = $loanApplication->loan_amount;
+            $paidLoans = 0;
+            $paidInstallments = [];
+            $unpaidInstallments = [];
 
-            // Return all objects in the response
+            foreach ($details as $detail) {
+                if ($detail->is_paid) {
+                    $paidLoans += $detail->amount_due;
+                }
+            }
+
+            $remainingLoans = $totalAmount - $paidLoans;
+
+            $latestPaid = null;
+            $nextUnpaid = null;
+
+            // Retrieve the latest paid installment
+            $latestPaid = InstallmentDetail::where('is_paid', 1)
+                ->orderBy('paid_at', 'desc') // Primary sort by payment date
+                ->orderBy('id', 'desc')      // Secondary sort by ID
+                ->first();
+
+
+            // Retrieve the next unpaid installment
+            $nextUnpaid = InstallmentDetail::where('is_paid', 0)
+                ->where('due_date', '>', now())
+                ->orderBy('due_date', 'asc')
+                ->first();
+
+
             return $this->sendResponse([
-                'totalLoans' => round($totalLoans),
+                'totalAmount' => round($totalAmount),
                 'paidLoans' => round($paidLoans),
                 'remainingLoans' => round($remainingLoans),
-                'paidInstallments' => $paidInstallments->count(),
-                'unpaidInstallments' => $unpaidInstallments->count(),
-                'upcomingInstallments' => $upcomingInstallments->values(),
-                'latestUpcomingInstallments' => $latestUpcomingInstallments->values(),
-                'installmentHistory' => $installmentHistory->values(),
-                'allInstallments' => $installments->values(),
-                'lateFeeSummary' => $lateFeeData->values(),
+                'paidInstallmentsCount' => count($paidInstallments),
+                'unpaidInstallmentsCount' => count($unpaidInstallments),
+                'latestPaid' => new InstallmentDetailResource($latestPaid),
+                'nextUnpaid' =>  new InstallmentDetailResource($nextUnpaid),
+                'upcomingInstallments' =>  $this->getUpcomingInstallments(),
+                'installmentHistory' =>  $this->getInstallmentHistory(),
+                'allInstallments' =>  $this->getAllInstallments(),
+                'lateFeeSummary' =>  $this->getLateFeeSummary(),
+
             ], 'Loan data retrieved successfully.');
         } catch (\Exception $e) {
             // Log the error
             Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
 
             // Return error response
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+
+    public function getUpcomingInstallments()
+    {
+        try {
+            $authUser = auth()->user();
+
+            $unpaidInstallments = Installment::with('details')
+                ->where('user_id', $authUser->id)
+                ->get()
+                ->flatMap->details
+                ->where('is_paid', 0)
+                ->sortBy('due_date');
+
+            return  InstallmentDetailResource::collection($unpaidInstallments);
+        } catch (\Exception $e) {
+            Log::error('Upcoming Installments Retrieval Error: ' . $e->getMessage());
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+    public function getInstallmentHistory()
+    {
+        try {
+            $authUser = auth()->user();
+
+            $paidInstallments = Installment::with('details')
+                ->where('user_id', $authUser->id)
+                ->get()
+                ->flatMap->details
+                ->where('is_paid', 1)
+                ->sortByDesc('due_date');
+
+            return  InstallmentDetailResource::collection($paidInstallments);
+        } catch (\Exception $e) {
+            Log::error('Installment History Retrieval Error: ' . $e->getMessage());
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+    public function getAllInstallments()
+    {
+        try {
+            $authUser = auth()->user();
+
+            $installments = Installment::with(['details' => function ($query) {
+                $query->select('id', 'installment_id', 'is_paid', 'amount_due', 'due_date', 'updated_at');
+            }])
+                ->where('user_id', $authUser->id)
+                ->get();
+
+            return  InstallmentDetailResource::collection($installments);
+        } catch (\Exception $e) {
+            Log::error('All Installments Retrieval Error: ' . $e->getMessage());
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+    public function getLateFeeSummary()
+    {
+        try {
+            $authUser = auth()->user();
+
+            $lateFeePerDay = env('LATE_FEE', 0);
+
+            $lateFeeData = Installment::with('details')
+                ->where('user_id', $authUser->id)
+                ->get()
+                ->flatMap->details
+                ->where('is_paid', 0)
+                ->where('due_date', '<', now())
+                ->map(function ($installment) use ($lateFeePerDay) {
+                    $daysDelayed = now()->diffInDays($installment->due_date);
+                    $totalLateFee = $daysDelayed * $lateFeePerDay;
+
+                    return [
+                        'id' => $installment->id,
+                        'due_date' => $installment->due_date,
+                        'amount_due' => $installment->amount_due,
+                        'daysDelayed' => abs(round($daysDelayed)),
+                        'perDayLateFee' => $lateFeePerDay,
+                        'totalLateFee' => abs(round($totalLateFee)),
+                        'totalAfterLateFee' => abs(round($installment->amount_due + $totalLateFee)),
+                    ];
+                });
+
+            return $lateFeeData->values() ;
+        } catch (\Exception $e) {
+            Log::error('Late Fee Summary Retrieval Error: ' . $e->getMessage());
             return $this->sendError($e->getMessage());
         }
     }

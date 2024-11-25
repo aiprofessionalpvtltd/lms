@@ -66,7 +66,10 @@ Route::middleware('auth:api')->group(function () {
     Route::post('user/loan-applications/storeCalculation', [LoanApplicationController::class, 'storeCalculation']);
 
     Route::get('user/get-dashboard-data', [LoanApplicationController::class, 'getDashboardData']);
-
+    Route::get('user/installments/upcoming', [LoanApplicationController::class, 'getUpcomingInstallments']);
+    Route::get('user/installments/history', [LoanApplicationController::class, 'getInstallmentHistory']);
+    Route::get('user/installments/all', [LoanApplicationController::class, 'getAllInstallments']);
+    Route::get('user/installments/late-fee-summary', [LoanApplicationController::class, 'getLateFeeSummary']);
     // Routes fr dropdowns
 
     Route::post('user/loan-applications/guarantors', [GuarantorController::class, 'store']);

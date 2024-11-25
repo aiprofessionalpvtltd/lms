@@ -21,10 +21,10 @@ class Installment extends Model
     }
 
 
-    public function installmentDetails()
-    {
-        return $this->hasMany(InstallmentDetail::class)->orderBy('due_date');
-    }
+//    public function installmentDetails()
+//    {
+//        return $this->hasMany(InstallmentDetail::class)->orderBy('due_date');
+//    }
 
     public function recoveries()
     {
