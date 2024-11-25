@@ -16,6 +16,7 @@ class InstallmentDetailResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'installment_number' => $this->installment_number,
             'installment_id' => $this->installment_id,
             'due_date' => $this->due_date,
             'amount_due' => $this->amount_due,

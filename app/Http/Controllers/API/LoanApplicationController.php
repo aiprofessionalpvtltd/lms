@@ -948,10 +948,10 @@ class LoanApplicationController extends BaseController
                 'unpaidInstallmentsCount' => count($unpaidInstallments),
                 'latestPaid' => $latestPaid ? new InstallmentDetailResource($latestPaid) : [],
                 'nextUnpaid' => $nextUnpaid ? new InstallmentDetailResource($nextUnpaid) : [],
-                'upcomingInstallments' =>  $this->getUpcomingInstallments(),
-                'installmentHistory' =>  $this->getInstallmentHistory(),
-                'allInstallments' =>  $this->getAllInstallments(),
-                'lateFeeSummary' =>  $this->getLateFeeSummary(),
+                'upcomingInstallments' => $this->getUpcomingInstallments(),
+                'installmentHistory' => $this->getInstallmentHistory(),
+                'allInstallments' => $this->getAllInstallments(),
+                'lateFeeSummary' => $this->getLateFeeSummary(),
 
             ], 'Loan data retrieved successfully.');
         } catch (\Exception $e) {
@@ -976,7 +976,7 @@ class LoanApplicationController extends BaseController
                 ->where('is_paid', 0)
                 ->sortBy('due_date');
 
-            return  InstallmentDetailResource::collection($unpaidInstallments);
+            return InstallmentDetailResource::collection($unpaidInstallments);
         } catch (\Exception $e) {
             Log::error('Upcoming Installments Retrieval Error: ' . $e->getMessage());
             return $this->sendError($e->getMessage());
@@ -995,7 +995,7 @@ class LoanApplicationController extends BaseController
                 ->where('is_paid', 1)
                 ->sortByDesc('due_date');
 
-            return  InstallmentDetailResource::collection($paidInstallments);
+            return InstallmentDetailResource::collection($paidInstallments);
         } catch (\Exception $e) {
             Log::error('Installment History Retrieval Error: ' . $e->getMessage());
             return $this->sendError($e->getMessage());
@@ -1011,9 +1011,9 @@ class LoanApplicationController extends BaseController
                 $query->select('id', 'installment_id', 'is_paid', 'amount_due', 'due_date', 'updated_at');
             }])
                 ->where('user_id', $authUser->id)
-                ->get();
+                ->get()->flatMap->details;
 
-            return  InstallmentDetailResource::collection($installments);
+            return InstallmentDetailResource::collection($installments);
         } catch (\Exception $e) {
             Log::error('All Installments Retrieval Error: ' . $e->getMessage());
             return $this->sendError($e->getMessage());
@@ -1039,6 +1039,7 @@ class LoanApplicationController extends BaseController
 
                     return [
                         'id' => $installment->id,
+                        'installment_number' => $installment->installment_number,
                         'due_date' => $installment->due_date,
                         'amount_due' => $installment->amount_due,
                         'daysDelayed' => abs(round($daysDelayed)),
@@ -1048,7 +1049,7 @@ class LoanApplicationController extends BaseController
                     ];
                 });
 
-            return $lateFeeData->values() ;
+            return $lateFeeData->values();
         } catch (\Exception $e) {
             Log::error('Late Fee Summary Retrieval Error: ' . $e->getMessage());
             return $this->sendError($e->getMessage());
