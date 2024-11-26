@@ -22,6 +22,7 @@ class InstallmentDetailResource extends JsonResource
             'amount_due' => $this->amount_due,
             'amount_paid' => $this->amount_paid,
             'is_paid' => $this->is_paid,
+            'paid_at' => $this->paid_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
