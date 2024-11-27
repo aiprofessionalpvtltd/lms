@@ -1035,17 +1035,20 @@ class LoanApplicationController extends BaseController
                 ->where('due_date', '<', now())
                 ->map(function ($installment) use ($lateFeePerDay) {
                     $daysDelayed = now()->diffInDays($installment->due_date);
+                    $daysDelayed = abs(round($daysDelayed));
+
                     $totalLateFee = $daysDelayed * $lateFeePerDay;
+                    $totalLateFee = abs(round($totalLateFee));
 
                     return [
                         'id' => $installment->id,
                         'installment_number' => $installment->installment_number,
                         'due_date' => $installment->due_date,
                         'amount_due' => $installment->amount_due,
-                        'daysDelayed' => abs(round($daysDelayed)),
+                        'daysDelayed' => $daysDelayed,
                         'perDayLateFee' => $lateFeePerDay,
-                        'totalLateFee' => abs(round($totalLateFee)),
-                        'totalAfterLateFee' => abs(round($installment->amount_due + $totalLateFee)),
+                        'totalLateFee' => $totalLateFee,
+                        'totalAfterLateFee' =>  round($installment->amount_due + $totalLateFee )   ,
                     ];
                 });
 
