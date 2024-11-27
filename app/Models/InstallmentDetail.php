@@ -38,4 +38,11 @@ class InstallmentDetail extends Model
     {
         return $this->belongsTo(Installment::class);
     }
+
+    public function recovery()
+    {
+        return $this->hasOne(Recovery::class, 'installment_detail_id');
+    }
+
+
 }

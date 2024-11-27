@@ -988,12 +988,15 @@ class LoanApplicationController extends BaseController
         try {
             $authUser = auth()->user();
 
-            $paidInstallments = Installment::with('details')
-                ->where('user_id', $authUser->id)
-                ->get()
-                ->flatMap->details
-                ->where('is_paid', 1)
-                ->sortByDesc('due_date');
+            // Fetch paid installments that have corresponding entries in the recoveries table
+            $paidInstallments = InstallmentDetail::where('is_paid', 1)
+                ->whereHas('recovery') // Ensure there is a corresponding recovery record
+                ->with(['recovery', 'installment']) // Eager load related data
+                ->whereHas('installment', function ($query) use ($authUser) {
+                    $query->where('user_id', $authUser->id);
+                })
+                ->orderBy('due_date', 'desc')
+                ->get();
 
             return InstallmentDetailResource::collection($paidInstallments);
         } catch (\Exception $e) {
@@ -1002,16 +1005,19 @@ class LoanApplicationController extends BaseController
         }
     }
 
+
     public function getAllInstallments()
     {
         try {
             $authUser = auth()->user();
 
-            $installments = Installment::with(['details' => function ($query) {
-                $query->select('id', 'installment_id', 'is_paid', 'amount_due', 'due_date', 'updated_at');
-            }])
-                ->where('user_id', $authUser->id)
-                ->get()->flatMap->details;
+            // Fetch all installment details for the authenticated user
+            $installments = InstallmentDetail::with(['recovery', 'installment']) // Load recovery and installment relationships
+            ->whereHas('installment', function ($query) use ($authUser) {
+                $query->where('user_id', $authUser->id);
+            })
+                ->orderBy('due_date', 'asc') // Optional: Order by due date
+                ->get();
 
             return InstallmentDetailResource::collection($installments);
         } catch (\Exception $e) {
@@ -1019,6 +1025,7 @@ class LoanApplicationController extends BaseController
             return $this->sendError($e->getMessage());
         }
     }
+
 
     public function getLateFeeSummary()
     {
@@ -1038,7 +1045,7 @@ class LoanApplicationController extends BaseController
                     $daysDelayed = abs(round($daysDelayed));
 
                     $totalLateFee = $daysDelayed * $lateFeePerDay;
-                    $totalLateFee = abs(round($totalLateFee));
+                    $totalLateFee = abs(round($totalLateFee, 2));
 
                     return [
                         'id' => $installment->id,
@@ -1048,7 +1055,7 @@ class LoanApplicationController extends BaseController
                         'daysDelayed' => $daysDelayed,
                         'perDayLateFee' => $lateFeePerDay,
                         'totalLateFee' => $totalLateFee,
-                        'totalAfterLateFee' =>  round($installment->amount_due + $totalLateFee )   ,
+                        'totalAfterLateFee' => round($installment->amount_due + $totalLateFee, 2),
                     ];
                 });
 
