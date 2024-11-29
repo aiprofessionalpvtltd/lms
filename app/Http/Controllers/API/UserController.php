@@ -287,7 +287,7 @@ class UserController extends BaseController
             $totalGuarantors = $user->references()->count();
 
             // If the user now has exactly 4 guarantors, update the tracking
-            if ($totalGuarantors == 4) {
+            if ($totalGuarantors == 2) {
                 $user->tracking->update(['is_reference' => 1]);
             }
 
