@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\InstallmentDetailResource;
 use App\Http\Resources\LoanApplicationResource;
 use App\Http\Resources\LoanApplicationTrackingResource;
+use App\Http\Resources\LoanAttachmentResource;
+use App\Http\Resources\UserResource;
 use App\Models\Installment;
 use App\Models\InstallmentDetail;
 use App\Models\LoanApplication;
@@ -502,17 +504,18 @@ class LoanApplicationController extends BaseController
         DB::beginTransaction();
 
         try {
-            $loanApplication = LoanApplication::find($request->id);
-
-            if (!$loanApplication) {
-                return $this->sendError('Loan Application not found.');
-            }
+//            $loanApplication = LoanApplication::find($request->id);
+//
+//            if (!$loanApplication) {
+//                return $this->sendError('Loan Application not found.');
+//            }
+            $authUser = auth::user();
 
             // Handle bank document upload
             $bankDocumentPath = $request->bank_document->store('documents', 'public');
             LoanAttachment::updateOrCreate(
                 [
-                    'loan_application_id' => $loanApplication->id,
+                    'user_id' => $authUser->id,
                     'document_type_id' => 1,  // Type ID for Bank Document
                 ],
                 [
@@ -524,7 +527,7 @@ class LoanApplicationController extends BaseController
             $salarySlipDocumentPath = $request->salary_slip_document->store('documents', 'public');
             LoanAttachment::updateOrCreate(
                 [
-                    'loan_application_id' => $loanApplication->id,
+                    'user_id' => $authUser->id,
                     'document_type_id' => 2,  // Type ID for Salary Slip Document
                 ],
                 [
@@ -536,17 +539,24 @@ class LoanApplicationController extends BaseController
             $signaturePath = $this->saveBase64Image($request->signature, 'documents');
             LoanAttachment::updateOrCreate(
                 [
-                    'loan_application_id' => $loanApplication->id,
+                    'user_id' => $authUser->id,
                     'document_type_id' => 3,  // Type ID for Signature
                 ],
                 [
                     'path' => $signaturePath,
                 ]
             );
+            $loanAttachments = LoanAttachment::where('user_id', $authUser->id)->get();
+
+            $authUser->load('tracking', 'familyDependent', 'bank_account', 'profile', 'education','employment','references');
+
+            $authUser->tracking->update(['is_bank_statement' => 1]);
+
 
             DB::commit();
             return $this->sendResponse([
-                'loan_application' => new LoanApplicationResource($loanApplication)
+                'attachments' => LoanAttachmentResource::collection($loanAttachments),
+                'user' => new UserResource($authUser),
             ], 'Documents uploaded successfully.');
 
         } catch (\Exception $e) {

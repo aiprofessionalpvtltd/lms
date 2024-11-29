@@ -13,20 +13,23 @@ return new class extends Migration
     {
         Schema::create('loan_attachments', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('loan_application_id');
+            $table->unsignedBigInteger('loan_application_id')->nullable();
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('document_type_id');
             $table->string('path'); // Path to the document file
             $table->timestamps();
 
             $table->foreign('loan_application_id')
                 ->references('id')
-                ->on('loan_applications')
-                ->onDelete('cascade');
+                ->on('loan_applications');
+
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users');
 
             $table->foreign('document_type_id')
                 ->references('id')
-                ->on('document_types')
-                ->onDelete('cascade');
+                ->on('document_types');
         });
     }
 

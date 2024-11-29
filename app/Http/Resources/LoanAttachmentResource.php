@@ -18,6 +18,7 @@ class LoanAttachmentResource extends JsonResource
         return [
             'id' => $this->id,
             'loan_application_id' => $this->loan_application_id,
+            'user_id' => $this->user_id,
             'document_type' => new DocumentTypeResource($this->documentType), // Include document type details
             'path' => Storage::url($this->path), // Path to the document file
             'created_at' => $this->created_at,

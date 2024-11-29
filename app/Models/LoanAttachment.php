@@ -11,6 +11,7 @@ class LoanAttachment extends Model
 
     protected $fillable = [
         'loan_application_id',
+        'user_id',
         'document_type_id',
         'path'
     ];
