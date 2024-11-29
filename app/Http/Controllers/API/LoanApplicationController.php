@@ -561,7 +561,7 @@ class LoanApplicationController extends BaseController
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->sendError('Something went wrong: ' . $e->getMessage());
+            return $this->sendError([] , 'Something went wrong: ' . $e->getMessage());
         }
     }
 
