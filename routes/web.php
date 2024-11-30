@@ -62,6 +62,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('loan-application/{id}/complete', [LoanApplicationController::class, 'completeApplication'])->name('complete-loan-application');
     Route::put('loan-applications/{id}/status', [LoanApplicationController::class, 'updateStatus'])->name('update-loan-application-status');
     Route::get('loan-applications/{id}/approved', [LoanApplicationController::class, 'approveLoan'])->name('approve-loan');
+    Route::get('get-customer-loan-applications/{id}/{loanID}', [LoanApplicationController::class, 'getCustomerData'])->name('get-customer-loan-applications');
 
 
     Route::get('show-installment', [InstallmentController::class, 'index'])->name('show-installment');

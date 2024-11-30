@@ -232,6 +232,30 @@ class LoanApplicationController extends BaseController
         }
     }
 
+    public function getCustomerData($id,$loanID)
+    {
+        try {
+            $loanApplications = [];
+
+
+            $loanApplications = LoanApplication::with('getLatestHistory')
+                ->where('id', '!=', $loanID) // Exclude the current loan application
+                ->where('user_id', $id)->get();
+
+
+            return view('admin.loan_applications.index', compact('loanApplications'));
+
+
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
+
+            // Return a generic error response
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+
     public function getSingleData(Request $request, $id)
     {
         // Get the status from the request, defaulting to 'pending' if not provided
@@ -245,6 +269,12 @@ class LoanApplicationController extends BaseController
             if ($loanApplication == null) {
                 return $this->sendError('No Loan Applications found');
             }
+
+            // Retrieve the user's existing or previous loan applications
+            $userId = $loanApplication->user_id;
+            $previousLoans = LoanApplication::where('user_id', $userId)
+                ->where('id', '!=', $loanApplicationID) // Exclude the current loan application
+                ->get();
 
 
             if ($request->expectsJson()) {
@@ -294,7 +324,7 @@ class LoanApplicationController extends BaseController
                 $loanApplicationProduct = $loanApplication->calculatedProduct;
 
 
-                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanApplicationProduct'));
+                return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanApplicationProduct', 'previousLoans'));
             }
 
 
@@ -393,14 +423,14 @@ class LoanApplicationController extends BaseController
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'loan_amount' => 'sometimes|numeric',
-            'product_id' => 'sometimes|exists:products,id',
-            'loan_duration_id' => 'sometimes|exists:loan_durations,id',
-            'product_service_id' => 'required|exists:product_services,id',
-            'loan_purpose_id' => 'required|exists:loan_purposes,id',
-            'address' => 'required|string',
-            'reference_contact_1' => 'required|string|max:255',
-            'reference_contact_2' => 'required|string|max:255',
+//            'loan_amount' => 'sometimes|numeric',
+//            'product_id' => 'sometimes|exists:products,id',
+//            'loan_duration_id' => 'sometimes|exists:loan_durations,id',
+//            'product_service_id' => 'required|exists:product_services,id',
+//            'loan_purpose_id' => 'required|exists:loan_purposes,id',
+//            'address' => 'required|string',
+//            'reference_contact_1' => 'required|string|max:255',
+//            'reference_contact_2' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -439,7 +469,6 @@ class LoanApplicationController extends BaseController
                     ->where('city_id', $cityID);
             })->first();
 
-//            dd($toUsers);
             if (!$toUsers) {
 
                 $toUsers = User::whereHas('roles', function ($query) use ($roleId, $provinceID, $districtID, $cityID) {
@@ -454,15 +483,7 @@ class LoanApplicationController extends BaseController
                 'application_id' => $this->generateLoanApplicationId(),
                 'name' => $request->name,
                 'email' => $request->email,
-                'loan_amount' => $request->loan_amount,
-                'product_id' => $request->product_id,
-                'loan_duration_id' => $request->loan_duration_id,
-                'product_service_id' => $request->product_service_id,
-                'loan_purpose_id' => $request->loan_purpose_id,
                 'user_id' => $userID,
-                'address' => $request->address,
-                'reference_contact_1' => $request->reference_contact_1,
-                'reference_contact_2' => $request->reference_contact_2,
                 'status' => 'pending',
             ]);
 
@@ -504,17 +525,18 @@ class LoanApplicationController extends BaseController
         DB::beginTransaction();
 
         try {
-//            $loanApplication = LoanApplication::find($request->id);
-//
-//            if (!$loanApplication) {
-//                return $this->sendError('Loan Application not found.');
-//            }
+            $loanApplication = LoanApplication::find($request->id);
+
+            if (!$loanApplication) {
+                return $this->sendError('Loan Application not found.');
+            }
             $authUser = auth::user();
 
             // Handle bank document upload
             $bankDocumentPath = $request->bank_document->store('documents', 'public');
             LoanAttachment::updateOrCreate(
                 [
+                    'loan_application_id' => $loanApplication->id,
                     'user_id' => $authUser->id,
                     'document_type_id' => 1,  // Type ID for Bank Document
                 ],
@@ -527,6 +549,8 @@ class LoanApplicationController extends BaseController
             $salarySlipDocumentPath = $request->salary_slip_document->store('documents', 'public');
             LoanAttachment::updateOrCreate(
                 [
+                    'loan_application_id' => $loanApplication->id,
+
                     'user_id' => $authUser->id,
                     'document_type_id' => 2,  // Type ID for Salary Slip Document
                 ],
@@ -539,6 +563,8 @@ class LoanApplicationController extends BaseController
             $signaturePath = $this->saveBase64Image($request->signature, 'documents');
             LoanAttachment::updateOrCreate(
                 [
+                    'loan_application_id' => $loanApplication->id,
+
                     'user_id' => $authUser->id,
                     'document_type_id' => 3,  // Type ID for Signature
                 ],
@@ -546,22 +572,21 @@ class LoanApplicationController extends BaseController
                     'path' => $signaturePath,
                 ]
             );
-            $loanAttachments = LoanAttachment::where('user_id', $authUser->id)->get();
 
-            $authUser->load('tracking', 'familyDependent', 'bank_account', 'profile', 'education','employment','references');
+            $authUser->load('tracking', 'familyDependent', 'bank_account', 'profile', 'education', 'employment', 'references');
 
             $authUser->tracking->update(['is_bank_statement' => 1]);
 
 
             DB::commit();
             return $this->sendResponse([
-                'attachments' => LoanAttachmentResource::collection($loanAttachments),
+                'loan_application' => new LoanApplicationResource($loanApplication),
                 'user' => new UserResource($authUser),
             ], 'Documents uploaded successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->sendError([] , 'Something went wrong: ' . $e->getMessage());
+            return $this->sendError([], 'Something went wrong: ' . $e->getMessage());
         }
     }
 
@@ -844,60 +869,66 @@ class LoanApplicationController extends BaseController
 
     public function approveLoan($loanApplicationId)
     {
-        // Fetch the loan application
-        $loanApplication = LoanApplication::findOrFail($loanApplicationId);
+        DB::beginTransaction(); // Start a transaction
 
-        // Ensure the loan application has not already been approved
-        if ($loanApplication->status === 'accepted') {
-            return redirect()->back()->with('error', 'This loan application has already been accepted.');
+        try {
+            // Fetch the loan application
+            $loanApplication = LoanApplication::findOrFail($loanApplicationId);
 
+            // Ensure the loan application has not already been approved
+            if ($loanApplication->status === 'accepted') {
+                return redirect()->back()->with('error', 'This loan application has already been accepted.');
+            }
+
+            // Set loan amount and duration for calculation
+            $loanAmount = $loanApplication->loan_amount;
+            $loanDuration = $loanApplication->loanDuration->value;
+
+            // Call calculateLoan to get loan details
+            $loanApplication->load('calculatedProduct');
+            $loanDetails = $loanApplication->calculatedProduct;
+
+            // Mark the loan as approved
+            $loanApplication->status = 'accepted';
+            $loanApplication->approved_by = auth()->id(); // Approved by the logged-in user
+            $loanApplication->save();
+
+            // Insert calculated loan details into the installments table
+            $installmentData = [
+                'loan_application_id' => $loanApplication->id,
+                'user_id' => $loanApplication->user_id,
+                'total_amount' => $loanDetails->total_repayable_amount,
+                'monthly_installment' => $loanDetails->monthly_installment_amount,
+                'processing_fee' => $loanDetails->processing_fee_amount,
+                'total_markup' => $loanDetails->total_interest_amount,
+                'approved_by' => auth()->id(),
+            ];
+            $installment = Installment::create($installmentData);
+
+            // Generate individual monthly installments
+            $startDate = now();
+            for ($i = 1; $i <= $loanDuration; $i++) {
+                $dueDate = $startDate->copy()->addMonths(1); // Calculate the due date
+                InstallmentDetail::create([
+                    'installment_id' => $installment->id,
+                    'issue_date' => $startDate,
+                    'due_date' => $dueDate,
+                    'amount_due' => $loanDetails->monthly_installment_amount,
+                ]);
+                $startDate = $dueDate->copy()->addDay(); // Update startDate for the next installment
+            }
+
+            DB::commit(); // Commit the transaction
+
+            return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback the transaction on failure
+
+            // Log the exception for debugging purposes
+            Log::error('Error approving loan application: ', ['error' => $e->getMessage()]);
+
+            return redirect()->back()->with('error', 'Failed to approve loan application. Please try again.');
         }
-
-        // Set loan amount and duration for calculation
-        $loanAmount = $loanApplication->loan_amount;
-        $loanDuration = $loanApplication->loanDuration->value;
-
-        // Call calculateLoan to get loan details
-
-        $loanApplication->load('calculatedProduct');
-        $loanDetails = $loanApplication->calculatedProduct;
-
-
-//        $loanDetails = $this->calculateLoan(new Request(['loan_amount' => $loanAmount, 'months' => $loanDuration]))->getData(true);
-//        $loanDetails = $loanDetails['data'];
-
-        // Mark the loan as approved
-        $loanApplication->status = 'accepted';
-        $loanApplication->approved_by = auth()->id(); // Approved by the logged-in user
-        $loanApplication->save();
-
-        // Insert calculated loan details into the installments table
-        $installmentData = [
-            'loan_application_id' => $loanApplication->id,
-            'user_id' => $loanApplication->user_id,
-            'total_amount' => $loanDetails->total_repayable_amount,
-            'monthly_installment' => $loanDetails->monthly_installment_amount,
-            'processing_fee' => $loanDetails->processing_fee_amount,
-            'total_markup' => $loanDetails->total_interest_amount,
-            'approved_by' => auth()->id(),
-        ];
-        $installment = Installment::create($installmentData);
-
-        // Generate individual monthly installments
-        $startDate = now();
-        for ($i = 1; $i <= $loanDuration; $i++) {
-            $dueDate = $startDate->copy()->addMonths(1); // Calculate the due date
-            InstallmentDetail::create([
-                'installment_id' => $installment->id,
-                'issue_date' => $startDate,
-                'due_date' => $dueDate,
-                'amount_due' => $loanDetails->monthly_installment_amount,
-            ]);
-            $startDate = $dueDate->copy()->addDay();; // Update startDate for the next installment
-        }
-
-        return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application status updated successfully.');
-
     }
 
     public function getDashboardData()

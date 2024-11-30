@@ -42,9 +42,9 @@
                     <th>Asisgned To</th>
                     <th>Loan Amount</th>
                     <th>Duration</th>
-                    <th>Service</th>
-                    <th>Purpose</th>
-                    <th>Address</th>
+{{--                    <th>Service</th>--}}
+{{--                    <th>Purpose</th>--}}
+{{--                    <th>Address</th>--}}
                     <th>Completed</th>
                       <th class="text-center">Actions</th>
                 </tr>
@@ -58,9 +58,9 @@
                         <td>{{$loanApplication->getLatestHistory->toUser->name}}</td>
                         <td>{{$loanApplication->loan_amount}}</td>
                         <td>{{$loanApplication->loanDuration->name}}</td>
-                        <td>{{$loanApplication->productService->name}}</td>
-                        <td>{{$loanApplication->loanPurpose->name}}</td>
-                        <td>{{$loanApplication->address}}</td>
+{{--                        <td>{{$loanApplication->productService->name}}</td>--}}
+{{--                        <td>{{$loanApplication->loanPurpose->name}}</td>--}}
+{{--                        <td>{{$loanApplication->address}}</td>--}}
                         <td>{{showBoolean($loanApplication->is_completed)}}</td>
                           <td>
                             <div class="d-flex">

@@ -109,24 +109,28 @@
     <!-- /page header -->
 
     <a href="{{ route('view-customer', $loanApplication->user->id) }}" class="btn btn-primary">View Customer Detail</a>
+    @if(count($previousLoans) > 0)
+        <a href="{{ route('get-customer-loan-applications', ['id' => $loanApplication->user->id, 'loanID' => $loanApplication->id]) }}" class="btn btn-info">View All Applications</a>
+    @endif
+
     <!-- Content area -->
     <div class="content">
 
         <div class="card mb-4">
-            <div class="card-header">
-                <h2>Loan Application Information</h2>
-            </div>
+{{--            <div class="card-header">--}}
+{{--                <h2>Loan Application Information</h2>--}}
+{{--            </div>--}}
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
                         {{--                        <p><strong>Loan Amount:</strong> {{ $loanApplication->loan_amount }}</p>--}}
                         {{--                        <p><strong>Loan Duration:</strong> {{ $loanApplication->loanDuration->name }}</p>--}}
-                        <p><strong>Product Service:</strong> {{ $loanApplication->productService->name }}</p>
-                        <p><strong>Loan Purpose:</strong> {{ $loanApplication->loanPurpose->name }}</p>
-                        <p><strong>Address:</strong> {{ $loanApplication->address }}</p>
-                        <p><strong>Reference Contact 1:</strong> {{ $loanApplication->reference_contact_1 }}</p>
-                        <p><strong>Reference Contact 2:</strong> {{ $loanApplication->reference_contact_2 }}</p>
-                        <p><strong>Status:</strong> {{ $loanApplication->status }}</p>
+{{--                        <p><strong>Product Service:</strong> {{ $loanApplication->productService->name }}</p>--}}
+{{--                        <p><strong>Loan Purpose:</strong> {{ $loanApplication->loanPurpose->name }}</p>--}}
+{{--                        <p><strong>Address:</strong> {{ $loanApplication->address }}</p>--}}
+{{--                        <p><strong>Reference Contact 1:</strong> {{ $loanApplication->reference_contact_1 }}</p>--}}
+{{--                        <p><strong>Reference Contact 2:</strong> {{ $loanApplication->reference_contact_2 }}</p>--}}
+{{--                        <p><strong>Status:</strong> {{ $loanApplication->status }}</p>--}}
 
                         <br>
                         <h2>Applied for Product</h2>
@@ -175,39 +179,39 @@
 
                 </div>
 
-                <h2>Loan Application Guarantors</h2>
+{{--                <h2>Loan Application Guarantors</h2>--}}
 
-                <table class="table" border="1" cellpadding="10" cellspacing="0">
-                    <thead>
-                    <tr>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>CNIC No</th>
-                        <th>Address</th>
-                        <th>Mobile No</th>
-                        <th>CNIC Attachment</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach($loanApplication->guarantors as $guarantor)
-                        <tr>
-                            <td>{{ $guarantor->first_name }}</td>
-                            <td>{{ $guarantor->last_name }}</td>
-                            <td>{{ $guarantor->cnic_no }}</td>
-                            <td>{{ $guarantor->address }}</td>
-                            <td>{{ $guarantor->mobile_no }}</td>
-                            <td>
-                                @if($guarantor->cnic_attachment)
-                                    <a href="{{ asset('storage/' . $guarantor->cnic_attachment) }}" target="_blank">View
-                                        Attachment</a>
-                                @else
-                                    N/A
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
+{{--                <table class="table" border="1" cellpadding="10" cellspacing="0">--}}
+{{--                    <thead>--}}
+{{--                    <tr>--}}
+{{--                        <th>First Name</th>--}}
+{{--                        <th>Last Name</th>--}}
+{{--                        <th>CNIC No</th>--}}
+{{--                        <th>Address</th>--}}
+{{--                        <th>Mobile No</th>--}}
+{{--                        <th>CNIC Attachment</th>--}}
+{{--                    </tr>--}}
+{{--                    </thead>--}}
+{{--                    <tbody>--}}
+{{--                    @foreach($loanApplication->guarantors as $guarantor)--}}
+{{--                        <tr>--}}
+{{--                            <td>{{ $guarantor->first_name }}</td>--}}
+{{--                            <td>{{ $guarantor->last_name }}</td>--}}
+{{--                            <td>{{ $guarantor->cnic_no }}</td>--}}
+{{--                            <td>{{ $guarantor->address }}</td>--}}
+{{--                            <td>{{ $guarantor->mobile_no }}</td>--}}
+{{--                            <td>--}}
+{{--                                @if($guarantor->cnic_attachment)--}}
+{{--                                    <a href="{{ asset('storage/' . $guarantor->cnic_attachment) }}" target="_blank">View--}}
+{{--                                        Attachment</a>--}}
+{{--                                @else--}}
+{{--                                    N/A--}}
+{{--                                @endif--}}
+{{--                            </td>--}}
+{{--                        </tr>--}}
+{{--                    @endforeach--}}
+{{--                    </tbody>--}}
+{{--                </table>--}}
 
 
             </div>

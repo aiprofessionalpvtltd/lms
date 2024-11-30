@@ -17,14 +17,14 @@ return new class extends Migration
             $table->string('email');
             $table->decimal('loan_amount', 15, 2)->nullable();
             $table->unsignedBigInteger('loan_duration_id')->nullable();
-            $table->unsignedBigInteger('product_service_id');
-            $table->unsignedBigInteger('loan_purpose_id');
+            $table->unsignedBigInteger('product_service_id')->nullable();
+            $table->unsignedBigInteger('loan_purpose_id')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('approved_by')->nullable();
 
-            $table->text('address');
-            $table->string('reference_contact_1');
-            $table->string('reference_contact_2');
+            $table->text('address')->nullable();
+            $table->string('reference_contact_1')->nullable();
+            $table->string('reference_contact_2')->nullable();
             $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
             $table->json('documents')->nullable(); // To store multiple document paths
             $table->boolean('is_completed')->default(false); // To store multiple document paths

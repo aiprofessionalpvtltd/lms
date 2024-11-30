@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('amount_due', 15, 2);
             $table->decimal('amount_paid', 15, 2)->nullable()->default(0);
             $table->boolean('is_paid')->default(false);
-            $table->date('paid_at');
+            $table->date('paid_at')->nullable();
             $table->timestamps();
 
             // Foreign keys
