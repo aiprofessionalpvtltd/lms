@@ -232,7 +232,7 @@ class LoanApplicationController extends BaseController
         }
     }
 
-    public function getCustomerData($id,$loanID)
+    public function getCustomerData($id, $loanID)
     {
         try {
             $loanApplications = [];
@@ -450,10 +450,11 @@ class LoanApplicationController extends BaseController
             $userID = $authUser->id;
             $userRoleID = $authUser->roles->first()->id;
 
-            $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_completed', 0)->count();
+            $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_completed', 0)->first();
 
-            if ($runningLoanApplication > 0) {
-                return $this->sendError('An application is already in progress. A new application cannot be submitted.');
+//            dd($runningLoanApplication);
+            if ($runningLoanApplication->count() > 0) {
+                return $this->sendError('An application is already in progress. A new application cannot be submitted.', new LoanApplicationResource($runningLoanApplication));
             }
 
             $provinceID = $authUser->province_id;
@@ -478,6 +479,8 @@ class LoanApplicationController extends BaseController
             }
 
             $toRoleID = $toUsers->roles->first()->id;
+
+//            dd($this->generateLoanApplicationId());
 
             $loanApplication = LoanApplication::create([
                 'application_id' => $this->generateLoanApplicationId(),

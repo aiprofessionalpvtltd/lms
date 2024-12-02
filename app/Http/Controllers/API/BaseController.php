@@ -283,15 +283,14 @@ class BaseController extends Controller
 
 
     function generateLoanApplicationId() {
-
         $authUser = auth()->user();
         $userProvince = $authUser->province->name;
-
         $userId = $authUser->id;
 
         // Get the current year
         $year = date('y');
 
+        // Define the province prefixes
         $provincePrefixes = [
             'Punjab' => 'PJ',
             'Sindh' => 'SN',
@@ -304,25 +303,30 @@ class BaseController extends Controller
 
         // Get the prefix for the province
         $prefix = $provincePrefixes[$userProvince] ?? 'X'; // Default to 'X' if not found
+
         // Count existing records for the user in the current year
         $applicationCount = LoanApplication::where('user_id', $userId)
-                ->whereYear('created_at', $year)
-                ->count() + 1; // Increment for the new application
+            ->whereYear('created_at', $year)
+            ->count(); // Increment for the new application
+
+        $count = $applicationCount + 1;
 
         // Generate the application ID in the format: PREFIX-USERID-YEAR-COUNT
-        $applicationId = sprintf('%s%s%02d', $prefix, $year, $applicationCount);
+        $applicationId = sprintf('%s%s%02d', $prefix, $year, $count);
 
-        // Check for uniqueness
-        $existingApplication = LoanApplication::where('application_id', $applicationId)
-            ->exists();
+        // Check for uniqueness without recursion
+        $existingApplication = LoanApplication::where('application_id', $applicationId)->exists();
 
-        if ($existingApplication) {
-            // If ID exists (very rare due to incremental count), retry by incrementing the count
-            return $this->generateLoanApplicationId();
+        // If the ID exists, increment the count and try again
+        while ($existingApplication) {
+            $count++;
+            $applicationId = sprintf('%s%s%02d', $prefix, $year, $count);
+            $existingApplication = LoanApplication::where('application_id', $applicationId)->exists();
         }
 
         return $applicationId;
     }
+
 
 
 }
