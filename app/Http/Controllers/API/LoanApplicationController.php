@@ -452,10 +452,11 @@ class LoanApplicationController extends BaseController
 
             $runningLoanApplication = LoanApplication::where('user_id', $userID)->where('is_completed', 0)->first();
 
-//            dd($runningLoanApplication);
-            if ($runningLoanApplication->count() > 0) {
+            if ($runningLoanApplication) {
+                // Check if a running application exists
                 return $this->sendError('An application is already in progress. A new application cannot be submitted.', new LoanApplicationResource($runningLoanApplication));
             }
+
 
             $provinceID = $authUser->province_id;
             $districtID = $authUser->district_id;
