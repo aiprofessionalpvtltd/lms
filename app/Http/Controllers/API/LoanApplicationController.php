@@ -519,7 +519,8 @@ class LoanApplicationController extends BaseController
         $validator = Validator::make($request->all(), [
             'bank_document' => 'required|file|mimes:pdf,jpg,png,doc,docx',
             'salary_slip_document' => 'required|file|mimes:pdf,jpg,png,doc,docx',
-            'signature' => 'required|string',  // Expecting base64 string for signature
+            'signature' => 'required|string',
+            'loan_purpose_id' => 'required|exists:loan_purposes,id',
         ]);
 
         if ($validator->fails()) {
@@ -536,6 +537,9 @@ class LoanApplicationController extends BaseController
             }
             $authUser = auth::user();
 
+            $loanApplication->loan_purpose_id = $request->loan_purpose_id;
+            $loanApplication->save();
+            
             // Handle bank document upload
             $bankDocumentPath = $request->bank_document->store('documents', 'public');
             LoanAttachment::updateOrCreate(
