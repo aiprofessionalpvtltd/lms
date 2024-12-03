@@ -539,7 +539,7 @@ class LoanApplicationController extends BaseController
 
             $loanApplication->loan_purpose_id = $request->loan_purpose_id;
             $loanApplication->save();
-            
+
             // Handle bank document upload
             $bankDocumentPath = $request->bank_document->store('documents', 'public');
             LoanAttachment::updateOrCreate(

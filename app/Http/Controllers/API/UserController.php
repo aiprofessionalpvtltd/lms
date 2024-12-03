@@ -43,6 +43,7 @@ class UserController extends BaseController
                 return $this->sendError('User not found.', ['error' => 'User not found.']);
             }
 
+            $user->load('profile.gender' ,'profile.maritalStatus' ,'profile.nationality' );
             // Return the user information using UserResource
             return $this->sendResponse(new UserResource($user), 'User information retrieved successfully.');
         } catch (Exception $e) {
