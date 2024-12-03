@@ -125,7 +125,7 @@ class LoanApplicationController extends BaseController
             $processingFeeAmount = $loanAmount * $processingFeeRate;
             $totalUpfrontPayment = $downPayment + $processingFeeAmount;
             $financedAmount = $loanAmount - round($downPayment);
-            $disbursementAmount = $financedAmount - $processingFeeAmount;
+            $disbursementAmount = $financedAmount ;
 
             $totalInterestAmount = $financedAmount * $interestRate;
             $totalRepayableAmount = $financedAmount + $totalInterestAmount;
@@ -144,10 +144,10 @@ class LoanApplicationController extends BaseController
             $downPayment = $loanAmount * ($downPaymentPercentage / 100);
             $financedAmount = $loanAmount - round($downPayment);
             $processingFeeAmount = $financedAmount * $processingFeeRate;
-            $disbursementAmount = $financedAmount - $processingFeeAmount;
+            $disbursementAmount = $financedAmount;
 
             $totalInterestAmount = $financedAmount * $interestRate;
-            $totalRepayableAmount = $financedAmount + $totalInterestAmount;
+            $totalRepayableAmount = $financedAmount + $totalInterestAmount + $processingFeeAmount;
             $monthlyInstallmentAmount = $totalRepayableAmount / $months;
         } else {
             return response()->json(['error' => 'Invalid request_for value.'], 400);
@@ -795,6 +795,17 @@ class LoanApplicationController extends BaseController
             ]);
 
             DB::commit();
+
+            if($loanAmount < env('MIN_AMOUNT') ){
+                $loanApplication->status = 'rejected';
+                $loanApplication->is_completed = 1;
+                $loanApplication->is_submitted = 1;
+                $loanApplication->save();
+
+                return $this->sendError('Loan Application Rejected', ['error' => 'Loan Amount is less than 50,000']);
+
+
+            }
 
             // Return a successful response
             return $this->sendResponse(

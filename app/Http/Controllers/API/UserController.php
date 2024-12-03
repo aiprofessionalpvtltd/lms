@@ -70,7 +70,7 @@ class UserController extends BaseController
         }
     }
 
-    public function updateProfile(Request $request): JsonResponse
+    public function updateProfile(Request $request): \Illuminate\Http\Response
     {
         // Get the authenticated user
         $user = Auth::user();
@@ -96,6 +96,14 @@ class UserController extends BaseController
         DB::beginTransaction();
 
         try {
+
+            // Check if the user is at least 21 years old
+            $dob = \Carbon\Carbon::parse($request->dob);
+            if ($dob->age < 21) {
+                return $this->sendError('Date Of Birth Validation.', 'The user must be at least 21 years old.');
+             }
+
+
             // Update the user information
             $user->update([
                 'name' => $request->name,

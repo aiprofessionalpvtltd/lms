@@ -113,11 +113,11 @@
                         <h1>Employment & Financial Information</h1>
                         <p><strong>Employment Status:</strong> {{ $customer->employment->employmentStatus->status }}</p>
                         <p><strong>Income Source:</strong> {{ $customer->employment->incomeSource->source }}</p>
-                        <p><strong>Current Employer:</strong> {{ $customer->employment->current_employer }}</p>
-                        <p><strong>Job Title:</strong> {{ $customer->employment->job_title->name }}</p>
-                        <p><strong>Employment Duration:</strong> {{ $customer->employment->employment_duration }}</p>
-                        <p><strong>Gross Income:</strong> {{ $customer->employment->gross_income }}</p>
-                        <p><strong>Net Income:</strong> {{ $customer->employment->net_income }}</p>
+                        <p><strong>Employer/Business Name:</strong> {{ $customer->employment->current_employer }}</p>
+                        <p><strong>Position/Role:</strong> {{ $customer->employment->job_title->name }}</p>
+                        <p><strong>Years of Employment/Business:</strong> {{ $customer->employment->employment_duration }}</p>
+                        <p><strong>How much money do you make each month?</strong> {{ $customer->employment->gross_income }}</p>
+                        <p><strong>After earning and spending, how much money do you keep</strong> {{ $customer->employment->net_income }}</p>
                         <p><strong>Existing Loan:</strong> {{ $customer->employment->existingLoan->name }}</p>
                         <br>
                         <h1>Education Background Information</h1>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BankResource;
 use App\Http\Resources\DocumentTypeResource;
 use App\Http\Resources\EducationResource;
 use App\Http\Resources\EmploymentStatusResource;
@@ -19,6 +20,7 @@ use App\Http\Resources\ProductServiceResource;
 use App\Http\Resources\RelationshipResource;
 use App\Http\Resources\ResidenceDurationResource;
 use App\Http\Resources\ResidenceTypeResource;
+use App\Models\Bank;
 use App\Models\City;
 use App\Models\District;
 use App\Models\DocumentType;
@@ -384,5 +386,22 @@ class DropdownController extends BaseController
             return $this->sendError('Error retrieving Products.', $e->getMessage());
         }
     }
+
+    public function getBanks()
+    {
+        try {
+
+            $banks = Bank::all();
+
+            return $this->sendResponse(BankResource::collection($banks), 'Banks retrieved successfully.');
+
+        } catch (\Exception $e) {
+            // Handle any exceptions
+            return $this->sendError('Error retrieving Banks .', $e->getMessage());
+
+
+        }
+    }
+
 
 }

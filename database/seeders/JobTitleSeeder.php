@@ -14,9 +14,14 @@ class JobTitleSeeder extends Seeder
     public function run(): void
     {
         $titles = [
+            ['name' => 'Trainee/Junior Staff'],
             ['name' => 'Senior/Managerial'],
-            ['name' => 'Mid-level'],
-            ['name' => 'Entry-level/Fresh graduate'],
+            ['name' => 'Executive/Director'],
+            ['name' => 'Business Owner/Entrepreneur'],
+            ['name' => 'Doctor'],
+            ['name' => 'Engineer'],
+            ['name' => 'Teacher/Principal'],
+            ['name' => 'Other'],
 
         ];
 

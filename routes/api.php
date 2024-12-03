@@ -35,6 +35,7 @@ Route::get('dropdown/getExistingLoans', [DropdownController::class, 'getExisting
 Route::get('dropdown/getProvinceByCountry', [DropdownController::class, 'getProvinceByCountry']);
 Route::get('dropdown/getDistrictByProvince', [DropdownController::class, 'getDistrictByProvince']);
 Route::get('dropdown/getCityByProvince', [DropdownController::class, 'getCityByProvince']);
+Route::get('dropdown/banks', [DropdownController::class, 'getBanks']);
 
 
 Route::post('user/loan-calculator', [LoanApplicationController::class, 'calculateLoan']);

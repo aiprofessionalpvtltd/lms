@@ -44,6 +44,7 @@ class DatabaseSeeder extends Seeder
             ResidenceTypeSeeder::class,
             ResidenceDurationSeeder::class,
             ExistingLoanSeeder::class,
+            BanksTableSeeder::class,
 
         ]);
 
