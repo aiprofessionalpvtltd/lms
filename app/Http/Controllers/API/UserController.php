@@ -44,6 +44,7 @@ class UserController extends BaseController
             }
 
             $user->load('profile.gender' ,'profile.maritalStatus' ,'profile.nationality' );
+
             // Return the user information using UserResource
             return $this->sendResponse(new UserResource($user), 'User information retrieved successfully.');
         } catch (Exception $e) {
