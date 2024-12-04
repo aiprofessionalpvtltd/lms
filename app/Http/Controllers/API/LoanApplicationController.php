@@ -961,7 +961,7 @@ class LoanApplicationController extends BaseController
                 ->first();
 
             if (!$loanApplication || !$loanApplication->getLatestInstallment) {
-                return $this->sendResponse([], 'No active loan applications found.');
+                return $this->sendResponse(['is_application' => false], 'No active loan applications found.');
             }
 
             $installment = $loanApplication->getLatestInstallment;
