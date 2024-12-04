@@ -961,11 +961,11 @@ class LoanApplicationController extends BaseController
                 ->first();
 
             if (!$loanApplication) {
-                return $this->sendResponse(['is_application' => false], 'No loan applications found.');
+                return $this->sendResponse(['is_application' => 'no loan'], 'No loan applications found.');
             }
 
             if ($loanApplication && $loanApplication->status == 'pending') {
-                return $this->sendResponse(['is_application' => true], 'Your loan application has been submitted successfully and is under review.');
+                return $this->sendResponse(['is_application' => 'pending'], 'Your loan application has been submitted successfully and is under review.');
             }
 
             $installment = $loanApplication->getLatestInstallment;
@@ -1016,6 +1016,7 @@ class LoanApplicationController extends BaseController
                 'installmentHistory' => $this->getInstallmentHistory(),
                 'allInstallments' => $this->getAllInstallments(),
                 'lateFeeSummary' => $this->getLateFeeSummary(),
+                'is_application' => 'approved'
 
             ], 'Loan data retrieved successfully.');
         } catch (\Exception $e) {
