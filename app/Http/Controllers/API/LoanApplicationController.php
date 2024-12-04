@@ -590,7 +590,7 @@ class LoanApplicationController extends BaseController
             return $this->sendResponse([
                 'loan_application' => new LoanApplicationResource($loanApplication),
                 'user' => new UserResource($authUser),
-            ], 'Documents uploaded successfully.');
+            ], 'Your loan application has been submitted successfully and is under review.');
 
         } catch (\Exception $e) {
             DB::rollBack();
