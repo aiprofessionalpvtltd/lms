@@ -960,8 +960,12 @@ class LoanApplicationController extends BaseController
                 ->where('user_id', $authUser->id)
                 ->first();
 
-            if (!$loanApplication || !$loanApplication->getLatestInstallment) {
-                return $this->sendResponse(['is_application' => false], 'No active loan applications found.');
+            if (!$loanApplication) {
+                return $this->sendResponse(['is_application' => false], 'No loan applications found.');
+            }
+
+            if ($loanApplication && $loanApplication->status == 'pending') {
+                return $this->sendResponse(['is_application' => true], 'Your loan application has been submitted successfully and is under review.');
             }
 
             $installment = $loanApplication->getLatestInstallment;
