@@ -28,7 +28,11 @@
             <div class="card-header header-elements-inline">
                 <h5 class="card-title"></h5>
                 <div class="header-elements">
-
+                    <div class="col-md-12 mt-5">
+                        <a href="{{route('add-customer')}}"
+                           class="btn btn-outline-primary float-end"><b><i
+                                    class="fas fa-plus"></i></b> Add Customer </a>
+                    </div>
                 </div>
             </div>
 

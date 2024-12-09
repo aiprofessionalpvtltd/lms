@@ -22,9 +22,10 @@
         <!-- Form validation -->
         <div class="card">
             <!-- Company form -->
-            <form action="{{ route('store-customer') }}" method="POST" enctype="multipart/form-data"
+            <form action="{{ route('update-customer',$customer->id) }}" method="POST" enctype="multipart/form-data"
                   class="flex-fill form-validate-jquery">
                 @csrf
+                @method('PUT')
                 <div class="card-body">
 
                     <!-- Tab navigation -->
@@ -62,7 +63,7 @@
                                         <div class="form-group">
                                             <input type="text" name="first_name" class="form-control"
                                                    placeholder="First Name"
-                                                   value="{{ old('first_name') }}">
+                                                   value="{{ old('first_name' ,$customer->profile->first_name) }}">
                                             @if ($errors->has('first_name'))
                                                 <span class="text-danger">  {{ $errors->first('first_name') }}</span>
                                             @endif
@@ -75,7 +76,7 @@
                                         <div class="form-group">
                                             <input type="text" name="last_name" class="form-control"
                                                    placeholder="Last Name"
-                                                   value="{{ old('last_name') }}">
+                                                   value="{{ old('last_name',$customer->profile->last_name) }}">
                                             @if ($errors->has('last_name'))
                                                 <span class="text-danger">{{ $errors->first('last_name') }}</span>
                                             @endif
@@ -87,7 +88,7 @@
                                         <label class="col-form-label">Email</label>
                                         <div class="form-group">
                                             <input type="email" name="email" class="form-control" placeholder="Email"
-                                                   value="{{ old('email') }}">
+                                                   value="{{ old('email',$customer->email) }}">
                                             @if ($errors->has('email'))
                                                 <span class="text-danger">{{ $errors->first('email') }}</span>
                                             @endif
@@ -103,7 +104,7 @@
                                                 <option></option>
                                                 @foreach($provinces as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('province_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('province_id' , $customer->province_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('province_id'))
@@ -120,7 +121,7 @@
                                                 <option></option>
                                                 @foreach($cities as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('city_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('city_id' , $customer->city_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('city_id'))
@@ -138,7 +139,7 @@
                                                 <option></option>
                                                 @foreach($districts as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('district_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('district_id', $customer->district_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('district_id'))
@@ -160,7 +161,7 @@
                                         <div class="form-group">
                                             <input type="text" name="father_name" class="form-control"
                                                    placeholder="Father Name"
-                                                   value="{{ old('father_name') }}">
+                                                   value="{{ old('father_name',$customer->profile->father_name) }}">
                                             @if ($errors->has('father_name'))
                                                 <span class="text-danger">{{ $errors->first('father_name') }}</span>
                                             @endif
@@ -173,7 +174,7 @@
                                         <div class="form-group form-group-feedback form-group-feedback-right">
 
                                             <input type="text" name="dob" class="form-control flatpickr-minimum"
-                                                   placeholder="Select DOB " value="{{old('dob' , currentDateInsert())}}"/>
+                                                   placeholder="Select DOB " value="{{old('dob' , $customer->profile->dob)}}"/>
                                             @if ($errors->has('dob'))
                                                 <span class="text-danger">{{ $errors->first('dob') }}</span>
                                             @endif
@@ -186,7 +187,7 @@
                                             <input type="text" name="cnic_no" class="form-control"
                                                    placeholder="99999-9999999-9"
                                                    data-inputmask="'mask': '99999-9999999-9'"
-                                                   value="{{ old('cnic_no') }}">
+                                                   value="{{ old('cnic_no',$customer->profile->cnic_no) }}">
                                             @if ($errors->has('cnic_no'))
                                                 <span class="text-danger">{{ $errors->first('cnic_no') }}</span>
                                             @endif
@@ -201,7 +202,7 @@
                                         <div class="form-group form-group-feedback form-group-feedback-right">
 
                                             <input type="text" name="issue_date" class="form-control flatpickr-minimum"
-                                                   placeholder="Select Date " value="{{ old('issue_date',currentDateInsert())}}"/>
+                                                   placeholder="Select Date " value="{{ old('issue_date',$customer->profile->issue_date)}}"/>
                                             @if ($errors->has('issue_date'))
                                                 <span class="text-danger">{{ $errors->first('issue_date') }}</span>
                                             @endif
@@ -215,7 +216,7 @@
                                         <div class="form-group form-group-feedback form-group-feedback-right">
 
                                             <input type="text" name="expire_date" class="form-control flatpickr-minimum"
-                                                   placeholder="Select Date " value="{{ old('expire_date',currentDateInsert())}}"/>
+                                                   placeholder="Select Date " value="{{ old('expire_date',$customer->profile->expire_date)}}"/>
                                             @if ($errors->has('expire_date'))
                                                 <span class="text-danger">{{ $errors->first('expire_date') }}</span>
                                             @endif
@@ -229,7 +230,7 @@
                                             <input type="text" name="mobile_no" class="form-control"
                                                    placeholder="0399-9999999"
                                                    data-inputmask="'mask': '0399-9999999'"
-                                                   value="{{ old('mobile_no') }}">
+                                                   value="{{ old('mobile_no' , $customer->profile->mobile_no) }}">
                                             @if ($errors->has('mobile_no'))
                                                 <span class="text-danger">{{ $errors->first('mobile_no') }}</span>
                                             @endif
@@ -244,7 +245,7 @@
                                             <input type="text" name="alternate_mobile_no" class="form-control"
                                                    placeholder="0399-9999999"
                                                    data-inputmask="'mask': '0399-9999999'"
-                                                   value="{{ old('alternate_mobile_no') }}">
+                                                   value="{{ old('alternate_mobile_no',$customer->profile->alternate_mobile_no) }}">
                                             @if ($errors->has('alternate_mobile_no'))
                                                 <span
                                                     class="text-danger">{{ $errors->first('alternate_mobile_no') }}</span>
@@ -260,7 +261,7 @@
                                                 <option></option>
                                                 @foreach($genders as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('gender_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('gender_id',$customer->profile->gender_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('gender_id'))
@@ -277,7 +278,7 @@
                                                 <option></option>
                                                 @foreach($maritalStatuses as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('marital_status_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('marital_status_id',$customer->profile->marital_status_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('marital_status_id'))
@@ -294,7 +295,7 @@
                                                 <option></option>
                                                 @foreach($nationalities as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('nationality_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('nationality_id', $customer->profile->nationality_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('nationality_id'))
@@ -311,7 +312,7 @@
                                                 <option></option>
                                                 @foreach($residenceTypes as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('residence_type_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('residence_type_id', $customer->profile->residence_type_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('residence_type_id'))
@@ -329,7 +330,7 @@
                                                 <option></option>
                                                 @foreach($residenceDurations as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('residence_duration_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('residence_duration_id',$customer->profile->residence_duration_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('residence_duration_id'))
@@ -347,7 +348,7 @@
                                                 <option></option>
                                                 @foreach($residenceDurations as $row)
                                                     <option
-                                                        value="{{ $row->name }}" {{ old('current_address_duration') == $row->name ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->name }}" {{ old('current_address_duration',$customer->profile->current_address_duration) == $row->name ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('current_address_duration'))
@@ -360,7 +361,7 @@
                                     <div class="col-md-6">
                                         <label class="col-form-label">Permanent Address</label>
                                         <div class="form-group">
-                                            <textarea name="permanent_address" class="form-control">{{old('permanent_address')}}</textarea>
+                                            <textarea name="permanent_address" class="form-control">{{old('permanent_address', $customer->profile->permanent_address)}}</textarea>
                                             @if ($errors->has('permanent_address'))
                                                 <span
                                                     class="text-danger">{{ $errors->first('permanent_address') }}</span>
@@ -370,7 +371,7 @@
                                     <div class="col-md-6">
                                         <label class="col-form-label">Current Address</label>
                                         <div class="form-group">
-                                            <textarea name="current_address" class="form-control">{{old('current_address')}}</textarea>
+                                            <textarea name="current_address" class="form-control">{{old('current_address', $customer->profile->current_address)}}</textarea>
                                             @if ($errors->has('residence_duration_id'))
                                                 <span
                                                     class="text-danger">{{ $errors->first('residence_duration_id') }}</span>
@@ -392,7 +393,7 @@
                                                 <option></option>
                                                 @foreach($educations as $row)
                                                     <option
-                                                        value="{{ $row->id }}" {{ old('education_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->id }}" {{ old('education_id' , $customer->education->education_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('education_id'))
@@ -407,7 +408,7 @@
                                         <div class="form-group">
                                             <input type="text" name="university_name" class="form-control"
                                                    placeholder="University Name"
-                                                   value="{{ old('university_name') }}">
+                                                   value="{{ old('university_name', $customer->education->university_name) }}">
                                             @if ($errors->has('university_name'))
                                                 <span class="text-danger">{{ $errors->first('university_name') }}</span>
                                             @endif
@@ -427,7 +428,7 @@
                                         <div class="form-group">
                                             <input type="text" name="number_of_dependents" class="form-control"
                                                    placeholder="No Of Dependent"
-                                                   value="{{ old('number_of_dependents') }}">
+                                                   value="{{ old('number_of_dependents',$customer->familyDependent->number_of_dependents) }}">
                                             @if ($errors->has('number_of_dependents'))
                                                 <span
                                                     class="text-danger">{{ $errors->first('number_of_dependents') }}</span>
@@ -440,7 +441,7 @@
                                         <div class="form-group">
                                             <input type="text" name="spouse_name" class="form-control"
                                                    placeholder="Spouse Name"
-                                                   value="{{ old('spouse_name') }}">
+                                                   value="{{ old('spouse_name' , $customer->familyDependent->spouse_name) }}">
                                             @if ($errors->has('spouse_name'))
                                                 <span class="text-danger">{{ $errors->first('spouse_name') }}</span>
                                             @endif
@@ -452,7 +453,7 @@
                                         <div class="form-group">
                                             <input type="text" name="spouse_employment_details" class="form-control"
                                                    placeholder="Spouse Employment Detail"
-                                                   value="{{ old('spouse_employment_details') }}">
+                                                   value="{{ old('spouse_employment_details' , $customer->familyDependent->spouse_employment_details) }}">
                                             @if ($errors->has('spouse_employment_details'))
                                                 <span
                                                     class="text-danger">{{ $errors->first('spouse_employment_details') }}</span>
@@ -480,6 +481,8 @@
                                                     <span class="text-danger">{{ $errors->first('cnic_front') }}</span>
                                                 @endif
                                             </div>
+                                            <img src="{{ asset('storage/' . $customer->profile->cnic_front) }}" width="50" height="50" alt="CNIC Front"
+                                                 class="img-thumbnail" style="max-width: 150px;">
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
@@ -489,6 +492,8 @@
                                                     <span class="text-danger">{{ $errors->first('cnic_back') }}</span>
                                                 @endif
                                             </div>
+                                            <img src="{{ asset('storage/' . $customer->profile->cnic_back) }}" width="50" height="50" alt="CNIC Back"
+                                                 class="img-thumbnail" style="max-width: 150px;">
                                         </div>
                                         <div class="col-md-6 mt-3">
                                             <div class="form-group">
@@ -496,6 +501,8 @@
                                                 <input type="file" name="photo" class="form-control">
 
                                             </div>
+                                            <img src="{{ asset('storage/' . $customer->profile->photo) }}" width="50" height="50" alt="Profile Photo"
+                                                 class="img-thumbnail" style="max-width: 150px;">
                                         </div>
 
                                     </div>
@@ -516,7 +523,7 @@
                                                 <option></option>
                                                 @foreach($banks as $row)
                                                     <option
-                                                        value="{{ $row->name }}" {{ old('bank_name') == $row->name ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                        value="{{ $row->name }}" {{ old('bank_name' , $customer->bank_account->bank_name) == $row->name ? 'selected' : '' }}>{{ $row->name }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('bank_name'))
@@ -532,7 +539,7 @@
                                         <div class="form-group">
                                             <input type="text" name="account_name" class="form-control"
                                                    placeholder="Account Name"
-                                                   value="{{ old('account_name') }}">
+                                                   value="{{ old('account_name' ,  $customer->bank_account->account_name ) }}">
                                             @if ($errors->has('account_name'))
                                                 <span class="text-danger">{{ $errors->first('account_name') }}</span>
                                             @endif
@@ -545,7 +552,7 @@
                                         <div class="form-group">
                                             <input type="text" name="account_number" class="form-control"
                                                    placeholder="Account Number"
-                                                   value="{{ old('account_number') }}">
+                                                   value="{{ old('account_number' , $customer->bank_account->account_number) }}">
                                             @if ($errors->has('account_number'))
                                                 <span class="text-danger">{{ $errors->first('account_number') }}</span>
                                             @endif
@@ -558,7 +565,7 @@
                                         <div class="form-group">
                                             <input type="text" name="iban" class="form-control"
                                                    placeholder="IBAN"
-                                                   value="{{ old('iban') }}">
+                                                   value="{{ old('iban' , $customer->bank_account->iban) }}">
                                             @if ($errors->has('iban'))
                                                 <span class="text-danger">{{ $errors->first('iban') }}</span>
                                             @endif
@@ -571,7 +578,7 @@
                                         <div class="form-group">
                                             <input type="number" name="swift_code" class="form-control"
                                                    placeholder="Swift Code"
-                                                   value="{{ old('swift_code') }}">
+                                                   value="{{ old('swift_code' , $customer->bank_account->swift_code) }}">
                                             @if ($errors->has('swift_code'))
                                                 <span class="text-danger">{{ $errors->first('swift_code') }}</span>
                                             @endif
@@ -594,7 +601,7 @@
                                             <option></option>
                                             @foreach($employmentStatus as $row)
                                                 <option
-                                                    value="{{ $row->id }}" {{ old('employment_status_id') == $row->id ? 'selected' : '' }}>{{ $row->status }}</option>
+                                                    value="{{ $row->id }}" {{ old('employment_status_id' , $customer->employment->employment_status_id) == $row->id ? 'selected' : '' }}>{{ $row->status }}</option>
                                             @endforeach
                                         </select>
                                         @if ($errors->has('employment_status_id'))
@@ -611,7 +618,7 @@
                                             <option></option>
                                             @foreach($incomeSources as $row)
                                                 <option
-                                                    value="{{ $row->id }}" {{ old('income_source_id') == $row->id ? 'selected' : '' }}>{{ $row->source }}</option>
+                                                    value="{{ $row->id }}" {{ old('income_source_id', $customer->employment->income_source_id) == $row->id ? 'selected' : '' }}>{{ $row->source }}</option>
                                             @endforeach
                                         </select>
                                         @if ($errors->has('income_source_id'))
@@ -627,7 +634,7 @@
                                     <div class="form-group">
                                         <input type="text" name="current_employer" class="form-control"
                                                placeholder="Current Employer"
-                                               value="{{ old('current_employer') }}">
+                                               value="{{ old('current_employer' , $customer->employment->current_employer) }}">
                                         @if ($errors->has('current_employer'))
                                             <span class="text-danger">{{ $errors->first('current_employer') }}</span>
                                         @endif
@@ -640,7 +647,7 @@
                                     <div class="form-group">
                                         <input type="text" name="employment_duration" class="form-control"
                                                placeholder="Employment Duration"
-                                               value="{{ old('employment_duration') }}">
+                                               value="{{ old('employment_duration' , $customer->employment->employment_duration) }}">
                                         @if ($errors->has('employment_duration'))
                                             <span class="text-danger">{{ $errors->first('employment_duration') }}</span>
                                         @endif
@@ -655,7 +662,7 @@
                                         <option></option>
                                         @foreach($jobs as $row)
                                             <option
-                                                value="{{ $row->id }}" {{ old('job_title_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                value="{{ $row->id }}" {{ old('job_title_id' , $customer->employment->job_title_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                         @endforeach
                                     </select>
                                     @if ($errors->has('job_title_id'))
@@ -670,7 +677,7 @@
                                     <div class="form-group">
                                         <input type="number" name="gross_income" class="form-control"
                                                placeholder="Gross Income"
-                                               value="{{ old('gross_income') }}">
+                                               value="{{ old('gross_income' , $customer->employment->gross_income) }}">
                                         @if ($errors->has('gross_income'))
                                             <span class="text-danger">{{ $errors->first('gross_income') }}</span>
                                         @endif
@@ -684,7 +691,7 @@
                                     <div class="form-group">
                                         <input type="number" name="net_income" class="form-control"
                                                placeholder="Net Income"
-                                               value="{{ old('net_income') }}">
+                                               value="{{ old('net_income' , $customer->employment->net_income) }}">
                                         @if ($errors->has('net_income'))
                                             <span class="text-danger">{{ $errors->first('net_income') }}</span>
                                         @endif
@@ -700,7 +707,7 @@
                                             <option></option>
                                             @foreach($existingLoan as $row)
                                                 <option
-                                                    value="{{ $row->id }}" {{ old('existing_loans_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                    value="{{ $row->id }}" {{ old('existing_loans_id' , $customer->employment->existing_loans_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                             @endforeach
                                         </select>
                                         @if ($errors->has('existing_loans_id'))
@@ -727,7 +734,7 @@
                                             <option></option>
                                             @foreach($relationships as $row)
                                                 <option
-                                                    value="{{ $row->id }}" {{ old('relationship_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                    value="{{ $row->id }}" {{ old('relationship_id' , $customer->references[0]->relationship_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                             @endforeach
                                         </select>
                                         @if ($errors->has('relationship_id'))
@@ -743,7 +750,7 @@
                                     <div class="form-group">
                                         <input type="text" name="guarantor_contact_name[]" class="form-control"
                                                placeholder="Guarantor Name 1"
-                                               value="">
+                                               value="{{ $customer->references[0]->guarantor_contact_name}}">
                                         @if ($errors->has('guarantor_contact_name'))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_name') }}</span>
@@ -758,8 +765,8 @@
                                         <input type="text" name="guarantor_contact_number[]" class="form-control"
                                                placeholder="0399-9999999"
                                                data-inputmask="'mask': '0399-9999999'"
-                                               value="">
-                                        @if ($errors->has('guarantor_contact_number'))
+                                               value="{{ $customer->references[0]->guarantor_contact_number}}">
+                                        @if ($errors->has('guarantor_contact_number' ))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_number') }}</span>
                                         @endif
@@ -778,7 +785,7 @@
                                             <option></option>
                                             @foreach($relationships as $row)
                                                 <option
-                                                    value="{{ $row->id }}" {{ old('relationship_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                    value="{{ $row->id }}" {{ old('relationship_id',$customer->references[1]->relationship_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
                                             @endforeach
                                         </select>
                                         @if ($errors->has('relationship_id'))
@@ -794,7 +801,7 @@
                                     <div class="form-group">
                                         <input type="text" name="guarantor_contact_name[]" class="form-control"
                                                placeholder="Guarantor Name 2"
-                                               value="">
+                                               value="{{$customer->references[1]->guarantor_contact_name}}">
                                         @if ($errors->has('guarantor_contact_name'))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_name') }}</span>
@@ -809,7 +816,7 @@
                                         <input type="text" name="guarantor_contact_number[]" class="form-control"
                                                placeholder="0399-9999999"
                                                data-inputmask="'mask': '0399-9999999'"
-                                               value="">
+                                               value="{{$customer->references[1]->guarantor_contact_number}}">
                                         @if ($errors->has('guarantor_contact_number'))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_number') }}</span>
