@@ -245,6 +245,8 @@ class CustomerController extends BaseController
             $profileData['dob'] = dateInsert($request->dob);
             $profileData['issue_date'] = dateInsert($request->issue_date);
             $profileData['expire_date'] = dateInsert($request->expire_date);
+            $profileData['mobile_no'] = inputMaskDash($request->mobile_no);
+            $profileData['alternate_mobile_no'] = inputMaskDash($request->alternate_mobile_no);
 
             if ($request->hasFile('photo')) {
                 $profileData['photo'] = $request->file('photo')->store('profile_photos', 'public');
@@ -438,7 +440,8 @@ class CustomerController extends BaseController
                 'dob', 'mobile_no', 'alternate_mobile_no', 'permanent_address',
                 'current_address', 'current_address_duration', 'residence_type_id', 'residence_duration_id'
             ]);
-
+            $profileData['mobile_no'] = inputMaskDash($request->mobile_no);
+            $profileData['alternate_mobile_no'] = inputMaskDash($request->alternate_mobile_no);
             if ($request->hasFile('photo')) {
                 // Delete the old file if it exists
                 if ($customer->profile->photo) {
