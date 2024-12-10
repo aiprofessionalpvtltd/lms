@@ -302,7 +302,7 @@ class BaseController extends Controller
         ];
 
         // Get the prefix for the province
-        $prefix = $provincePrefixes[$userProvince] ?? 'X'; // Default to 'X' if not found
+        $prefix = $provincePrefixes[$userProvince] ?? 'NA'; // Default to 'X' if not found
 
         // Count existing records for the user in the current year
         $applicationCount = LoanApplication::where('user_id', $userId)

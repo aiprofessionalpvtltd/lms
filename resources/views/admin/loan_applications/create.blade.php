@@ -1,7 +1,5 @@
 @extends('admin.layouts.app')
 @push('style')
-    <link href="{{asset('backend/vendor/select2/css/select2.min.css')}}" rel="stylesheet">
-    <link href="{{asset('backend/vendor/bootstrap-select/dist/css/bootstrap-select.min.css')}}" rel="stylesheet">
 
 @endpush
 @section('content')
@@ -32,7 +30,7 @@
         <div class="card">
 
             <!-- Registration form -->
-            <form action="{{route('store-user')}}" method="post"
+            <form action="{{route('store-loan-application')}}" method="post" enctype="multipart/form-data"
                   name="allotee_registration" class="flex-fill form-validate-jquery">
                 @csrf
 
@@ -43,114 +41,291 @@
 
                                 <div class="row">
                                     <div class="col-md-4">
-                                        <label class="col-form-label  ">Name <span
-                                                class="text-danger">*</span> </label>
-                                        <div
-                                            class="form-group form-group-feedback form-group-feedback-right">
-                                            <input type="text"   class="form-control"
-                                                   name="name"
-                                                   value="{{old('name')}}"
-                                                   placeholder=" Name">
-                                            <div class="form-control-feedback">
-                                                <i class="icon-user-check text-muted"></i>
-                                            </div>
-                                            @if ($errors->has('name'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('name') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-md-4">
-                                        <label class="col-form-label  ">Email </label>
-                                        <div
-                                            class="form-group form-group-feedback form-group-feedback-right">
-                                            <input type="email" name="email"
-                                                   class="form-control"
-                                                   placeholder="Your email"
-                                                   value="{{session('email') ?? old('email')}}">
-                                            <div class="form-control-feedback">
-                                                <i class="icon-mention text-muted"></i>
-                                            </div>
-                                            @if ($errors->has('email'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('email') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-md-4">
-                                        <label class="col-form-label  ">Password <span
-                                                class="text-danger">*</span> </label>
-                                        <div
-                                            class="form-group form-group-feedback form-group-feedback-right">
-                                            <input   type="password" name="password"
-                                                   class="form-control" id="password"
-                                                   placeholder="Create password">
-                                            <div class="form-control-feedback">
-                                                <i class="icon-user-lock text-muted"></i>
-                                            </div>
-                                            @if ($errors->has('password'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('password') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="col-form-label  ">Repeat Password <span
-                                                class="text-danger">*</span> </label>
-                                        <div
-                                            class="form-group form-group-feedback form-group-feedback-right">
-                                            <input   type="password" name="password_confirmation"
-                                                   class="form-control"
-                                                   placeholder="Create password">
-                                            <div class="form-control-feedback">
-                                                <i class="icon-user-lock text-muted"></i>
-                                            </div>
-                                            @if ($errors->has('password_confirmation'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('password_confirmation') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <label class="col-form-label">Select Role <span class="text-danger">*</span></label>
+                                        <label class="col-form-label">Select Customer <span class="text-danger">*</span></label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
-                                            <select data-placeholder="Select Role"
-                                                    name="role_id" id="role_id"
+                                            <select data-placeholder="Select Customer"
+                                                    name="customer_id" id="customer_id"
                                                     class="form-control select2"
-                                            data-fouc>
-                                            <option></option>
-                                            @foreach($roles as $key => $row)
-                                                <option value="{{ $row->id }}">{{ $row->name }}</option>
+                                                    data-fouc>
+                                                <option></option>
+                                                @foreach($customers as $key => $row)
+                                                    <option value="{{ $row->id }}">{{ $row->name }}</option>
                                                 @endforeach
-                                                </select>
-                                                @if ($errors->has('role_id'))
-                                                    <span class="text-danger">{{ $errors->first('role_id') }}</span>
-                                                @endif
+                                            </select>
+                                            @if ($errors->has('customer_id'))
+                                                <span class="text-danger">{{ $errors->first('customer_id') }}</span>
+                                            @endif
                                         </div>
                                     </div>
 
-                                    <div class="col-md-12">
-                                        <button type="submit"
-                                                class="btn btn-outline-primary float-end">
-                                           Save
-                                        </button>
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Request For <span
+                                                class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Option"
+                                                    name="request_for" id="request_for"
+                                                    class="form-control select2"
+                                                    data-fouc>
+                                                <option></option>
+                                                <option value="product">Product Financing</option>
+                                                <option value="loan">Standard Loan</option>
+
+                                            </select>
+                                            @if ($errors->has('request_for'))
+                                                <span class="text-danger">{{ $errors->first('request_for') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4" id="productDiv">
+                                        <label class="col-form-label">Select Product <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Product"
+                                                    name="product_id" id="product_id"
+                                                    class="form-control select2"
+                                                    data-fouc>
+                                                <option></option>
+                                                @foreach($products as $key => $row)
+                                                    <option data-price="{{$row->price}}"
+                                                        value="{{ $row->id }}">{{ $row->name .'(' . $row->price .')'}}</option>
+                                                @endforeach
+                                            </select>
+                                            @if ($errors->has('product_id'))
+                                                <span class="text-danger">{{ $errors->first('product_id') }}</span>
+                                            @endif
+
+
+                                        </div>
+                                    </div>
+
+
+                                    <div class="col-md-4" id="amountDiv">
+                                        <label class="col-form-label  ">Loan Amount <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text" required class="form-control"
+                                                   name="loan_amount" id="loan_amount"
+                                                   value=""
+                                                   placeholder="Loan Amount">
+
+                                            @if ($errors->has('loan_amount'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('loan_amount') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Down Payment (%) <span
+                                                class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Option"
+                                                    name="down_payment_percentage" id="down_payment_percentage"
+                                                    class="form-control select2"
+                                                    data-fouc>
+                                                <option></option>
+                                                <option value="10">10%</option>
+                                                <option value="20">20%</option>
+                                                <option value="30">30%</option>
+                                                <option value="40">40%</option>
+                                                <option value="50">50%</option>
+                                            </select>
+                                            @if ($errors->has('down_payment_percentage'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('down_payment_percentage') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Select Loan Duration <span
+                                                class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Duration"
+                                                    name="loan_duration_id" id="loan_duration_id"
+                                                    class="form-control select2"
+                                                    data-fouc>
+                                                <option></option>
+                                                @foreach($loanDurations as $key => $row)
+                                                    <option
+                                                        value="{{ $row->value }}">{{ $row->value}}</option>
+                                                @endforeach
+                                            </select>
+                                            @if ($errors->has('loan_duration_id'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('loan_duration_id') }}</span>
+                                            @endif
+
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row" id="calculationDiv">
+                                    <div class="col-md-4">
+                                        <label class="col-form-label  ">Finance Amount <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text" required class="form-control"
+                                                   name="finance_amount" readonly
+                                                   value="{{old('finance_amount')}}"
+                                                   placeholder="Finance Amount">
+
+                                            @if ($errors->has('finance_amount'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('finance_amount') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="col-form-label  ">Processing
+                                            Fee {{env('STANDARD_PROCESSING_FEE')}}% <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text" required class="form-control"
+                                                   name="processing_fee_amount" readonly
+                                                   value="{{old('processing_fee_amount')}}"
+                                                   placeholder="Processing Fee">
+
+                                            @if ($errors->has('processing_fee_amount'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('processing_fee_amount') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label  ">Disbursement Amount <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text" required class="form-control"
+                                                   name="disbursement_amount" readonly
+                                                   value="{{old('disbursement_amount')}}"
+                                                   placeholder="Disbursement Amount ">
+
+                                            @if ($errors->has('disbursement_amount'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('disbursement_amount') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label  ">Interest Amount <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text" required class="form-control"
+                                                   name="total_interest_amount" readonly
+                                                   value="{{old('total_interest_amount')}}"
+                                                   placeholder="Interest Amount ">
+
+                                            @if ($errors->has('total_interest_amount'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('total_interest_amount') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="col-form-label  ">Payable Amount <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text" required class="form-control"
+                                                   name="total_repayable_amount" readonly
+                                                   value="{{old('total_repayable_amount')}}"
+                                                   placeholder="Interest Amount ">
+
+                                            @if ($errors->has('total_repayable_amount'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('total_repayable_amount') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label  ">Monthly Installment <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text" required class="form-control"
+                                                   name="monthly_installment_amount" readonly
+                                                   value="{{old('monthly_installment_amount')}}"
+                                                   placeholder="Monthly Installment">
+
+                                            @if ($errors->has('monthly_installment_amount'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('monthly_installment_amount') }}</span>
+                                            @endif
+                                        </div>
                                     </div>
 
                                 </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Select Loan Purpose <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Purpose"
+                                                    name="loan_purpose_id" id="loan_purpose_id"
+                                                    class="form-control select2"
+                                                    data-fouc>
+                                                <option></option>
+                                                @foreach($loanPurposes as $key => $row)
+                                                    <option value="{{ $row->id }}">{{ $row->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if ($errors->has('loan_purpose_id'))
+                                                <span class="text-danger">{{ $errors->first('loan_purpose_id') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label" for="attachment_file">Bank Statement</label>
+                                        <div class="form-group">
+                                            <input type="file" name="bank_document" class="form-control">
+                                            @if ($errors->has('bank_document'))
+                                                <span class="text-danger">{{ $errors->first('bank_document') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label" for="attachment_file">Salary Slip</label>
+                                        <div class="form-group">
+                                            <input type="file" name="salary_slip_document" class="form-control">
+                                            @if ($errors->has('salary_slip_document'))
+                                                <span class="text-danger">{{ $errors->first('salary_slip_document') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                                <div class="col-md-12 mt-3">
+                                    <button type="submit"
+                                            class="btn btn-outline-primary float-end">
+                                        Save
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
                     </div>
                 </div>
             </form>
-            <!-- /registration form -->
         </div>
-        <!-- /form validation -->
 
+        <!-- /registration form -->
+    </div>
+    <!-- /form validation -->
+
+    </div>
     </div>
     <!-- /content area -->
     <!--**********************************
@@ -161,5 +336,84 @@
 
 @push('script')
 
+    <script>
+        $(document).ready(function () {
+            $('#calculationDiv').hide(); // Initially hide the calculation div
+
+            $('#request_for').change(function () {
+                let requestFor = $(this).val();
+
+                // Reset loan amount field
+                $('#loan_amount').val('').prop('readonly', false);
+
+                if (requestFor === 'product') {
+                    $('#productDiv').show(); // Show the product dropdown
+                    // $('#amountDiv').hide(); // Hide the loan amount input
+                    $('.select2').select2(); // Reinitialize Select2 if needed
+                } else {
+                    $('#productDiv').hide(); // Hide the product dropdown
+                    $('#amountDiv').show(); // Show the loan amount input
+                }
+            }).trigger('change');
+
+            $('#product_id').on('change',function (e) {
+                e.preventDefault();
+                // Get the data-price attribute of the selected option
+                let productPrice = $(this).find(':selected').data('price');
+
+                if (productPrice) {
+                    // Set loan amount to the product price and make it readonly
+                    $('#loan_amount').val(productPrice).prop('readonly', true);
+                } else {
+                    // Clear loan amount if no product is selected
+                    $('#loan_amount').val('').prop('readonly', false);
+                }
+            }); // Trigger the change event to handle preselected value
+        });
+
+
+        function calculateLoan() {
+            let loanAmount = $('input[name="loan_amount"]').val();
+            let months = $('#loan_duration_id').val();
+            let requestFor = $('#request_for').val();
+            let downPaymentPercentage = $('#down_payment_percentage').val();
+            let product_id = $('#product_id').find(':selected').val()
+            if (loanAmount && months && downPaymentPercentage && requestFor) {
+                $.ajax({
+                    url: '{{ route('calculate-loan-application') }}',
+                    type: 'GET',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        loan_amount: loanAmount,
+                        months: months,
+                        request_for: requestFor,
+                        down_payment_percentage: downPaymentPercentage,
+                        product_id: product_id,
+                    },
+                    success: function (response) {
+                        response = response.data;
+                        $('input[name="finance_amount"]').val(response.financed_amount);
+                        $('input[name="processing_fee_amount"]').val(response.processing_fee_amount);
+                        $('input[name="disbursement_amount"]').val(response.disbursement_amount);
+                        $('input[name="total_interest_amount"]').val(response.total_interest_amount);
+                        $('input[name="total_repayable_amount"]').val(response.total_repayable_amount);
+                        $('input[name="monthly_installment_amount"]').val(response.monthly_installment_amount);
+                        $('#calculationDiv').show(); // Show the calculation div
+                    },
+                    error: function (xhr) {
+                        console.error(xhr.responseText);
+                        alert('Error calculating loan details. Please try again.');
+                    }
+                });
+            }
+        }
+
+        $(document).on('change', '#loan_duration_id, #down_payment_percentage, input[name="loan_amount"]', function () {
+            console.log('kkk');
+            calculateLoan();
+        });
+
+
+    </script>
 
 @endpush

@@ -68,6 +68,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('loan-applications/{id}/approved', [LoanApplicationController::class, 'approveLoan'])->name('approve-loan');
     Route::get('get-customer-loan-applications/{id}/{loanID}', [LoanApplicationController::class, 'getCustomerData'])->name('get-customer-loan-applications');
 
+    Route::get('create-loan-application', [LoanApplicationController::class, 'create'])->name('create-loan-application');
+    Route::get('calculate-loan-application', [LoanApplicationController::class, 'calculateLoan'])->name('calculate-loan-application');
+    Route::post('store-loan-application', [LoanApplicationController::class, 'storeApplication'])->name('store-loan-application');
+
 
     Route::get('show-installment', [InstallmentController::class, 'index'])->name('show-installment');
     Route::get('show-installment/{id}/view', [InstallmentController::class, 'view'])->name('view-installment');
