@@ -17,6 +17,10 @@ class Transaction extends Model
         'transaction_reference',
         'status',
         'remarks',
+        'responseCode',
+        'transactionID',
+        'referenceID',
+        'dateTime',
     ];
 
     public function loanApplication()
