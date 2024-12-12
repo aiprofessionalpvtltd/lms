@@ -53,13 +53,13 @@
                             <td>{{ $installment->approvedBy->name ?? 'N/A' }}</td>
 
                             <td>
-                                @if($installment->loanApplication->transaction)
+{{--                                @if($installment->loanApplication->transaction)--}}
                                     <a href="{{ route('view-installment', $installment->id) }}"
                                        class="btn btn-sm btn-info m-2">View</a>
 
                                     <a href="{{ route('recovery.create', $installment->id) }}"
                                        class="btn btn-sm btn-info  m-2">Recovery</a>
-                                @endif
+{{--                                @endif--}}
                                 @if(!$installment->loanApplication->transaction)
                                     <form action="{{ route('transactions.store') }}" method="POST" class="d-inline">
                                     @csrf <!-- CSRF token for security -->

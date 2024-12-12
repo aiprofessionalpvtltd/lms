@@ -86,7 +86,7 @@
                                                     data-fouc>
                                                 <option></option>
                                                 @foreach($products as $key => $row)
-                                                    <option data-price="{{$row->price}}"
+                                                    <option data-price="{{$row->price}}" data-interest="{{$row->interest_rate}}"
                                                         value="{{ $row->id }}">{{ $row->name .'(' . $row->price .')'}}</option>
                                                 @endforeach
                                             </select>
@@ -116,7 +116,40 @@
                                         </div>
                                     </div>
 
+                                    <div class="col-md-4" id="InterestDiv">
+                                        <label class="col-form-label  ">Interest <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text"  class="form-control"
+                                                   name="old_interest_rate" id="interest_rate"
+                                                   value=""
+                                                   placeholder="Interest Rate">
+
+                                            @if ($errors->has('interest_rate'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('interest_rate') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
                                     <div class="col-md-4">
+                                        <label class="col-form-label  ">Old Processing
+                                            Fee  <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group">
+                                            <input type="text"  class="form-control"
+                                                   name="old_processing_fee_amount" id="old_processing_fee_amount"
+                                                   value="{{env('STANDARD_PROCESSING_FEE')}}"
+                                                   placeholder="Processing Fee">
+
+                                            @if ($errors->has('old_processing_fee_amount'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('old_processing_fee_amount') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4" id="downPaymentDiv">
                                         <label class="col-form-label">Down Payment (%) <span
                                                 class="text-danger">*</span></label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
@@ -181,7 +214,7 @@
                                     </div>
                                     <div class="col-md-4">
                                         <label class="col-form-label  ">Processing
-                                            Fee {{env('STANDARD_PROCESSING_FEE')}}% <span
+                                            Fee  <span
                                                 class="text-danger">*</span> </label>
                                         <div
                                             class="form-group">
@@ -345,14 +378,21 @@
 
                 // Reset loan amount field
                 $('#loan_amount').val('').prop('readonly', false);
+                $('#interest_rate').val('').prop('readonly', false);
+
 
                 if (requestFor === 'product') {
                     $('#productDiv').show(); // Show the product dropdown
                     // $('#amountDiv').hide(); // Hide the loan amount input
+                    $('#downPaymentDiv').show(); // Hide the product dropdown
                     $('.select2').select2(); // Reinitialize Select2 if needed
+
                 } else {
                     $('#productDiv').hide(); // Hide the product dropdown
+                    $('#downPaymentDiv').hide(); // Hide the product dropdown
                     $('#amountDiv').show(); // Show the loan amount input
+                    $('#interest_rate').val(35);
+
                 }
             }).trigger('change');
 
@@ -360,13 +400,16 @@
                 e.preventDefault();
                 // Get the data-price attribute of the selected option
                 let productPrice = $(this).find(':selected').data('price');
+                let productInterest = $(this).find(':selected').data('interest');
 
                 if (productPrice) {
                     // Set loan amount to the product price and make it readonly
                     $('#loan_amount').val(productPrice).prop('readonly', true);
+                    $('#interest_rate').val(productInterest);
                 } else {
                     // Clear loan amount if no product is selected
                     $('#loan_amount').val('').prop('readonly', false);
+                    $('#interest_rate').val('').prop('readonly', false);
                 }
             }); // Trigger the change event to handle preselected value
         });
@@ -377,8 +420,10 @@
             let months = $('#loan_duration_id').val();
             let requestFor = $('#request_for').val();
             let downPaymentPercentage = $('#down_payment_percentage').val();
+            let old_interest_rate = $('#interest_rate').val();
+            let old_processing_fee_amount = $('#old_processing_fee_amount').val();
             let product_id = $('#product_id').find(':selected').val()
-            if (loanAmount && months && downPaymentPercentage && requestFor) {
+            if (loanAmount && months  && requestFor) {
                 $.ajax({
                     url: '{{ route('calculate-loan-application') }}',
                     type: 'GET',
@@ -388,6 +433,8 @@
                         months: months,
                         request_for: requestFor,
                         down_payment_percentage: downPaymentPercentage,
+                        old_interest_rate: old_interest_rate,
+                        old_processing_fee_amount: old_processing_fee_amount,
                         product_id: product_id,
                     },
                     success: function (response) {
@@ -408,9 +455,9 @@
             }
         }
 
-        $(document).on('change', '#loan_duration_id, #down_payment_percentage, input[name="loan_amount"]', function () {
-            console.log('kkk');
-            calculateLoan();
+        $(document).on('change', '#loan_duration_id,#interest_rate,#old_processing_fee_amount,   input[name="loan_amount"]', function () {
+            console.log('yy')
+             calculateLoan();
         });
 
 

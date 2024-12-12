@@ -112,23 +112,25 @@ class LoanApplicationController extends BaseController
 
     public function storeApplication(Request $request)
     {
+//        dd($request->all());
         // Fetch maximum loan amount from .env
         $maxAmount = env('MAX_AMOUNT', 300000); // Default to 300,000 PKR
 
         // Validate the request
         $validator = Validator::make($request->all(), [
             'customer_id' => 'required|exists:users,id',
-            'product_id' => 'required|exists:products,id',
+            'product_id' => 'nullable|exists:products,id',
             'loan_amount' => 'required|numeric',
             'loan_duration_id' => 'required',
             'loan_purpose_id' => 'required|exists:loan_purposes,id',
-            'down_payment_percentage' => 'required|numeric|min:0|max:100',
+            'down_payment_percentage' => 'nullable|numeric|min:0|max:100',
             'bank_document' => 'required|file|mimes:pdf,jpg,png|max:2048', // Example validation for documents
             'salary_slip_document' => 'required|file|mimes:pdf,jpg,png|max:2048',
             'signature' => 'nullable|string', // Ensure signature is a base64 string
         ]);
 
         if ($validator->fails()) {
+            dd($validator->errors());
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
@@ -148,7 +150,6 @@ class LoanApplicationController extends BaseController
             if ($existingApplication) {
                 return redirect()->back()->with('error', 'An application is already in progress. A new application cannot be submitted.');
             }
-
             // Prepare loan application data
             $loanDuration = LoanDuration::where('value', $request->loan_duration_id)->firstOrFail();
              $loanApplicationData = $this->prepareLoanApplicationData($user, $loanDuration, $request);
@@ -162,13 +163,14 @@ class LoanApplicationController extends BaseController
             // Calculate loan details
             $loanCalculated = $this->calculateLoan($request);
 
-              if(isset($loanCalculated->getData()->error)){
+            if(isset($loanCalculated->getData()->error)){
 
-                 return redirect()->back()->with('error',  $loanCalculated->getData()->error);
+                 return   $loanCalculated->getData()->error;
 
             }
 
             $calculatedData = $loanCalculated->getData()->data;
+
 
             $request->merge(['loan_duration_id' => $loanDuration->id]);
 
@@ -298,6 +300,8 @@ class LoanApplicationController extends BaseController
         $loanAmount = $request->input('loan_amount');
         $months = $request->input('months');
         $requestType = $request->input('request_for');
+        $old_interest_rate = $request->input('old_interest_rate');
+        $old_processing_fee_amount= $request->input('old_processing_fee_amount');
         $downPaymentPercentage = $request->input('down_payment_percentage', 10); // Default to 10% if not specified
 
         // Validate input
@@ -313,8 +317,18 @@ class LoanApplicationController extends BaseController
                 return response()->json(['error' => 'Product not found.'], 404);
             }
 
-            $productProcessingFeePercentage = $product->processing_fee;
-            $productInterestRate = $product->interest_rate;
+            if($old_processing_fee_amount){
+                $productProcessingFeePercentage = $old_processing_fee_amount;
+            }else{
+                $productProcessingFeePercentage = $product->processing_fee;
+
+            }
+
+            if($old_interest_rate){
+                $productInterestRate = $old_interest_rate;
+            }else{
+                $productInterestRate = $product->interest_rate;
+            }
 
             $processingFeeRate = $productProcessingFeePercentage / 100;
             $interestRate = $productInterestRate / 100;
@@ -336,6 +350,14 @@ class LoanApplicationController extends BaseController
             $totalUpfrontPayment = 0;
             $productId = NULL;
 
+            if($old_processing_fee_amount){
+                $standardProcessingFeePercentage = $old_processing_fee_amount;
+            }
+
+            if($old_interest_rate){
+                $standardInterestRate = $old_interest_rate;
+            }
+
             $processingFeeRate = $standardProcessingFeePercentage / 100;
             $interestRate = $standardInterestRate / 100;
 
@@ -348,7 +370,7 @@ class LoanApplicationController extends BaseController
             $totalRepayableAmount = $financedAmount + $totalInterestAmount + $processingFeeAmount;
             $monthlyInstallmentAmount = $totalRepayableAmount / $months;
         } else {
-            return response()->json(['error' => 'Invalid request_for value.'], 400);
+            return $this->sendError('error', 'Invalid request_for value.');
         }
 
         return $this->sendResponse(

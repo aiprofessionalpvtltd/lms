@@ -110,6 +110,8 @@
                     </tr>
                     </thead>
                     <tbody>
+{{--                    {{dd($installment->recoveries)}}--}}
+                    @if(count($installment->recoveries) > 0)
                     @foreach($installment->recoveries as $recovery)
                         <tr>
                             <td>{{ $recovery->installmentDetail->installment_number }}</td>
@@ -123,6 +125,11 @@
                             <td>{{ showDate($recovery->created_at) }}</td>
                         </tr>
                     @endforeach
+                    @else
+                        <tr>
+                            <td colspan="9" class="text-center fw-bold">No Record Found</td>
+                        </tr>
+                    @endif
                     </tbody>
                 </table>
             </div>
@@ -149,6 +156,8 @@
                     </tr>
                     </thead>
                     <tbody>
+
+                    @if(isset($installment->loanApplication->transaction))
                     <tr>
                         <td>{{ $installment->loanApplication->transaction->id }}</td>
                         <td>{{ $installment->loanApplication->transaction->amount }}</td>
@@ -158,6 +167,11 @@
                         <td>{{ showDate($installment->loanApplication->transaction->created_at) }}</td>
                         <td>{{ $installment->loanApplication->transaction->user->name }}</td>
                     </tr>
+                    @else
+                        <tr>
+                            <td colspan="7" class="text-center fw-bold">No Disbursement data found</td>
+                        </tr>
+                    @endif
                     </tbody>
                 </table>
             </div>
