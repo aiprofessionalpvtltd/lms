@@ -117,4 +117,68 @@ class RecoveryController extends Controller
         }
     }
 
+    public function storeRecovery(Request $request)
+    {
+        $request->validate([
+            'installment_detail_id' => 'required',
+            'amount' => 'required|numeric|min:1',
+            'overdue_days' => 'required|string|max:255',
+            'late_fee' => 'required|string|max:255',
+            'total_amount' => 'required|string|max:255',
+            'payment_method' => 'required|string|max:255',
+            'remarks' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $installmentDetail = InstallmentDetail::findOrFail($request->installment_detail_id);
+
+            $penaltyFee = abs($request->overdue_days * config('app.late_fee', 250)); // Late fee from config
+
+            $totalAmount = $request->amount + $penaltyFee;
+
+            // Save recovery record
+            $recovery = Recovery::create([
+                'installment_detail_id' => $installmentDetail->id,
+                'installment_id' => $installmentDetail->installment_id,
+                'amount' => $request->amount,
+                'overdue_days' => abs($request->overdue_days),
+                'penalty_fee' => $penaltyFee,
+                'total_amount' => $totalAmount,
+                'payment_method' => $request->payment_method,
+                'status' => 'completed',
+                'remarks' => $request->remarks,
+            ]);
+
+            // Update installment detail
+            $installmentDetail->update([
+                'is_paid' => true,
+                'amount_paid' => $request->amount,
+                'paid_at' => now(),
+            ]);
+
+            // Check if all installment details are paid
+            $installment = $installmentDetail->installment;
+            if ($installment->details()->where('is_paid', false)->count() === 0) {
+                $installment->loanApplication->update(['is_completed' => true]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Recovery payment recorded successfully.',
+                'recovery' => $recovery,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'An error occurred while recording the recovery payment.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 }

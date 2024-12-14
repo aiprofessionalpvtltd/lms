@@ -77,12 +77,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-installment/{id}/view', [InstallmentController::class, 'view'])->name('view-installment');
     Route::get('pay-installment', [InstallmentController::class, 'index'])->name('pay-installment');
     Route::post('/installment/details/{id}/update-due-date', [InstallmentController::class, 'updateDueDate']);
+    Route::post('/installment/details/{id}/update-issue-date', [InstallmentController::class, 'updateIssueDate']);
 
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 
     Route::prefix('recovery')->group(function () {
         Route::get('/create/{installmentDetailId}', [RecoveryController::class, 'create'])->name('recovery.create');
         Route::post('/store', [RecoveryController::class, 'store'])->name('recovery.store');
+        Route::post('/installment/recover', [RecoveryController::class, 'storeRecovery']);
+
     });
 
 

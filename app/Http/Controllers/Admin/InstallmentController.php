@@ -46,4 +46,16 @@ class InstallmentController extends Controller
         return response()->json(['message' => 'Due date updated successfully.'],200);
     }
 
+    public function updateIssueDate(Request $request, $id)
+    {
+        $request->validate([
+            'issue_date' => 'required|date',
+        ]);
+        $installmentDetail = InstallmentDetail::findOrFail($id);
+        $installmentDetail->issue_date = $request->issue_date;
+        $installmentDetail->save();
+
+        return response()->json(['message' => 'Issue date updated successfully.'],200);
+    }
+
 }
