@@ -115,7 +115,7 @@
                             <input type="hidden" name="installment_detail_id" id="installment_detail_id">
                             <div class="mb-3">
                                 <label for="installment_amount" class="form-label">Installment Amount</label>
-                                <input type="number" class="form-control" id="installment_amount" name="amount"
+                                <input type="number" readonly class="form-control" id="installment_amount" name="amount"
                                        required>
                             </div>
                             <div class="mb-3">
@@ -412,40 +412,58 @@
 
 
         // Handle Recovery Form Submission
-        $('#recoveryForm').on('submit', function (e) {
-            e.preventDefault(); // Prevent default form submission
+                 // Handle Recovery Form Submission
+                $('#recoveryForm').on('submit', function (e) {
+                    e.preventDefault(); // Prevent default form submission
 
-            const url = '/recovery/installment/recover'; // Your API endpoint
-            const formData = $(this).serialize(); // Serialize form data
+                    const url = '/recovery/installment/recover'; // Your API endpoint
 
-            storeData(url, formData)
-                .then(response => {
-                    $('#recoveryModal').modal('hide'); // Close the modal
-                     notyf.open({
-                        type: 'success',
-                        message: 'Recovery saved successfully.',
-                        duration: 5000,
-                        ripple: true,
-                        dismissible: true,
-                        position: {x: 'right', y: 'top'},
+                    // Collect form data into FormData object
+                    const formData = new FormData(this); // Automatically includes all form inputs
+                    formData.append('_token', '{{ csrf_token() }}'); // Add CSRF token if not included in the form
+
+                    storeRecoveryData(url, formData)
+                        .then(response => {
+                            $('#recoveryModal').modal('hide'); // Close the modal
+                            notyf.open({
+                                type: 'success',
+                                message: 'Recovery saved successfully.',
+                                duration: 5000,
+                                ripple: true,
+                                dismissible: true,
+                                position: { x: 'right', y: 'top' },
+                            });
+                            location.reload(); // Reload page if necessary
+                        })
+                        .catch(error => {
+                            const errorMessage = error.responseJSON?.message || 'Failed to save data.';
+                            notyf.open({
+                                type: 'error',
+                                message: errorMessage,
+                                duration: 5000,
+                                ripple: true,
+                                dismissible: true,
+                                position: { x: 'right', y: 'top' },
+                            });
+                        });
+                });
+
+                // Helper function for AJAX form submission
+                function storeRecoveryData(url, formData) {
+                    return new Promise((resolve, reject) => {
+                        $.ajax({
+                            url: url,
+                            method: 'POST',
+                            data: formData,
+                            processData: false, // Required for FormData
+                            contentType: false, // Required for FormData
+                            success: resolve,
+                            error: reject,
+                        });
                     });
-                    location.reload(); // Reload page if necessary
-                })
-                .catch(error => {
-                    notyf.open({
-                        type: 'error',
-                        message:error || 'Failed to save data.',
-                        duration: 5000,
-                        ripple: true,
-                        dismissible: true,
-                        position: {x: 'right', y: 'top'},
-                    });
+                }
 
-                 });
         });
-
-        })
-        ;
 
     </script>
 @endpush

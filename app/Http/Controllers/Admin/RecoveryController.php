@@ -119,7 +119,7 @@ class RecoveryController extends Controller
 
     public function storeRecovery(Request $request)
     {
-        $request->validate([
+         $request->validate([
             'installment_detail_id' => 'required',
             'amount' => 'required|numeric|min:1',
             'overdue_days' => 'required|string|max:255',
