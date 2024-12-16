@@ -505,6 +505,7 @@
 
             // Helper function for AJAX form submission
             function storeRecoveryData(url, formData) {
+
                 return new Promise((resolve, reject) => {
                     $.ajax({
                         url: url,
@@ -537,6 +538,8 @@
 
                 const url = '/transactions/storeManual'; // Your API endpoint
 
+                console.log(url); return false;
+                
                 // Collect form data into FormData object
                 const formData = new FormData(this); // Automatically includes all form inputs
                 formData.append('_token', '{{ csrf_token() }}'); // Add CSRF token if not included in the form
