@@ -540,7 +540,7 @@
                 const formData = new FormData(this); // Automatically includes all form inputs
                 formData.append('_token', '{{ csrf_token() }}'); // Ensure CSRF token is included
 
-                console.log(url); return false;
+                // console.log(url); return false;
                 storeRecoveryData(url, formData)
                     .then(response => {
                         $('#disbursementModal').modal('hide'); // Close the modal

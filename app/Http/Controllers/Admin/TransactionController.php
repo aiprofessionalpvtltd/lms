@@ -223,6 +223,7 @@ class TransactionController extends Controller
     public function storeManual(Request $request)
     {
 
+        dd($request->all());
         $request->validate([
             'installment_detail_id_disbursement' => 'required',
             'disbursement_amount' => 'required',
