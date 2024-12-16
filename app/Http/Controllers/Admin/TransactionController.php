@@ -223,12 +223,11 @@ class TransactionController extends Controller
     public function storeManual(Request $request)
     {
 
-        dd($request->all());
         $request->validate([
             'installment_detail_id_disbursement' => 'required',
             'disbursement_amount' => 'required',
             'payment_method' => 'required',
-            'remarks' => 'required|',
+            'remarks' => 'required',
         ]);
 
         DB::beginTransaction();
@@ -265,8 +264,6 @@ class TransactionController extends Controller
                 'referenceID' => $paymentData['referenceId'],
                 'dateTime' => currentDateTimeInsert(),
             ]);
-
-
 
 
             DB::commit();
