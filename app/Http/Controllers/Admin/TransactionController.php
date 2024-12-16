@@ -266,7 +266,7 @@ class TransactionController extends Controller
             ]);
 
 
-            dd($transaction);
+//            dd($transaction);
             DB::commit();
 
             return redirect()->back()->with('success', 'Transaction updated successfully.');
