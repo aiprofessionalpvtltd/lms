@@ -536,13 +536,9 @@
             $('#disbursementForm').on('submit', function (e) {
                 e.preventDefault(); // Prevent default form submission
 
-                const url = '/transactions/storeManual'; // Your API endpoint
-
-                console.log(url); return false;
-                
-                // Collect form data into FormData object
+                const url = '{{ url("/transactions/storeManual") }}'; // Use Laravel's `url` helper for dynamic URLs
                 const formData = new FormData(this); // Automatically includes all form inputs
-                formData.append('_token', '{{ csrf_token() }}'); // Add CSRF token if not included in the form
+                formData.append('_token', '{{ csrf_token() }}'); // Ensure CSRF token is included
 
                 storeRecoveryData(url, formData)
                     .then(response => {
@@ -558,7 +554,12 @@
                         location.reload(); // Reload page if necessary
                     })
                     .catch(error => {
-                        const errorMessage = error.responseJSON?.message || 'Failed to save data.';
+                        let errorMessage = 'Failed to save data.';
+                        if (error.responseJSON?.message) {
+                            errorMessage = error.responseJSON.message;
+                        } else if (error.responseText) {
+                            errorMessage = error.responseText;
+                        }
                         notyf.open({
                             type: 'error',
                             message: errorMessage,
