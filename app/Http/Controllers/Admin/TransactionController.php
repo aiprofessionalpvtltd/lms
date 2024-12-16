@@ -266,11 +266,13 @@ class TransactionController extends Controller
             ]);
 
 
+            dd($transaction);
             DB::commit();
 
-            return redirect()->route('show-installment')->with('success', 'Transaction updated successfully.');
+            return redirect()->back()->with('success', 'Transaction updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
+            dd($e->getMessage());
             return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
