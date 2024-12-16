@@ -331,7 +331,7 @@ class LoanApplicationController extends BaseController
             }
 
             $processingFeeRate = $productProcessingFeePercentage / 100;
-            $interestRate = $productInterestRate / 100;
+            $interestRate = ($productInterestRate / 100) / 12;
 
             $downPayment = $loanAmount * ($downPaymentPercentage / 100);
             $processingFeeAmount = $loanAmount * $processingFeeRate;
@@ -339,7 +339,7 @@ class LoanApplicationController extends BaseController
             $financedAmount = $loanAmount - round($downPayment);
             $disbursementAmount = $financedAmount;
 
-            $totalInterestAmount = $financedAmount * $interestRate;
+            $totalInterestAmount = $financedAmount * $interestRate * $months;
             $totalRepayableAmount = $financedAmount + $totalInterestAmount;
             $monthlyInstallmentAmount = $totalRepayableAmount / $months;
 
@@ -359,14 +359,15 @@ class LoanApplicationController extends BaseController
             }
 
             $processingFeeRate = $standardProcessingFeePercentage / 100;
-            $interestRate = $standardInterestRate / 100;
+            $interestRate = ($standardInterestRate / 100) / 12 ;
 
             $downPayment = $loanAmount * ($downPaymentPercentage / 100);
             $financedAmount = $loanAmount - round($downPayment);
             $processingFeeAmount = $financedAmount * $processingFeeRate;
             $disbursementAmount = $financedAmount;
 
-            $totalInterestAmount = $financedAmount * $interestRate;
+            $totalInterestAmount = $financedAmount * $interestRate * $months;
+
             $totalRepayableAmount = $financedAmount + $totalInterestAmount + $processingFeeAmount;
             $monthlyInstallmentAmount = $totalRepayableAmount / $months;
         } else {
