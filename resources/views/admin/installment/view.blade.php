@@ -120,15 +120,15 @@
                             </div>
                             <div class="mb-3">
                                 <label for="overdue_days" class="form-label">Overdue Days</label>
-                                <input type="number" class="form-control" id="overdue_days" name="overdue_days" >
+                                <input type="number" class="form-control" id="overdue_days" name="overdue_days" value="0">
                             </div>
                             <div class="mb-3">
                                 <label for="late_fee" class="form-label">Late Fee</label>
-                                <input type="number" class="form-control" id="late_fee" name="late_fee" >
+                                <input type="number" class="form-control" id="late_fee" name="late_fee" value="0">
                             </div>
                             <div class="mb-3">
                                 <label for="total_amount" class="form-label">Total Amount</label>
-                                <input type="number" class="form-control" id="total_amount" name="total_amount" >
+                                <input type="number" class="form-control" id="total_amount" name="total_amount" value="0">
                             </div>
                             <div class="mb-3">
                                 <label for="payment_method" class="form-label">Payment Method</label>
@@ -137,6 +137,10 @@
                                     <option value="cash">Cash</option>
                                     <option value="online">Online</option>
                                 </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Recovery Date</label>
+                                <input type="date" class="form-control" id="date" name="date">
                             </div>
                             <div class="mb-3">
                                 <label for="remarks" class="form-label">Remarks</label>
@@ -199,11 +203,62 @@
         </div>
         <!-- /Recovery details -->
 
+        <!-- Bootstrap Modal -->
+        <div class="modal fade" id="disbursementModal" tabindex="-1" aria-labelledby="disbursementModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="disbursementModalLabel">Disbursement Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="disbursementForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="installment_detail_id_disbursement"
+                                   id="installment_detail_id_disbursement">
+                            <div class="mb-3">
+                                <label for="disbursement_amount" class="form-label">Disburse Amount</label>
+                                <input type="number" readonly class="form-control" id="disbursement_amount"
+                                       name="disbursement_amount"
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="payment_method" class="form-label">Payment Method</label>
+                                <select class="form-select" id="payment_method" name="payment_method" required>
+                                    <option value="bank">Bank</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="online">Online</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="remarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="remarks" name="remarks"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Transaction details -->
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title">Disbursement Amount Details</h5>
+                @if(!isset($installment->loanApplication->transaction))
+                    <button class="btn btn-sm btn-success float-end disbursement-modal"
+                            data-id="{{ $installment->id }}"
+                            data-amount="{{ $installment->loanApplication->calculatedProduct->disbursement_amount }}">
+                        Add
+                        Disbursement
+                    </button>
+                @endif
+
             </div>
             <div class="card-body">
                 <table class="table table-striped">
@@ -222,7 +277,7 @@
 
                     @if(isset($installment->loanApplication->transaction))
                         <tr>
-                            <td>{{ $installment->loanApplication->transaction->id }}</td>
+                            <td>{{ $installment->loanApplication->transaction->transaction_reference }}</td>
                             <td>{{ $installment->loanApplication->transaction->amount }}</td>
                             <td>{{ ucfirst($installment->loanApplication->transaction->payment_method) }}</td>
                             <td>{{ ucfirst($installment->loanApplication->transaction->status) }}</td>
@@ -374,94 +429,144 @@
             });
 
 
-        // General AJAX store function
-        function storeData(url, data) {
-            return new Promise((resolve, reject) => {
-                $.ajax({
-                    url: url,
-                    method: 'POST',
-                    data: {
-                        ...data,
-                        _token: '{{ csrf_token() }}' // Ensure CSRF token is included
-                    },
-                    success: function (response) {
-                        notyf.open({
-                            type: 'success',
-                            message: 'Data saved successfully.',
-                            duration: 5000,
-                            ripple: true,
-                            dismissible: true,
-                            position: {x: 'right', y: 'top'},
-                        });
-                        resolve(response);
-                    },
-                    error: function (xhr) {
-                        notyf.open({
-                            type: 'error',
-                            message: xhr.responseJSON?.message || 'Failed to save data.',
-                            duration: 5000,
-                            ripple: true,
-                            dismissible: true,
-                            position: {x: 'right', y: 'top'},
-                        });
-                        reject(xhr);
-                    }
-                });
-            });
-        }
-
-
-        // Handle Recovery Form Submission
-                 // Handle Recovery Form Submission
-                $('#recoveryForm').on('submit', function (e) {
-                    e.preventDefault(); // Prevent default form submission
-
-                    const url = '/recovery/installment/recover'; // Your API endpoint
-
-                    // Collect form data into FormData object
-                    const formData = new FormData(this); // Automatically includes all form inputs
-                    formData.append('_token', '{{ csrf_token() }}'); // Add CSRF token if not included in the form
-
-                    storeRecoveryData(url, formData)
-                        .then(response => {
-                            $('#recoveryModal').modal('hide'); // Close the modal
+            // General AJAX store function
+            function storeData(url, data) {
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: url,
+                        method: 'POST',
+                        data: {
+                            ...data,
+                            _token: '{{ csrf_token() }}' // Ensure CSRF token is included
+                        },
+                        success: function (response) {
                             notyf.open({
                                 type: 'success',
-                                message: 'Recovery saved successfully.',
+                                message: 'Data saved successfully.',
                                 duration: 5000,
                                 ripple: true,
                                 dismissible: true,
-                                position: { x: 'right', y: 'top' },
+                                position: {x: 'right', y: 'top'},
                             });
-                            location.reload(); // Reload page if necessary
-                        })
-                        .catch(error => {
-                            const errorMessage = error.responseJSON?.message || 'Failed to save data.';
+                            resolve(response);
+                        },
+                        error: function (xhr) {
                             notyf.open({
                                 type: 'error',
-                                message: errorMessage,
+                                message: xhr.responseJSON?.message || 'Failed to save data.',
                                 duration: 5000,
                                 ripple: true,
                                 dismissible: true,
-                                position: { x: 'right', y: 'top' },
+                                position: {x: 'right', y: 'top'},
                             });
-                        });
+                            reject(xhr);
+                        }
+                    });
                 });
+            }
 
-                // Helper function for AJAX form submission
-                function storeRecoveryData(url, formData) {
-                    return new Promise((resolve, reject) => {
-                        $.ajax({
-                            url: url,
-                            method: 'POST',
-                            data: formData,
-                            processData: false, // Required for FormData
-                            contentType: false, // Required for FormData
-                            success: resolve,
-                            error: reject,
+
+            // Handle Recovery Form Submission
+            // Handle Recovery Form Submission
+            $('#recoveryForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                const url = '/recovery/installment/recover'; // Your API endpoint
+
+                // Collect form data into FormData object
+                const formData = new FormData(this); // Automatically includes all form inputs
+                formData.append('_token', '{{ csrf_token() }}'); // Add CSRF token if not included in the form
+
+                storeRecoveryData(url, formData)
+                    .then(response => {
+                        $('#recoveryModal').modal('hide'); // Close the modal
+                        notyf.open({
+                            type: 'success',
+                            message: 'Recovery saved successfully.',
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+                        location.reload(); // Reload page if necessary
+                    })
+                    .catch(error => {
+                        const errorMessage = error.responseJSON?.message || 'Failed to save data.';
+                        notyf.open({
+                            type: 'error',
+                            message: errorMessage,
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
                         });
                     });
-                }
+            });
+
+            // Helper function for AJAX form submission
+            function storeRecoveryData(url, formData) {
+                return new Promise((resolve, reject) => {
+                    $.ajax({
+                        url: url,
+                        method: 'POST',
+                        data: formData,
+                        processData: false, // Required for FormData
+                        contentType: false, // Required for FormData
+                        success: resolve,
+                        error: reject,
+                    });
+                });
+            }
+
+            // Open Recovery Modal
+            $(document).on('click', '.disbursement-modal', function () {
+                const installmentDetailId = $(this).data('id');
+                const disbursementAmount = $(this).data('amount');
+
+
+                // Set hidden field value
+                $('#installment_detail_id_disbursement').val(installmentDetailId);
+                $('#disbursement_amount').val(disbursementAmount);
+
+                $('#disbursementModal').modal('show');
+
+            });
+
+            $('#disbursementForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                const url = '/transactions/storeManual'; // Your API endpoint
+
+                // Collect form data into FormData object
+                const formData = new FormData(this); // Automatically includes all form inputs
+                formData.append('_token', '{{ csrf_token() }}'); // Add CSRF token if not included in the form
+
+                storeRecoveryData(url, formData)
+                    .then(response => {
+                        $('#disbursementModal').modal('hide'); // Close the modal
+                        notyf.open({
+                            type: 'success',
+                            message: 'Disbursement saved successfully.',
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+                        location.reload(); // Reload page if necessary
+                    })
+                    .catch(error => {
+                        const errorMessage = error.responseJSON?.message || 'Failed to save data.';
+                        notyf.open({
+                            type: 'error',
+                            message: errorMessage,
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+                    });
+            });
+
 
         });
 

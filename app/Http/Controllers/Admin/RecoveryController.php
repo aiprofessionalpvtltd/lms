@@ -138,8 +138,7 @@ class RecoveryController extends Controller
 
             $totalAmount = $request->amount + $penaltyFee;
 
-            // Save recovery record
-            $recovery = Recovery::create([
+             $recoveryData = [
                 'installment_detail_id' => $installmentDetail->id,
                 'installment_id' => $installmentDetail->installment_id,
                 'amount' => $request->amount,
@@ -149,7 +148,10 @@ class RecoveryController extends Controller
                 'payment_method' => $request->payment_method,
                 'status' => 'completed',
                 'remarks' => $request->remarks,
-            ]);
+                'created_at' => \Carbon\Carbon::parse($request->date)->format('Y-m-d H:i:s')
+            ];
+            // Save recovery record
+            $recovery = Recovery::insert($recoveryData);
 
             // Update installment detail
             $installmentDetail->update([

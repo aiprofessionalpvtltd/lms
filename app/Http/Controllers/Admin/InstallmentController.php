@@ -28,7 +28,7 @@ class InstallmentController extends Controller
 
     public function view($id)
     {
-        $installment = Installment::with(['details', 'user', 'loanApplication' ,'recoveries'])->findOrFail($id);
+        $installment = Installment::with(['details', 'user', 'loanApplication' ,'loanApplication.calculatedProduct','recoveries'])->findOrFail($id);
 //        dd($installment);
         return view("admin.installment.view", compact('installment'));
     }

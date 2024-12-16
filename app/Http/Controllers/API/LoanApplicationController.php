@@ -130,7 +130,6 @@ class LoanApplicationController extends BaseController
         ]);
 
         if ($validator->fails()) {
-            dd($validator->errors());
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();

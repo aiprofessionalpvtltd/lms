@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\API\BaseController;
 use App\Http\Controllers\Controller;
+use App\Models\Installment;
 use App\Models\LoanApplication;
 use App\Models\Transaction;
 use Carbon\Carbon;
@@ -218,5 +219,62 @@ class TransactionController extends Controller
             return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
+
+    public function storeManual(Request $request)
+    {
+        $request->validate([
+            'installment_detail_id_disbursement' => 'required',
+            'disbursement_amount' => 'required',
+            'payment_method' => 'required',
+            'remarks' => 'required|',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $installment = Installment::find($request->installment_detail_id_disbursement);
+
+            $loanApplication = LoanApplication::with('getLatestInstallment.details')
+                ->findOrFail($installment->loan_application_id);
+
+            $disburseAmount = $request->disbursement_amount ;
+
+
+            $paymentData = [
+                'amount' => $disburseAmount,
+                'loan_application_id' => $loanApplication->id,
+                'receiverCNIC' => inputMaskDash($loanApplication->user->profile->cnic_no),
+                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
+                'referenceId' => 'money_' . uniqid(),
+            ];
+
+
+
+            $transaction = Transaction::create([
+                'loan_application_id' => $loanApplication->id,
+                'user_id' => Auth::id(),
+                'amount' => $disburseAmount,
+                'payment_method' => $request->payment_method,
+                'status' => 'completed',
+                'transaction_reference' => $paymentData['referenceId'],
+                'remarks' => $request->remarks,
+                'responseCode' => 500,
+                'transactionID' => uniqid(),
+                'referenceID' => $paymentData['referenceId'],
+                'dateTime' => currentDateTimeInsert(),
+            ]);
+
+
+
+
+            DB::commit();
+
+            return redirect()->route('show-installment')->with('success', 'Transaction updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+
 
 }

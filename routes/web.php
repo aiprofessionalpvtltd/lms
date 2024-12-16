@@ -80,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/installment/details/{id}/update-issue-date', [InstallmentController::class, 'updateIssueDate']);
 
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::post('/transactions/storeManual', [TransactionController::class, 'storeManual'])->name('transactions.storeManual');
 
     Route::prefix('recovery')->group(function () {
         Route::get('/create/{installmentDetailId}', [RecoveryController::class, 'create'])->name('recovery.create');
