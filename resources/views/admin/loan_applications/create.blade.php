@@ -182,7 +182,7 @@
                                                 <option></option>
                                                 @foreach($loanDurations as $key => $row)
                                                     <option
-                                                        value="{{ $row->value }}">{{ $row->value}}</option>
+                                                        value="{{ $row->value }}">{{ $row->name}}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('loan_duration_id'))

@@ -57,7 +57,7 @@
                                     <a href="{{ route('view-installment', $installment->id) }}"
                                        class="btn btn-sm btn-info m-2">View</a>
 
-                                     
+
 {{--                                @endif--}}
                                 @if(!$installment->loanApplication->transaction)
                                     <form action="{{ route('transactions.store') }}" method="POST" class="d-inline">
