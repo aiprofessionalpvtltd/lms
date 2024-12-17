@@ -119,7 +119,7 @@ class RecoveryController extends Controller
 
     public function storeRecovery(Request $request)
     {
-         $request->validate([
+        $request->validate([
             'installment_detail_id' => 'required',
             'amount' => 'required|numeric|min:1',
             'overdue_days' => 'required|string|max:255',
@@ -138,7 +138,7 @@ class RecoveryController extends Controller
 
             $totalAmount = $request->amount + $penaltyFee;
 
-             $recoveryData = [
+            $recoveryData = [
                 'installment_detail_id' => $installmentDetail->id,
                 'installment_id' => $installmentDetail->installment_id,
                 'amount' => $request->amount,
@@ -156,6 +156,7 @@ class RecoveryController extends Controller
             // Update installment detail
             $installmentDetail->update([
                 'is_paid' => true,
+                'status' => 'paid',
                 'amount_paid' => $request->amount,
                 'paid_at' => now(),
             ]);
@@ -177,6 +178,88 @@ class RecoveryController extends Controller
 
             return response()->json([
                 'message' => 'An error occurred while recording the recovery payment.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function storeEarlySettlement(Request $request)
+    {
+        // Validate incoming request data
+        $request->validate([
+            'installment_detail_id_early' => 'required|exists:installment_details,id',
+            'amount' => 'required|min:0',
+            'payment_method' => 'required|string|max:255',
+            'remarks' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $amount = str_replace(',', '', $request->amount);
+
+            // Find the installment detail that needs to be settled
+            $installmentDetail = InstallmentDetail::findOrFail($request->installment_detail_id_early);
+
+            // Filter only unpaid installments related to the installment detail
+            $unpaidInstallments = $installmentDetail->installment->details->filter(function ($detail) {
+                return $detail->is_paid == 0; // Only unpaid installments
+            });
+
+
+            $recoveryData = [
+                'installment_detail_id' => $installmentDetail->id,
+                'installment_id' => $installmentDetail->installment_id,
+                'amount' => $installmentDetail->amount_due,
+                'overdue_days' => 0,
+                'penalty_fee' => 0,
+                'total_amount' => $amount,
+                'payment_method' => $request->payment_method,
+                'status' => 'Early Settlement',
+                'remarks' => $request->remarks,
+                'is_early_settlement' => 1,
+                'remaining_amount' => $request->input_remaining_loan,
+                'percentage' => $request->input_penalty_percentage,
+                'erc_amount' => $request->input_penalty_amount,
+                'created_at' => \Carbon\Carbon::parse($request->date)->format('Y-m-d H:i:s')
+            ];
+
+            $recovery = Recovery::create($recoveryData);
+
+            // Step 5: Mark All Remaining Installments as Paid
+            foreach ($unpaidInstallments as $detail) {
+                if (!$detail->is_paid) {
+                    $detail->update([
+                        'is_paid' => true,
+                        'status' => 'Settled Early ',
+                        'amount_paid' => $detail->amount_due,
+                        'paid_at' => now(),
+                    ]);
+                }
+            }
+
+            // Update Loan Application as Completed
+            $installment = $installmentDetail->installment;
+
+            if ($installment->details()->where('is_paid', false)->count() === 0) {
+                $installment->loanApplication->update(['is_completed' => true]);
+            }
+
+            // Commit the transaction
+            DB::commit();
+
+            // Return a successful response with recovery details and settlement amount
+            return response()->json([
+                'message' => 'Early settlement processed successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+            // Rollback in case of an error
+            DB::rollBack();
+
+            // Return error response
+            return response()->json([
+                'message' => 'An error occurred while processing the early settlement.',
                 'error' => $e->getMessage(),
             ], 500);
         }

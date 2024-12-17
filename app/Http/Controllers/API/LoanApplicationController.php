@@ -304,9 +304,9 @@ class LoanApplicationController extends BaseController
         $downPaymentPercentage = $request->input('down_payment_percentage', 10); // Default to 10% if not specified
 
         // Validate input
-        if (!in_array($months, [3, 6, 9, 12])) {
-            return response()->json(['error' => 'Invalid month duration. Choose from 3, 6, 9, or 12 months.'], 400);
-        }
+//        if (!in_array($months, [3, 6, 9, 12])) {
+//            return response()->json(['error' => 'Invalid month duration. Choose from 3, 6, 9, or 12 months.'], 400);
+//        }
 
         if ($requestType === 'product') {
             $productId = $request->input('product_id');
@@ -1152,6 +1152,7 @@ class LoanApplicationController extends BaseController
                     'installment_id' => $installment->id,
                     'issue_date' => $startDate,
                     'due_date' => $dueDate,
+                    'status' => 'unpaid',
                     'amount_due' => $loanDetails->monthly_installment_amount,
                 ]);
                 $startDate = $dueDate->copy()->addDay(); // Update startDate for the next installment

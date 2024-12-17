@@ -12,12 +12,11 @@ class LoanDurationSeeder extends Seeder
      */
     public function run(): void
     {
-        $durations = [
-            ['name' => '3 Months', 'value' => 3],
-            ['name' => '6 Months', 'value' => 6],
-            ['name' => '9 Months', 'value' => 9],
-            ['name' => '12 Months', 'value' => 12],
-        ];
+        $durations = [];
+
+        for ($i = 1; $i <= 12; $i++) {
+            $durations[] = ['name' => "{$i} Month" . ($i > 1 ? 's' : ''), 'value' => $i];
+        }
 
         foreach ($durations as $duration) {
             LoanDuration::firstOrCreate([
@@ -25,5 +24,6 @@ class LoanDurationSeeder extends Seeder
                 'value' => $duration['value']
             ]);
         }
+
     }
 }

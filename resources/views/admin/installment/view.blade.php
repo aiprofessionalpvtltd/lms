@@ -71,18 +71,26 @@
 
                             <td>{{ $detail->amount_due }}</td>
                             <td>{{ $detail->amount_paid }}</td>
-                            <td>{{ $detail->is_paid ? 'Paid' : 'Pending' }}</td>
+                            <td>{{ strtoupper($detail->status)  }}</td>
                             @if($detail->is_paid == 0)
                                 @can('edit-installments')
 
                                     <td>
-                                        <button class="btn btn-primary open-recovery-modal"
+                                        <button class="btn  btn-sm btn-primary open-recovery-modal"
                                                 data-id="{{ $detail->id }}"
-                                                data-amount="{{ $detail->amount_due }}"
-
-                                        >
+                                                data-amount="{{ $detail->amount_due }}">
                                             Recover
                                         </button>
+                                        <button class="btn btn-sm btn-primary open-early-modal"
+                                                data-id="{{ $detail->id }}"
+                                                data-amount="{{ number_format($detail->amount_due, 2) }}"
+                                                data-remaining-loan="{{ number_format($detail->remaining_loan, 2) }}"
+                                                data-penalty-percentage="{{ $detail->penalty_percentage }}"
+                                                data-penalty-amount="{{ number_format($detail->penalty_amount, 2) }}"
+                                                data-total-payable="{{ number_format($detail->total_payable, 2) }}">
+                                            Early Settlement
+                                        </button>
+
                                         <button class="btn btn-sm btn-primary edit-due-date">Edit</button>
                                         <button class="btn btn-sm btn-danger cancel-update d-none">Cancel</button>
                                     </td>
@@ -100,6 +108,34 @@
             </div>
         </div>
         <!-- /Installment details -->
+
+{{--        <table class="table table-bordered">--}}
+{{--            <thead>--}}
+{{--            <tr>--}}
+{{--                <th>#</th>--}}
+{{--                <th>Amount Due</th>--}}
+{{--                <th>Remaining Loan</th>--}}
+{{--                <th>ERC %</th>--}}
+{{--                <th>ERC Amount</th>--}}
+{{--                <th>Total Payable</th>--}}
+
+{{--            </tr>--}}
+{{--            </thead>--}}
+{{--            <tbody>--}}
+{{--            @foreach($unpaidInstallments as $key => $detail)--}}
+{{--                <tr>--}}
+{{--                    <td>{{ $key + 1 }}</td>--}}
+{{--                    <td>{{ number_format($detail->amount_due, 2) }}</td>--}}
+{{--                    <td>{{ number_format($detail->remaining_loan, 2) }}</td>--}}
+{{--                    <td>{{ $detail->penalty_percentage }}%</td>--}}
+{{--                    <td>{{ number_format($detail->penalty_amount, 2) }}</td>--}}
+{{--                    <td>{{ number_format($detail->total_payable, 2) }}</td>--}}
+
+{{--                </tr>--}}
+{{--            @endforeach--}}
+{{--            </tbody>--}}
+{{--        </table>--}}
+
 
         <!-- Bootstrap Modal -->
         <div class="modal fade" id="recoveryModal" tabindex="-1" aria-labelledby="recoveryModalLabel"
@@ -120,7 +156,8 @@
                             </div>
                             <div class="mb-3">
                                 <label for="overdue_days" class="form-label">Overdue Days</label>
-                                <input type="number" class="form-control" id="overdue_days" name="overdue_days" value="0">
+                                <input type="number" class="form-control" id="overdue_days" name="overdue_days"
+                                       value="0">
                             </div>
                             <div class="mb-3">
                                 <label for="late_fee" class="form-label">Late Fee</label>
@@ -128,7 +165,8 @@
                             </div>
                             <div class="mb-3">
                                 <label for="total_amount" class="form-label">Total Amount</label>
-                                <input type="number" class="form-control" id="total_amount" name="total_amount" value="0">
+                                <input type="number" class="form-control" id="total_amount" name="total_amount"
+                                       value="0">
                             </div>
                             <div class="mb-3">
                                 <label for="payment_method" class="form-label">Payment Method</label>
@@ -155,6 +193,82 @@
                 </div>
             </div>
         </div>
+
+        <!-- First Modal (Early Settlement Details) -->
+        <div class="modal fade" id="earlySettlementModal" tabindex="-1" aria-labelledby="earlySettlementModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="earlySettlementModalLabel">Early Settlement Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-striped">
+                            <tr>
+                                <th>Installment ID</th>
+                                <td id="modal-id"></td>
+                            </tr>
+                            <tr>
+                                <th>Amount Due</th>
+                                <td id="modal-amount"></td>
+                            </tr>
+                            <tr>
+                                <th>Remaining Loan</th>
+                                <td id="modal-remaining-loan"></td>
+                            </tr>
+                            <tr>
+                                <th>ERC %</th>
+                                <td id="modal-penalty-percentage"></td>
+                            </tr>
+                            <tr>
+                                <th>ERC Amount</th>
+                                <td id="modal-penalty-amount"></td>
+                            </tr>
+                            <tr>
+                                <th>Total Payable</th>
+                                <td id="modal-total-payable"></td>
+                            </tr>
+                        </table>
+                        <form id="earlyForm">
+                            <div class="modal-body">
+                                <input type="hidden" name="installment_detail_id_early"
+                                       id="installment_detail_id_early">
+                                <input type="hidden" name="input_remaining_loan" id="input_remaining_loan">
+                                <input type="hidden" name="input_penalty_percentage" id="input_penalty_percentage">
+                                <input type="hidden" name="input_penalty_amount" id="input_penalty_amount">
+                                <div class="mb-3">
+                                    <label for="installment_amount_early" class="form-label">Installment Amount</label>
+                                    <input type="text" readonly class="form-control" id="installment_amount_early"
+                                           name="amount" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="payment_method" class="form-label">Payment Method</label>
+                                    <select class="form-select" id="payment_method" name="payment_method" required>
+                                        <option value="bank">Bank</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="online">Online</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="remarks" class="form-label">Remarks</label>
+                                    <textarea class="form-control" id="remarks" name="remarks"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Confirm Settlement</button>
+                            </div>
+                        </form>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
 
         <!-- Recovery details -->
         <div class="card">
@@ -187,8 +301,16 @@
                                 <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>
                                 <td>{{ ucfirst($recovery->total_amount) }}</td>
                                 <td>{{ ucfirst($recovery->payment_method) }}</td>
-                                <td>{{ ucfirst($recovery->status) }}</td>
-                                <td>{{ $recovery->remarks }}</td>
+                                <td>
+                                    {{ ucfirst($recovery->status)  }}
+
+                                </td>
+                                <td>{{ $recovery->remarks }}
+                                    @if($recovery->is_early_settlement)
+                                        <br>
+                                        <b class="text-danger"> {{ ($recovery->percentage)  }}% of {{ ($recovery->remaining_amount)  }} is {{ ($recovery->erc_amount)  }}</b>  <br>
+                                    @endif
+                                </td>
                                 <td>{{ showDate($recovery->created_at) }}</td>
                             </tr>
                         @endforeach
@@ -301,6 +423,70 @@
 @push('script')
     <script>
         $(document).ready(function () {
+
+            // Open the first modal
+            $('.open-early-modal').click(function () {
+                // Fetch data attributes from the clicked button
+                const id = $(this).data('id');
+                const amount = $(this).data('amount');
+                const remainingLoan = $(this).data('remaining-loan');
+                const penaltyPercentage = $(this).data('penalty-percentage');
+                const penaltyAmount = $(this).data('penalty-amount');
+                const totalPayable = $(this).data('total-payable');
+
+                // Set modal fields for the first modal
+                $('#modal-id').text(id);
+                $('#modal-amount').text(amount);
+                $('#modal-remaining-loan').text(remainingLoan);
+                $('#modal-penalty-percentage').text(penaltyPercentage + '%');
+                $('#modal-penalty-amount').text(penaltyAmount);
+                $('#modal-total-payable').text(totalPayable);
+
+                $('#installment_detail_id_early').val(id);  // Set installment detail ID
+                $('#installment_amount_early').val(totalPayable); // Set amount due in the second modal
+                $('#input_penalty_amount').val(penaltyAmount);
+                $('#input_remaining_loan').val(remainingLoan);
+                $('#input_penalty_percentage').val(penaltyPercentage);
+
+                // Show the first modal
+                $('#earlySettlementModal').modal('show');
+            });
+
+            $('#earlyForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                const url = '/recovery/installment/early'; // Your API endpoint
+
+                // Collect form data into FormData object
+                const formData = new FormData(this); // Automatically includes all form inputs
+                formData.append('_token', '{{ csrf_token() }}'); // Add CSRF token if not included in the form
+
+                storeRecoveryData(url, formData)
+                    .then(response => {
+                        $('#earlyModal').modal('hide'); // Close the modal
+                        notyf.open({
+                            type: 'success',
+                            message: 'Recovery saved successfully.',
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+                        location.reload(); // Reload page if necessary
+                    })
+                    .catch(error => {
+                        const errorMessage = error.responseJSON?.message || 'Failed to save data.';
+                        notyf.open({
+                            type: 'error',
+                            message: errorMessage,
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+                    });
+            });
+
             // Handle edit button click
             $(document).on('click', '.edit-due-date', function () {
                 const row = $(this).closest('tr');

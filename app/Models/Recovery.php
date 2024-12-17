@@ -18,7 +18,11 @@ class Recovery extends Model
         'total_amount',
         'payment_method',
         'status',
-        'remarks'
+        'remarks',
+        'is_early_settlement',
+        'remaining_amount',
+        'percentage',
+        'erc_amount',
     ];
 
     public function installmentDetail()

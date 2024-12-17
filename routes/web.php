@@ -86,6 +86,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create/{installmentDetailId}', [RecoveryController::class, 'create'])->name('recovery.create');
         Route::post('/store', [RecoveryController::class, 'store'])->name('recovery.store');
         Route::post('/installment/recover', [RecoveryController::class, 'storeRecovery']);
+        Route::post('/installment/early', [RecoveryController::class, 'storeEarlySettlement']);
 
     });
 
