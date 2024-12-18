@@ -104,7 +104,7 @@ class LoanApplicationController extends BaseController
                 $query->where('name', 'Customer');
             })->get();
         $products = Product::all();
-        $loanDurations = LoanDuration::all();
+        $loanDurations = LoanDuration::orderBy('id', 'asc')->get();
         $loanPurposes = LoanPurpose::all();
         return view('admin.loan_applications.create',
             compact('title', 'customers', 'products', 'loanDurations', 'loanPurposes'));

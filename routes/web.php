@@ -79,6 +79,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/installment/details/{id}/update-due-date', [InstallmentController::class, 'updateDueDate']);
     Route::post('/installment/details/{id}/update-issue-date', [InstallmentController::class, 'updateIssueDate']);
 
+    Route::get('/disbursement/{id}', [TransactionController::class, 'index'])->name('disbursement.show');
+    Route::post('/store-disbursement', [TransactionController::class, 'storeDisbursement'])->name('disbursement.store');
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
     Route::post('/transactions/storeManual', [TransactionController::class, 'storeManual'])->name('transactions.storeManual');
 

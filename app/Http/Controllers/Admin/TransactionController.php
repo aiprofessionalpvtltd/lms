@@ -18,6 +18,34 @@ use Illuminate\Http\JsonResponse;
 class TransactionController extends Controller
 {
 
+
+    public function index($id)
+    {
+        $title = 'Disbursement';
+        $installment = Installment::with([
+            'details',
+            'user',
+            'loanApplication',
+            'loanApplication.calculatedProduct',
+            'recoveries'
+        ])->find($id);
+        $loanApplication = LoanApplication::with('user.profile')->find($id);
+
+
+//        dd($id);
+         return view("admin.disbursement.create", compact('id', 'title' ,'loanApplication'));
+    }
+
+    public function storeDisbursement(Request $request)
+    {
+
+        if($request->service_api == 'jazz_cash'){
+            $this->jazzCashAPI($request);
+        }
+
+     }
+
+
     public function getToken(): JsonResponse
     {
         // Define the endpoint and headers
@@ -139,9 +167,9 @@ class TransactionController extends Controller
         return $statuses[$responseCode] ?? 'Unknown response code.';
     }
 
-    public function store(Request $request)
+    public function jazzCashAPI($request)
     {
-        $request->validate([
+         $request->validate([
             'loan_application_id' => 'required|exists:loan_applications,id',
         ]);
 
