@@ -183,6 +183,56 @@ class RecoveryController extends Controller
         }
     }
 
+    public function updateRecovery(Request $request, $id)
+    {
+        $request->validate([
+            'installment' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:1',
+            'overdueDays' => 'required|integer|min:0', // Match field name in the form
+            'penaltyFee' => 'required|numeric|min:0',
+            'totalAmount' => 'required|numeric|min:0',
+            'paymentMethod' => 'required|string|max:255', // Match field name in the form
+            'status' => 'nullable|string|max:255',
+            'percentage' => 'nullable|numeric|min:0',
+            'remainingAmount' => 'nullable|string|max:255',
+            'ercAmount' => 'nullable',
+            'date' => 'required|date',
+            'remarks' => 'nullable|string|max:1000',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $recovery = Recovery::findOrFail($id);
+
+             $recovery->update([
+                'amount' => $request->amount,
+                'overdue_days' => $request->overdueDays,
+                'penalty_fee' => $request->penaltyFee,
+                'total_amount' => $request->totalAmount,
+                'payment_method' => $request->paymentMethod,
+                'status' => $request->status,
+                'percentage' => $request->percentage ?? 0,
+                'remaining_amount' => str_replace(',', '', $request->remainingAmount) ?? 0, // Remove commas
+                'erc_amount' => $request->ercAmount ?? 0,
+                'date' => \Carbon\Carbon::parse($request->date)->format('Y-m-d'),
+                'remarks' => $request->remarks,
+                'updated_at' => now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json(['message' => 'Recovery updated successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error updating recovery',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
     public function storeEarlySettlement(Request $request)
     {
         // Validate incoming request data

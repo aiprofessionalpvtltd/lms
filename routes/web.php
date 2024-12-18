@@ -89,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [RecoveryController::class, 'store'])->name('recovery.store');
         Route::post('/installment/recover', [RecoveryController::class, 'storeRecovery']);
         Route::post('/installment/early', [RecoveryController::class, 'storeEarlySettlement']);
+        Route::put('/recoveries/{id}', [RecoveryController::class, 'updateRecovery'])->name('recoveries.update');
 
     });
 

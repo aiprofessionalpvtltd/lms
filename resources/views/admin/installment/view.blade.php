@@ -109,35 +109,35 @@
         </div>
         <!-- /Installment details -->
 
-{{--        <table class="table table-bordered">--}}
-{{--            <thead>--}}
-{{--            <tr>--}}
-{{--                <th>#</th>--}}
-{{--                <th>Amount Due</th>--}}
-{{--                <th>Remaining Loan</th>--}}
-{{--                <th>ERC %</th>--}}
-{{--                <th>ERC Amount</th>--}}
-{{--                <th>Total Payable</th>--}}
+    {{--        <table class="table table-bordered">--}}
+    {{--            <thead>--}}
+    {{--            <tr>--}}
+    {{--                <th>#</th>--}}
+    {{--                <th>Amount Due</th>--}}
+    {{--                <th>Remaining Loan</th>--}}
+    {{--                <th>ERC %</th>--}}
+    {{--                <th>ERC Amount</th>--}}
+    {{--                <th>Total Payable</th>--}}
 
-{{--            </tr>--}}
-{{--            </thead>--}}
-{{--            <tbody>--}}
-{{--            @foreach($unpaidInstallments as $key => $detail)--}}
-{{--                <tr>--}}
-{{--                    <td>{{ $key + 1 }}</td>--}}
-{{--                    <td>{{ number_format($detail->amount_due, 2) }}</td>--}}
-{{--                    <td>{{ number_format($detail->remaining_loan, 2) }}</td>--}}
-{{--                    <td>{{ $detail->penalty_percentage }}%</td>--}}
-{{--                    <td>{{ number_format($detail->penalty_amount, 2) }}</td>--}}
-{{--                    <td>{{ number_format($detail->total_payable, 2) }}</td>--}}
+    {{--            </tr>--}}
+    {{--            </thead>--}}
+    {{--            <tbody>--}}
+    {{--            @foreach($unpaidInstallments as $key => $detail)--}}
+    {{--                <tr>--}}
+    {{--                    <td>{{ $key + 1 }}</td>--}}
+    {{--                    <td>{{ number_format($detail->amount_due, 2) }}</td>--}}
+    {{--                    <td>{{ number_format($detail->remaining_loan, 2) }}</td>--}}
+    {{--                    <td>{{ $detail->penalty_percentage }}%</td>--}}
+    {{--                    <td>{{ number_format($detail->penalty_amount, 2) }}</td>--}}
+    {{--                    <td>{{ number_format($detail->total_payable, 2) }}</td>--}}
 
-{{--                </tr>--}}
-{{--            @endforeach--}}
-{{--            </tbody>--}}
-{{--        </table>--}}
+    {{--                </tr>--}}
+    {{--            @endforeach--}}
+    {{--            </tbody>--}}
+    {{--        </table>--}}
 
 
-        <!-- Bootstrap Modal -->
+    <!-- Bootstrap Modal -->
         <div class="modal fade" id="recoveryModal" tabindex="-1" aria-labelledby="recoveryModalLabel"
              aria-hidden="true">
             <div class="modal-dialog">
@@ -281,17 +281,17 @@
                     <tr>
                         <th>Installment</th>
                         <th>Installment Amount</th>
-                        <th>OverDue Days (PKR{{env('LATE_FEE')}}/day)</th>
+                        <th>OverDue Days (PKR{{ env('LATE_FEE') }}/day)</th>
                         <th>Late Fee</th>
                         <th>Total Amount</th>
                         <th>Payment Method</th>
                         <th>Status</th>
                         <th>Remarks</th>
                         <th>Date</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {{--                    {{dd($installment->recoveries)}}--}}
                     @if(count($installment->recoveries) > 0)
                         @foreach($installment->recoveries as $recovery)
                             <tr>
@@ -301,28 +301,132 @@
                                 <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>
                                 <td>{{ ucfirst($recovery->total_amount) }}</td>
                                 <td>{{ ucfirst($recovery->payment_method) }}</td>
+                                <td>{{ ucfirst($recovery->status) }}</td>
                                 <td>
-                                    {{ ucfirst($recovery->status)  }}
-
-                                </td>
-                                <td>{{ $recovery->remarks }}
+                                    {{ $recovery->remarks }}
                                     @if($recovery->is_early_settlement)
                                         <br>
-                                        <b class="text-danger"> {{ ($recovery->percentage)  }}% of {{ ($recovery->remaining_amount)  }} is {{ ($recovery->erc_amount)  }}</b>  <br>
+                                        <b class="text-danger">
+                                            {{ ($recovery->percentage) }}% of {{ ($recovery->remaining_amount) }}
+                                            is {{ ($recovery->erc_amount) }}
+                                        </b><br>
                                     @endif
                                 </td>
                                 <td>{{ showDate($recovery->created_at) }}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm edit-button"
+                                            data-id="{{ $recovery->id }}"
+                                            data-installment="{{ $recovery->installmentDetail->installment_number }}"
+                                            data-amount="{{ $recovery->amount }}"
+                                            data-overdue-days="{{ $recovery->overdue_days ?? 'N/A' }}"
+                                            data-penalty-fee="{{ $recovery->penalty_fee ?? 'N/A' }}"
+                                            data-total-amount="{{ $recovery->total_amount }}"
+                                            data-payment-method="{{ $recovery->payment_method }}"
+                                            data-status="{{ $recovery->status }}"
+                                            data-remarks="{{ $recovery->remarks }}"
+                                            data-is-early-settlement="{{ $recovery->is_early_settlement }}"
+                                            data-percentage="{{ $recovery->percentage ?? '' }}"
+                                            data-remaining-amount="{{ $recovery->remaining_amount ?? '' }}"
+                                            data-erc-amount="{{ $recovery->erc_amount ?? '' }}"
+                                            data-created-at="{{ dateInsert($recovery->created_at) }}">
+                                        Edit
+                                    </button>
+                                </td>
                             </tr>
                         @endforeach
                     @else
                         <tr>
-                            <td colspan="9" class="text-center fw-bold">No Record Found</td>
+                            <td colspan="10" class="text-center fw-bold">No Record Found</td>
                         </tr>
                     @endif
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <!-- Bootstrap Modal -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editModalLabel">Edit Recovery Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editRecoveryForm">
+                            <input type="hidden" id="recoveryId" name="recoveryId">
+
+                            <div class="mb-3">
+                                <label for="installment" class="form-label">Installment</label>
+                                <input type="text" class="form-control" id="installment" name="installment">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="amount" class="form-label">Amount</label>
+                                <input type="text" class="form-control" id="amount" name="amount">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="overdueDays" class="form-label">Overdue Days</label>
+                                <input type="text" class="form-control" id="overdueDays" name="overdueDays">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="penaltyFee" class="form-label">Penalty Fee</label>
+                                <input type="text" class="form-control" id="penaltyFee" name="penaltyFee">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="totalAmount" class="form-label">Total Amount</label>
+                                <input type="text" class="form-control" id="totalAmount" name="totalAmount">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="paymentMethod" class="form-label">Payment Method</label>
+                                <input type="text" class="form-control" id="paymentMethod" name="paymentMethod">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <input type="text" class="form-control" id="status" name="status">
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Percentage</label>
+                                <input type="text" class="form-control" id="percentage" name="percentage">
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Remaining Amount</label>
+                                <input type="text" class="form-control" id="remainingAmount" name="remainingAmount">
+                            </div>
+                            <div class="mb-3">
+                                <label for="status" class="form-label">ERC Amount</label>
+                                <input type="text" class="form-control" id="ercAmount" name="ercAmount">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="recoveryDate" name="date">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="remarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="remarksRecovery" name="remarks" rows="2"></textarea>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary" form="editRecoveryForm">Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
         <!-- /Recovery details -->
 
         <!-- Bootstrap Modal -->
@@ -614,45 +718,6 @@
 
             });
 
-
-            // General AJAX store function
-            function storeData(url, data) {
-                return new Promise((resolve, reject) => {
-                    $.ajax({
-                        url: url,
-                        method: 'POST',
-                        data: {
-                            ...data,
-                            _token: '{{ csrf_token() }}' // Ensure CSRF token is included
-                        },
-                        success: function (response) {
-                            notyf.open({
-                                type: 'success',
-                                message: 'Data saved successfully.',
-                                duration: 5000,
-                                ripple: true,
-                                dismissible: true,
-                                position: {x: 'right', y: 'top'},
-                            });
-                            resolve(response);
-                        },
-                        error: function (xhr) {
-                            notyf.open({
-                                type: 'error',
-                                message: xhr.responseJSON?.message || 'Failed to save data.',
-                                duration: 5000,
-                                ripple: true,
-                                dismissible: true,
-                                position: {x: 'right', y: 'top'},
-                            });
-                            reject(xhr);
-                        }
-                    });
-                });
-            }
-
-
-            // Handle Recovery Form Submission
             // Handle Recovery Form Submission
             $('#recoveryForm').on('submit', function (e) {
                 e.preventDefault(); // Prevent default form submission
@@ -758,6 +823,94 @@
                     });
             });
 
+            $('.edit-button').on('click', function () {
+                const recoveryId = $(this).data('id');
+                const installment = $(this).data('installment');
+                const amount = $(this).data('amount');
+                const overdueDays = $(this).data('overdue-days');
+                const penaltyFee = $(this).data('penalty-fee');
+                const totalAmount = $(this).data('total-amount');
+                const paymentMethod = $(this).data('payment-method');
+                const status = $(this).data('status');
+                const remarks = $(this).data('remarks');
+                const isEarlySettlement = $(this).data('is-early-settlement');
+                const percentage = $(this).data('percentage');
+                const remainingAmount = $(this).data('remaining-amount');
+                const ercAmount = $(this).data('erc-amount');
+                const date = $(this).data('created-at');
+
+
+                // Populate modal form fields
+                $('#recoveryId').val(recoveryId);
+                $('#installment').val(installment);
+                $('#amount').val(amount);
+                $('#overdueDays').val(overdueDays);
+                $('#penaltyFee').val(penaltyFee);
+                $('#totalAmount').val(totalAmount);
+                $('#paymentMethod').val(paymentMethod);
+                $('#status').val(status);
+                $('#recoveryDate').val(date);
+                $('#remarksRecovery').val(remarks);
+
+
+                // Early Settlement Details
+                if (isEarlySettlement) {
+                    $('#earlySettlementDetails').show();
+                    $('#percentage').val(percentage);
+                    $('#remainingAmount').val(remainingAmount);
+                    $('#ercAmount').val(ercAmount);
+                } else {
+                    $('#earlySettlementDetails').hide();
+                }
+
+                // Open modal
+                $('#editModal').modal('show');
+            });
+
+            $('#editRecoveryForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                // Collect form data
+                const formData = $(this).serialize(); // Serializes the form fields into a query string
+
+                const recoveryId = $('#recoveryId').val(); // Get the recovery ID
+                const updateUrl = `/recovery/recoveries/${recoveryId}`; // Define your API endpoint
+
+                $.ajax({
+                    url: updateUrl,
+                    method: 'PUT', // Use PUT or POST based on your backend logic
+                    data: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // CSRF token
+                    },
+                    success: function (response) {
+                        notyf.open({
+                            type: 'success',
+                            message: 'Recovery updated successfully.',
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+
+                        // Reload the page after updates
+                        setTimeout(function () {
+                            location.reload();
+                        }, 2000); // Adjust delay as needed
+                    },
+                    error: function (xhr) {
+                        // Handle error response
+                        notyf.open({
+                            type: 'error',
+                            message: 'An error occurred: ' + xhr.responseJSON.message,
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+                    }
+                });
+            });
 
         });
 
