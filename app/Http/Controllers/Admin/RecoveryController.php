@@ -128,6 +128,7 @@ class RecoveryController extends Controller
             'total_amount' => 'required|string|max:255',
             'payment_method' => 'required|string|max:255',
             'remarks' => 'nullable|string',
+            'waive_off_charges' => 'nullable',
         ]);
 
         DB::beginTransaction();
@@ -135,16 +136,25 @@ class RecoveryController extends Controller
         try {
             $installmentDetail = InstallmentDetail::findOrFail($request->installment_detail_id);
 
+
             $penaltyFee = abs($request->overdue_days * config('app.late_fee', 250)); // Late fee from config
 
-            $totalAmount = $request->amount + $penaltyFee;
+             $waiveOffCharges = $request->waive_off_charges;
+            $amount = $request->amount;
+
+            if ($waiveOffCharges > 0) {
+                $penaltyFee = $penaltyFee - $waiveOffCharges;
+            }
+            $totalAmount = $amount+ $penaltyFee;
+
 
             $recoveryData = [
                 'installment_detail_id' => $installmentDetail->id,
                 'installment_id' => $installmentDetail->installment_id,
-                'amount' => $request->amount,
+                'amount' => $amount,
                 'overdue_days' => abs($request->overdue_days),
                 'penalty_fee' => $penaltyFee,
+                'waive_off_charges' => $waiveOffCharges,
                 'total_amount' => $totalAmount,
                 'payment_method' => $request->payment_method,
                 'status' => 'completed',
@@ -168,7 +178,7 @@ class RecoveryController extends Controller
                 $installment->loanApplication->update(['is_completed' => true]);
             }
 
-            LogActivity::addToLog('installments recovery of loan application '.$installment->loanApplication->application_id.' Created');
+            LogActivity::addToLog('installments recovery of loan application ' . $installment->loanApplication->application_id . ' Created');
 
             DB::commit();
 
@@ -201,6 +211,8 @@ class RecoveryController extends Controller
             'ercAmount' => 'nullable',
             'date' => 'required|date',
             'remarks' => 'nullable|string|max:1000',
+            'waiveOffCharges' => 'nullable',
+
         ]);
 
         DB::beginTransaction();
@@ -208,11 +220,21 @@ class RecoveryController extends Controller
         try {
             $recovery = Recovery::findOrFail($id);
 
-             $recovery->update([
+            $penaltyFee = $request->penaltyFee;
+            $waiveOffCharges = $request->waiveOffCharges;
+            $amount = $request->amount;
+
+            if ($waiveOffCharges > 0) {
+                $penaltyFee = $penaltyFee - $waiveOffCharges;
+            }
+            $totalAmount = $amount+ $penaltyFee;
+
+            $recovery->update([
                 'amount' => $request->amount,
                 'overdue_days' => $request->overdueDays,
-                'penalty_fee' => $request->penaltyFee,
-                'total_amount' => $request->totalAmount,
+                'penalty_fee' => $penaltyFee,
+                'waive_off_charges' => $waiveOffCharges,
+                'total_amount' => $totalAmount,
                 'payment_method' => $request->paymentMethod,
                 'status' => $request->status,
                 'percentage' => $request->percentage ?? 0,
@@ -223,7 +245,7 @@ class RecoveryController extends Controller
                 'updated_at' => now(),
             ]);
 
-            LogActivity::addToLog('installments recovery of loan application '.$recovery->installment->loanApplication->application_id.' Updated');
+            LogActivity::addToLog('installments recovery of loan application ' . $recovery->installment->loanApplication->application_id . ' Updated');
 
 
             DB::commit();
@@ -301,7 +323,7 @@ class RecoveryController extends Controller
                 $installment->loanApplication->update(['is_completed' => true]);
             }
 
-            LogActivity::addToLog('installments Early settlement processed of loan application '.$installment->loanApplication->application_id.' Created');
+            LogActivity::addToLog('installments Early settlement processed of loan application ' . $installment->loanApplication->application_id . ' Created');
 
 
             // Commit the transaction

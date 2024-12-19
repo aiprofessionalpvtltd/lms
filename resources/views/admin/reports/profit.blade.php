@@ -194,6 +194,7 @@
                         </thead>
                         <tbody>
                         @foreach($result as $row)
+{{--                            {{dd($row)}}--}}
                             <tr>
                                 <td>{{ $row->application_id ?? 'N/A' }}</td>
                                 <td>{{ $row->user->name ?? 'N/A' }}</td>
@@ -204,8 +205,8 @@
                                 <td>{{ $row->product->name ?? 'N/A' }}</td>
                                 <td>{{  number_format($row->loan_amount) }}</td>
                                 <td>{{  number_format($row->getLatestInstallment->total_amount) }}</td>
-                                <td>{{  number_format($row->getLatestInstallment->processing_fee) . ' ('.$row->product->processing_fee.'%)' }}</td>
-                                <td>{{  number_format($row->getLatestInstallment->total_markup)  . ' ('.$row->product->interest_rate.'%)' }}</td>
+                                <td>{{  number_format($row->getLatestInstallment->processing_fee)  }}</td>
+                                <td>{{  number_format($row->getLatestInstallment->total_markup)  }}</td>
                                 <td>{{  number_format($row->getLatestInstallment->monthly_installment) }}</td>
 
                             </tr>

@@ -23,6 +23,7 @@ class Recovery extends Model
         'remaining_amount',
         'percentage',
         'erc_amount',
+        'waive_off_changes',
     ];
 
     public function installmentDetail()

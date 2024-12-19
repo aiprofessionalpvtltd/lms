@@ -86,7 +86,7 @@
                                                 data-amount="{{ number_format($detail->amount_due, 2) }}"
                                                 data-remaining-loan="{{ number_format($detail->remaining_loan, 2) }}"
                                                 data-penalty-percentage="{{ $detail->penalty_percentage }}"
-                                                data-penalty-amount="{{ number_format($detail->penalty_amount, 2) }}"
+                                                data-waive-off-changes="{{ $detail->waive_off_charges ?? '0' }}"
                                                 data-total-payable="{{ number_format($detail->total_payable, 2) }}">
                                             Early Settlement
                                         </button>
@@ -163,6 +163,13 @@
                                 <label for="late_fee" class="form-label">Late Fee</label>
                                 <input type="number" class="form-control" id="late_fee" name="late_fee" value="0">
                             </div>
+
+                            <div class="mb-3">
+                                <label for="waive_off_charges" class="form-label">Waive Off Charges</label>
+                                <input type="number" class="form-control" id="waive_off_charges" name="waive_off_charges" value="0">
+                            </div>
+
+
                             <div class="mb-3">
                                 <label for="total_amount" class="form-label">Total Amount</label>
                                 <input type="number" class="form-control" id="total_amount" name="total_amount"
@@ -283,6 +290,7 @@
                         <th>Installment Amount</th>
                         <th>OverDue Days (PKR{{ env('LATE_FEE') }}/day)</th>
                         <th>Late Fee</th>
+                        <th>Waive Off Charges</th>
                         <th>Total Amount</th>
                         <th>Payment Method</th>
                         <th>Status</th>
@@ -299,6 +307,7 @@
                                 <td>{{ $recovery->amount }}</td>
                                 <td>{{ $recovery->overdue_days ?? 'N/A' }}</td>
                                 <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>
+                                <td>{{ $recovery->waive_off_charges ?? '0' }}</td>
                                 <td>{{ ucfirst($recovery->total_amount) }}</td>
                                 <td>{{ ucfirst($recovery->payment_method) }}</td>
                                 <td>{{ ucfirst($recovery->status) }}</td>
@@ -320,6 +329,7 @@
                                             data-amount="{{ $recovery->amount }}"
                                             data-overdue-days="{{ $recovery->overdue_days ?? 'N/A' }}"
                                             data-penalty-fee="{{ $recovery->penalty_fee ?? 'N/A' }}"
+                                            data-waive-off-changes="{{ $recovery->waive_off_charges ?? '0' }}"
                                             data-total-amount="{{ $recovery->total_amount }}"
                                             data-payment-method="{{ $recovery->payment_method }}"
                                             data-status="{{ $recovery->status }}"
@@ -372,8 +382,13 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="penaltyFee" class="form-label">Penalty Fee</label>
+                                <label for="penaltyFee" class="form-label">Late Fee</label>
                                 <input type="text" class="form-control" id="penaltyFee" name="penaltyFee">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="waiveOffCharges" class="form-label">Waive Off Charges</label>
+                                <input type="text" class="form-control" id="waiveOffCharges" name="waiveOffCharges">
                             </div>
 
                             <div class="mb-3">
@@ -829,6 +844,7 @@
                 const amount = $(this).data('amount');
                 const overdueDays = $(this).data('overdue-days');
                 const penaltyFee = $(this).data('penalty-fee');
+                const waiveOffCharges = $(this).data('waive-off-changes');
                 const totalAmount = $(this).data('total-amount');
                 const paymentMethod = $(this).data('payment-method');
                 const status = $(this).data('status');
@@ -839,6 +855,7 @@
                 const ercAmount = $(this).data('erc-amount');
                 const date = $(this).data('created-at');
 
+                console.log(waiveOffCharges);
 
                 // Populate modal form fields
                 $('#recoveryId').val(recoveryId);
@@ -846,6 +863,7 @@
                 $('#amount').val(amount);
                 $('#overdueDays').val(overdueDays);
                 $('#penaltyFee').val(penaltyFee);
+                $('#waiveOffCharges').val(waiveOffCharges);
                 $('#totalAmount').val(totalAmount);
                 $('#paymentMethod').val(paymentMethod);
                 $('#status').val(status);
@@ -911,6 +929,7 @@
                     }
                 });
             });
+
 
         });
 

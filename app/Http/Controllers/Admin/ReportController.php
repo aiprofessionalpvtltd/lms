@@ -622,6 +622,7 @@ class ReportController extends Controller
                 $nplEntryDate = now()->addDays($daysUntilNPL)->toDateString();
             }
 
+//            dd($nextDue);
 
             return [
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
@@ -629,7 +630,7 @@ class ReportController extends Controller
                 'application_id' => $loan->application_id,
                 'original_loan_amount' => $loan->loan_amount,
                 'outstanding_amount' => $outstandingAmount,
-                'due_date' => optional($nextDue)->due_date,
+                'due_date' => optional($nextDue)->due_date ?? 'no installment found',
                 'provision_amount' => optional($nextDue)->amount_due,
                 'days_past_due' => $daysPastDue, // Days past due with sign
                 'status' => $status,
