@@ -2,14 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
-use App\Models\Announcement;
-use App\Models\Attendance;
-use App\Models\InventoryRequest;
-use App\Models\LeaveRequest;
-use App\Models\MeetingSchedule;
-use App\Models\Project;
-use App\Models\VehicleRequest;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -31,7 +25,8 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-         return redirect()->route('our-dashboard');
+
+        return redirect()->route('our-dashboard');
 
 
     }
