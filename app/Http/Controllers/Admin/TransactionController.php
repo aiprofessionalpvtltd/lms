@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\API\BaseController;
 use App\Http\Controllers\Controller;
 use App\Models\Installment;
@@ -293,6 +294,8 @@ class TransactionController extends Controller
                 'dateTime' => currentDateTimeInsert(),
             ]);
 
+
+            LogActivity::addToLog('Manual Disbursement of loan application '.$installment->loanApplication->application_id.' Created');
 
 //            dd($transaction);
             DB::commit();

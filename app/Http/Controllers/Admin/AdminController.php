@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
 use App\Models\FailedLoginAttempt;
 use App\Models\User;
@@ -72,6 +73,38 @@ class AdminController extends Controller
         }
 
         return view('auth.failed_attempt_logs', compact('title'));
+    }
+
+    public function logActivityLists(Request $request)
+    {
+        $title = 'Activity Logs';
+
+        if ($request->ajax()) {
+            $logs = LogActivity::logActivityLists();
+
+            return DataTables::of($logs)
+                ->addColumn('user', function ($log) {
+                    return $log->user->name;
+                })->addColumn('subject', function ($log) {
+                    return $log->subject;
+                })->addColumn('url', function ($log) {
+                    return '<a href="'.$log->url.'" target="_blank">URL</a>';;
+                })->addColumn('method', function ($log) {
+                    return $log->method;
+                })->addColumn('ip', function ($log) {
+                    return $log->ip;
+                })->addColumn('agent', function ($log) {
+                    return $log->agent;
+                })
+                ->addColumn('created_at', function ($log) {
+                    return showDateTime($log->created_at);
+                })
+                ->rawColumns(['url'])
+
+                ->make(true);
+        }
+
+        return view('auth.activity_logs', compact('title'));
     }
 }
 

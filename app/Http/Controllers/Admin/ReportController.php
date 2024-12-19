@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
 use App\Models\District;
 use App\Models\Gender;
@@ -76,6 +77,8 @@ class ReportController extends Controller
             return $transaction->loanApplication->user->profile->gender->name === 'Female';
         })->count();
 
+        LogActivity::addToLog('Disbursement report generated');
+
         return view('admin.reports.disbursement', compact('title', 'result', 'provinces', 'genders', 'request', 'districts', 'totalAmount', 'totalMale', 'totalFemale'));
     }
 
@@ -143,6 +146,9 @@ class ReportController extends Controller
             return $transaction->installment->loanApplication->user->profile->gender->name === 'Female';
         })->count();
 
+        LogActivity::addToLog('overdue report generated');
+
+
         return view('admin.reports.overdue', compact('title', 'result', 'provinces', 'genders', 'request', 'districts', 'totalAmount', 'totalMale', 'totalFemale'));
     }
 
@@ -206,6 +212,8 @@ class ReportController extends Controller
         $totalFemale = $result->filter(function ($transaction) {
             return $transaction->installment->loanApplication->user->profile->gender->name === 'Female';
         })->count();
+
+        LogActivity::addToLog('collection report generated');
 
         return view('admin.reports.collection', compact('title', 'result', 'provinces', 'genders', 'request', 'districts', 'totalAmount', 'totalMale', 'totalFemale'));
     }
@@ -281,6 +289,8 @@ class ReportController extends Controller
         $totalMonthlyInstallment = $result->sum(function ($transaction) {
             return $transaction->getLatestInstallment->monthly_installment ?? 0;
         });
+
+        LogActivity::addToLog('profit report generated');
 
 
         return view('admin.reports.profit', compact('title', 'result', 'provinces', 'genders',
@@ -390,6 +400,7 @@ class ReportController extends Controller
         $totalOutstanding = $outstandingData->sum('outstanding_amount');
         $totalInterestAccrued = $outstandingData->sum('interest_accrued');
 
+        LogActivity::addToLog('outstanding report generated');
 
         return view('admin.reports.outstanding', compact(
             'title', 'outstandingData', 'provinces', 'genders',
@@ -504,6 +515,8 @@ class ReportController extends Controller
         // Calculate totals
         $totalAmount = $result->sum('loan_amount');
         $totalOutstanding = $agingData->sum('outstanding_amount');
+
+        LogActivity::addToLog('aging receivable report generated');
 
         return view('admin.reports.aging_receivable', compact(
             'title', 'agingData', 'provinces', 'genders',
@@ -630,6 +643,8 @@ class ReportController extends Controller
         // Calculate totals
         $totalAmount = $result->sum('loan_amount');
         $totalOutstanding = $agingData->sum('outstanding_amount');
+
+        LogActivity::addToLog('provision report generated');
 
         return view('admin.reports.provision', compact(
             'title', 'agingData', 'provinces', 'genders',
@@ -773,6 +788,8 @@ class ReportController extends Controller
         $totalAmount = $result->sum('loan_amount');
         $totalOutstanding = $agingData->sum('outstanding_amount');
 
+        LogActivity::addToLog('finance report generated');
+
         return view('admin.reports.finance', compact(
             'title', 'agingData', 'provinces', 'genders',
             'request', 'districts', 'products', 'totalAmount',
@@ -880,6 +897,8 @@ class ReportController extends Controller
         })->flatten(1);
 
 //        dd($penaltyData);
+        LogActivity::addToLog('penalty report generated');
+
         return view('admin.reports.penalty', compact(
             'title', 'penaltyData', 'provinces', 'genders',
             'request', 'districts', 'products'
@@ -993,6 +1012,9 @@ class ReportController extends Controller
         })->flatten(1);
 
 //        dd($principalData);
+
+        LogActivity::addToLog('principal report generated');
+
         return view('admin.reports.principal', compact(
             'title', 'principalData', 'provinces', 'genders',
             'request', 'districts', 'products'
@@ -1095,6 +1117,8 @@ class ReportController extends Controller
                 'installment_end_date' => $endDate,
             ];
         });
+
+        LogActivity::addToLog('interest income report generated');
 
         return view('admin.reports.interest_income', compact(
             'title', 'interestIncomeData', 'provinces', 'genders',

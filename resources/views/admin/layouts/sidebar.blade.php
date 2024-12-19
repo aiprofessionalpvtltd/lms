@@ -53,14 +53,22 @@
                     <span class="align-middle">Dashboard</span>
                 </a>
             </li>
+            @can('view-roles')
             <li class="sidebar-item {{ request()->routeIs('failed-attempt-logs') ? 'active' : '' }}">
                 <a class="sidebar-link" href="{{ route('failed-attempt-logs') }}">
                     <i class="align-middle" data-feather="user"></i>
                     <span class="align-middle">Failed Attempt Logs</span>
                 </a>
             </li>
+                <li class="sidebar-item {{ request()->routeIs('activity-logs') ? 'active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('activity-logs') }}">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">Activity Logs</span>
+                    </a>
+                </li>
 
-            @can('view-roles')
+
+
 
                 <li class="sidebar-item {{ request()->routeIs('show-role') ? 'active' : '' }}">
                     <a class="sidebar-link" href="{{ route('show-role') }}">

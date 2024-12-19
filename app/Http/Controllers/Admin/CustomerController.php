@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\API\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
@@ -107,6 +108,8 @@ class CustomerController extends BaseController
                 ->make(true);
         }
 
+        LogActivity::addToLog('Customer Listing View');
+
         return view('admin.customer.index', compact('title'));
     }
 
@@ -119,9 +122,8 @@ class CustomerController extends BaseController
             ->find($id);
 
 
-//        if ($customer->tracking->score == 0) {
         $this->calculateUserScore($customer);
-//        }
+        LogActivity::addToLog('Customer ID : '.$id.' View');
 
         return view('admin.customer.view', compact('title', 'customer'));
     }
@@ -312,6 +314,9 @@ class CustomerController extends BaseController
             $user->load('tracking', 'familyDependent', 'bank_account', 'profile', 'education', 'employment', 'references');
 
             $this->calculateUserScore($user);
+
+            LogActivity::addToLog('Customer  : '.$userInput['name'].' Created');
+
             DB::commit();
 
             return redirect()->route('show-customer')->with('success', 'Customer Created Successfully');
@@ -503,6 +508,9 @@ class CustomerController extends BaseController
 
                 UserGuarantor::create($userGuarantor);
             }
+
+             LogActivity::addToLog('Customer  '.$request->name.' Updated');
+
 
             // Finalize and Commit
             DB::commit();

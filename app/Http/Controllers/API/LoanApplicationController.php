@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\InstallmentDetailResource;
 use App\Http\Resources\LoanApplicationResource;
@@ -181,6 +182,8 @@ class LoanApplicationController extends BaseController
 
             // Update tracking data for user
             $user->tracking->update(['is_bank_statement' => 1]);
+
+            LogActivity::addToLog('Loan Application  '.$loanApplication->application_id.' Created');
 
             DB::commit();
 
@@ -439,6 +442,7 @@ class LoanApplicationController extends BaseController
                     'Loan Applications retrieved successfully.'
                 );
             } else {
+                LogActivity::addToLog('Loan Applications Listing Viewed');
 
                 return view('admin.loan_applications.index', compact('loanApplications'));
             }
@@ -543,6 +547,7 @@ class LoanApplicationController extends BaseController
                 $loanApplication->load('calculatedProduct');
                 $loanApplicationProduct = $loanApplication->calculatedProduct;
 
+                LogActivity::addToLog('Loan Application '.$loanApplication->application_id.' Viewed');
 
                 return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanApplicationProduct', 'previousLoans'));
             }
@@ -1157,6 +1162,7 @@ class LoanApplicationController extends BaseController
                 ]);
                 $startDate = $dueDate->copy()->addDay(); // Update startDate for the next installment
             }
+            LogActivity::addToLog('Loan Application  '.$loanApplication->application_id.' Approved');
 
             DB::commit(); // Commit the transaction
 

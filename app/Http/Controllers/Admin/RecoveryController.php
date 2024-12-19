@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
 
 use App\Models\Installment;
@@ -167,6 +168,8 @@ class RecoveryController extends Controller
                 $installment->loanApplication->update(['is_completed' => true]);
             }
 
+            LogActivity::addToLog('installments recovery of loan application '.$installment->loanApplication->application_id.' Created');
+
             DB::commit();
 
             return response()->json([
@@ -219,6 +222,9 @@ class RecoveryController extends Controller
                 'remarks' => $request->remarks,
                 'updated_at' => now(),
             ]);
+
+            LogActivity::addToLog('installments recovery of loan application '.$recovery->installment->loanApplication->application_id.' Updated');
+
 
             DB::commit();
 
@@ -294,6 +300,9 @@ class RecoveryController extends Controller
             if ($installment->details()->where('is_paid', false)->count() === 0) {
                 $installment->loanApplication->update(['is_completed' => true]);
             }
+
+            LogActivity::addToLog('installments Early settlement processed of loan application '.$installment->loanApplication->application_id.' Created');
+
 
             // Commit the transaction
             DB::commit();

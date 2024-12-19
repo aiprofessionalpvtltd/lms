@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
 
 use App\Models\Installment;
@@ -24,6 +25,8 @@ class InstallmentController extends Controller
     {
         $title = 'installments';
         $installments = Installment::all();
+        LogActivity::addToLog('installments Listing View');
+
         return view("admin.installment.index", compact('installments', 'title'));
     }
 
@@ -79,6 +82,9 @@ class InstallmentController extends Controller
             return $detail;
         });
 
+        LogActivity::addToLog('installments of loan application '.$installment->loanApplication->application_id.' View');
+
+
         // Return to the view with calculated unpaid installments
         return view('admin.installment.view', [
             'installment' => $installment,
@@ -94,6 +100,7 @@ class InstallmentController extends Controller
         $installmentDetail = InstallmentDetail::findOrFail($id);
         $installmentDetail->due_date = $request->due_date;
         $installmentDetail->save();
+        LogActivity::addToLog('installments due date of  '.$installmentDetail->installment->loanApplication->application_id.' Updated');
 
         return response()->json(['message' => 'Due date updated successfully.'], 200);
     }
@@ -106,6 +113,7 @@ class InstallmentController extends Controller
         $installmentDetail = InstallmentDetail::findOrFail($id);
         $installmentDetail->issue_date = $request->issue_date;
         $installmentDetail->save();
+        LogActivity::addToLog('installments issue date of  '.$installmentDetail->installment->loanApplication->application_id.' Updated');
 
         return response()->json(['message' => 'Issue date updated successfully.'], 200);
     }

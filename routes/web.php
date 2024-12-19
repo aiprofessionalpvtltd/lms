@@ -33,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('update-password', [AdminController::class, 'updatePassword'])->name('update-password');
     Route::put('change-password{id}', [AdminController::class, 'ChangePassword'])->name('change-password');
     Route::get('failed-attempt-logs', [AdminController::class, 'failedLogs'])->name('failed-attempt-logs');
+    Route::get('activity-logs', [AdminController::class, 'logActivityLists'])->name('activity-logs');
 
     //User Controllers
     Route::get('show-user', [UserController::class, 'show'])->name('show-user');

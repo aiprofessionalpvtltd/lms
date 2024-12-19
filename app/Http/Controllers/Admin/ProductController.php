@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
 use App\Models\District;
 use App\Models\Product;
@@ -44,6 +45,8 @@ class ProductController extends Controller
                 ->make(true);
         }
 
+        LogActivity::addToLog('Products Listing View');
+
         // Return view for non-AJAX request
         return view('admin.product.index', compact('title'));
     }
@@ -72,6 +75,9 @@ class ProductController extends Controller
         try {
             $product = Product::create($data);
             DB::commit();
+
+            LogActivity::addToLog('Product '.$request->name.' Created');
+
 
             return redirect()->route('show-product')->with('success', 'Product created successfully');
         } catch (Exception $e) {
@@ -111,6 +117,8 @@ class ProductController extends Controller
 
         try {
             $product->update($data);
+            LogActivity::addToLog('Product '.$request->name.' Updated');
+
             DB::commit();
 
             return redirect()->route('show-product')->with('success', 'Product updated successfully');
@@ -134,6 +142,8 @@ class ProductController extends Controller
 
         try {
             $product->delete();
+            LogActivity::addToLog('Product '.$product->name.' Deleted');
+
             DB::commit();
             return response()->json(['success' => 'Product Deleted Successfully']);
 
