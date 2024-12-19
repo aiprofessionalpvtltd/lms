@@ -723,7 +723,7 @@ class ReportController extends Controller
                 $query->with('details'); // Load installment details for outstanding calculation
             }
         ])
-            ->whereNotNull('product_id')  
+            ->whereNotNull('product_id')
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
                 return $query->whereBetween('created_at', [$startDate, $endDate]);
             })

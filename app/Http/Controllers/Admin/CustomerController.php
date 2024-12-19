@@ -207,9 +207,9 @@ class CustomerController extends BaseController
             'spouse_name' => 'nullable|string|max:255',
             'spouse_employment_details' => 'nullable|string',
 
-            'guarantor_contact_name' => 'required',
-            'relationship_id' => 'required|exists:relationships,id',
-            'guarantor_contact_number' => 'required',
+            'guarantor_contact_name' => 'nullable',
+            'relationship_id' => 'nullable|exists:relationships,id',
+            'guarantor_contact_number' => 'nullable',
 
             'education_id' => 'required|exists:educations,id', // Ensure valid education
             'university_name' => 'required|string|max:255',
@@ -283,18 +283,20 @@ class CustomerController extends BaseController
             // Create a new Bank Information
             $bankAccount = UserBankAccount::create($request->all());
 
+            if($request->relationship_id ){
+                foreach ($request->relationship_id as $key => $relationshipId) {
+                    $userGuarantor = [
+                        'user_id' => $user->id,
+                        'relationship_id' => $relationshipId,
+                        'guarantor_contact_name' => $request->guarantor_contact_name[$key],
+                        'guarantor_contact_number' => $request->guarantor_contact_number[$key],
+                    ];
 
-            foreach ($request->relationship_id as $key => $relationshipId) {
-                $userGuarantor = [
-                    'user_id' => $user->id,
-                    'relationship_id' => $relationshipId,
-                    'guarantor_contact_name' => $request->guarantor_contact_name[$key],
-                    'guarantor_contact_number' => $request->guarantor_contact_number[$key],
-                ];
-
-                // Create a new UserGuarantor record
-                UserGuarantor::create($userGuarantor);
+                    // Create a new UserGuarantor record
+                    UserGuarantor::create($userGuarantor);
+                }
             }
+
 
 
 
@@ -415,9 +417,9 @@ class CustomerController extends BaseController
             'spouse_name' => 'nullable|string|max:255',
             'spouse_employment_details' => 'nullable|string',
 
-            'guarantor_contact_name' => 'required',
-            'relationship_id' => 'required|exists:relationships,id',
-            'guarantor_contact_number' => 'required',
+            'guarantor_contact_name' => 'nullable',
+            'relationship_id' => 'nullable|exists:relationships,id',
+            'guarantor_contact_number' => 'nullable',
 
             'education_id' => 'required|exists:educations,id', // Ensure valid education
             'university_name' => 'required|string|max:255',
@@ -496,17 +498,19 @@ class CustomerController extends BaseController
                 'education_id', 'university_name'
             ]));
 
-            // Step 4: Update Guarantors
-            $customer->references()->delete(); // Remove old guarantors
-            foreach ($request->relationship_id as $key => $relationshipId) {
-                $userGuarantor = [
-                    'user_id' => $customer->id,
-                    'relationship_id' => $relationshipId,
-                    'guarantor_contact_name' => $request->guarantor_contact_name[$key],
-                    'guarantor_contact_number' => $request->guarantor_contact_number[$key],
-                ];
+            if($request->relationship_id ) {
+                // Step 4: Update Guarantors
+                $customer->references()->delete(); // Remove old guarantors
+                foreach ($request->relationship_id as $key => $relationshipId) {
+                    $userGuarantor = [
+                        'user_id' => $customer->id,
+                        'relationship_id' => $relationshipId,
+                        'guarantor_contact_name' => $request->guarantor_contact_name[$key],
+                        'guarantor_contact_number' => $request->guarantor_contact_number[$key],
+                    ];
 
-                UserGuarantor::create($userGuarantor);
+                    UserGuarantor::create($userGuarantor);
+                }
             }
 
              LogActivity::addToLog('Customer  '.$request->name.' Updated');

@@ -715,111 +715,80 @@
 
 
                         <div class="tab-pane fade" id="guarantor-tab">
-
-
-                            <div class="row">
-
-                                <div class="col-md-4">
-                                    <label class="col-form-label">Relationship</label>
-                                    <div class="form-group">
-                                        <select name="relationship_id[]" class="form-control select2"
-                                                data-placeholder="Select Relationship 1">
-                                            <option></option>
-                                            @foreach($relationships as $row)
-                                                <option
-                                                    value="{{ $row->id }}" {{ old('relationship_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        @if ($errors->has('relationship_id'))
-                                            <span
-                                                class="text-danger">{{ $errors->first('relationship_id') }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="col-form-label">Guarantor Name<span
-                                            class="text-danger">*</span></label>
-                                    <div class="form-group">
-                                        <input type="text" name="guarantor_contact_name[]" class="form-control"
-                                               placeholder="Guarantor Name 1"
-                                               value="">
-                                        @if ($errors->has('guarantor_contact_name'))
-                                            <span
-                                                class="text-danger">{{ $errors->first('guarantor_contact_name') }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="col-form-label">Mobile No <span
-                                            class="text-danger">*</span></label>
-                                    <div class="form-group form-group-feedback form-group-feedback-right">
-                                        <input type="text" name="guarantor_contact_number[]" class="form-control"
-                                               placeholder="0399-9999999"
-                                               data-inputmask="'mask': '0399-9999999'"
-                                               value="">
-                                        @if ($errors->has('guarantor_contact_number'))
-                                            <span
-                                                class="text-danger">{{ $errors->first('guarantor_contact_number') }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-
+                            <div class="form-check mt-5 mb-3">
+                                <input type="checkbox" class="form-check-input" id="noGuarantorCheckbox">
+                                <label class="form-check-label" for="noGuarantorCheckbox">No Need for Guarantor</label>
                             </div>
 
-                            <div class="row">
+                            <div id="guarantor-fields">
+                                <!-- First Guarantor -->
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Relationship</label>
+                                        <div class="form-group">
+                                            <select name="relationship_id[]" class="form-control select2"
+                                                    data-placeholder="Select Relationship 1">
+                                                <option></option>
+                                                @foreach($relationships as $row)
+                                                    <option
+                                                        value="{{ $row->id }}" {{ old('relationship_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
 
-                                <div class="col-md-4">
-                                    <label class="col-form-label">Relationship</label>
-                                    <div class="form-group">
-                                        <select name="relationship_id[]" class="form-control select2" style="width: 100% !important;"
-                                                data-placeholder="Select Relationship 2">
-                                            <option></option>
-                                            @foreach($relationships as $row)
-                                                <option
-                                                    value="{{ $row->id }}" {{ old('relationship_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
-                                            @endforeach
-                                        </select>
-                                        @if ($errors->has('relationship_id'))
-                                            <span
-                                                class="text-danger">{{ $errors->first('relationship_id') }}</span>
-                                        @endif
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Guarantor Name<span class="text-danger">*</span></label>
+                                        <div class="form-group">
+                                            <input type="text" name="guarantor_contact_name[]" class="form-control"
+                                                   placeholder="Guarantor Name 1" value="">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Mobile No <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <input type="text" name="guarantor_contact_number[]" class="form-control"
+                                                   placeholder="0399-9999999" data-inputmask="'mask': '0399-9999999'" value="">
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="col-md-4">
-                                    <label class="col-form-label">Guarantor Name<span
-                                            class="text-danger">*</span></label>
-                                    <div class="form-group">
-                                        <input type="text" name="guarantor_contact_name[]" class="form-control"
-                                               placeholder="Guarantor Name 2"
-                                               value="">
-                                        @if ($errors->has('guarantor_contact_name'))
-                                            <span
-                                                class="text-danger">{{ $errors->first('guarantor_contact_name') }}</span>
-                                        @endif
+                                <!-- Second Guarantor -->
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Relationship</label>
+                                        <div class="form-group">
+                                            <select name="relationship_id[]" class="form-control select2"
+                                                    data-placeholder="Select Relationship 2">
+                                                <option></option>
+                                                @foreach($relationships as $row)
+                                                    <option
+                                                        value="{{ $row->id }}" {{ old('relationship_id') == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Guarantor Name<span class="text-danger">*</span></label>
+                                        <div class="form-group">
+                                            <input type="text" name="guarantor_contact_name[]" class="form-control"
+                                                   placeholder="Guarantor Name 2" value="">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Mobile No <span class="text-danger">*</span></label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <input type="text" name="guarantor_contact_number[]" class="form-control"
+                                                   placeholder="0399-9999999" data-inputmask="'mask': '0399-9999999'" value="">
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div class="col-md-4">
-                                    <label class="col-form-label">Mobile No <span
-                                            class="text-danger">*</span></label>
-                                    <div class="form-group form-group-feedback form-group-feedback-right">
-                                        <input type="text" name="guarantor_contact_number[]" class="form-control"
-                                               placeholder="0399-9999999"
-                                               data-inputmask="'mask': '0399-9999999'"
-                                               value="">
-                                        @if ($errors->has('guarantor_contact_number'))
-                                            <span
-                                                class="text-danger">{{ $errors->first('guarantor_contact_number') }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-
                             </div>
-
                         </div>
+
                     </div>
                 </div>
 
@@ -836,6 +805,19 @@
 
 @push('script')
     <script>
+        $(document).ready(function () {
+            $('#noGuarantorCheckbox').change(function () {
+                if ($(this).is(':checked')) {
+                    // Disable all fields inside #guarantor-fields
+                    $('#guarantor-fields').find('input, select').prop('disabled', true);
+                } else {
+                    // Enable all fields inside #guarantor-fields
+                    $('#guarantor-fields').find('input, select').prop('disabled', false);
+                }
+            });
+        });
+
+
         document.addEventListener("DOMContentLoaded", function () {
             // Initialize Select2
             $('.select2').select2();

@@ -62,7 +62,8 @@ class BanksTableSeeder extends Seeder
             'U Microfinance Bank',
             'United Bank Limited (UBL)',
             'Waseela Microfinance Bank',
-            'Zarai Taraqiati Bank Limited (ZTBL)'
+            'Zarai Taraqiati Bank Limited (ZTBL)',
+            'COC (cash over counter)'
         ];
 
         foreach ($banks as $bank) {
