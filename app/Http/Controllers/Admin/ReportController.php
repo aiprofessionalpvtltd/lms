@@ -335,6 +335,7 @@ class ReportController extends Controller
                 $query->with('details'); // Load installment details for outstanding calculation
             }
         ])
+            ->where('is_completed', 0) // Add condition for is_completed == 0
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
                 return $query->whereBetween('created_at', [$startDate, $endDate]);
             })
@@ -447,6 +448,7 @@ class ReportController extends Controller
                 $query->with('details'); // Load installment details for outstanding calculation
             }
         ])
+            ->where('is_completed', 0) // Add condition for is_completed == 0
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
                 return $query->whereBetween('created_at', [$startDate, $endDate]);
             })
@@ -467,7 +469,7 @@ class ReportController extends Controller
             })
             ->get();
 
-        // Process each loan application to retrieve required details
+         // Process each loan application to retrieve required details
         $agingData = $result->map(function ($loan) {
             $userProfile = $loan->user->profile;
             $latestInstallment = $loan->getLatestInstallment;
@@ -513,8 +515,9 @@ class ReportController extends Controller
         })->filter(); // Remove null entries from skipped loans
 
         // Calculate totals
-        $totalAmount = $result->sum('loan_amount');
+         $totalAmount = $agingData->isNotEmpty() ? $agingData->sum('original_loan_amount') : 0;
         $totalOutstanding = $agingData->sum('outstanding_amount');
+
 
         LogActivity::addToLog('aging receivable report generated');
 
@@ -720,6 +723,7 @@ class ReportController extends Controller
                 $query->with('details'); // Load installment details for outstanding calculation
             }
         ])
+            ->whereNotNull('product_id')  
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
                 return $query->whereBetween('created_at', [$startDate, $endDate]);
             })

@@ -182,7 +182,7 @@
                             <th>Borrower Name</th>
                             <th>CNIC</th>
                             <th>Original Loan Amount</th>
-                            <th>Outstanding Principal</th>
+                            <th>Outstanding Amount</th>
                             <th>Due Date</th>
                             <th>Days Past Due</th>
                             <th>Provision Amount</th>
