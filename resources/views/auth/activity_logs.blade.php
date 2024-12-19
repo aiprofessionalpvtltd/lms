@@ -96,7 +96,7 @@
                         className: 'btn btn-danger',
                         titleAttr: 'Export to PDF',
                         orientation: 'landscape', // Set PDF orientation to landscape
-                        title: 'Profit Report',
+                        title: 'Activity Logs',
                         exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer
@@ -107,7 +107,7 @@
                         text: 'Excel',
                         className: 'btn btn-success',
                         titleAttr: 'Export to Excel',
-                        title: 'Profit Report',
+                        title: 'Activity Logs',
                         exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer
