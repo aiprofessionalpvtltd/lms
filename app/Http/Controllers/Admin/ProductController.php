@@ -8,6 +8,8 @@ use App\Models\District;
 use App\Models\Product;
 use App\Models\Province;
 use App\Models\User;
+use App\Models\Vendor;
+use App\Models\VendorProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -25,6 +27,12 @@ class ProductController extends Controller
             $products = Product::with('province', 'district')->orderBy('created_at', 'DESC');
 
             return DataTables::of($products)
+                ->addColumn('vendor', function ($product) {
+                    return $product->vendor ? $product->vendor->name : 'N/A'; // Handle case where province might not exist
+                })
+                ->addColumn('vendorProduct', function ($product) {
+                    return $product->vendorProduct ? $product->vendorProduct->product_name : 'N/A'; // Handle case where province might not exist
+                })
                 ->addColumn('province', function ($product) {
                     return $product->province ? $product->province->name : 'N/A'; // Handle case where province might not exist
                 })
@@ -54,8 +62,9 @@ class ProductController extends Controller
     public function index()
     {
         $provinces = Province::all();
+        $vendors = Vendor::all();
         $title = 'Add Products';
-        return view('admin.product.create', compact('title', 'provinces'));
+        return view('admin.product.create', compact('title', 'provinces','vendors'));
     }
 
     public function store(Request $request)
@@ -68,6 +77,8 @@ class ProductController extends Controller
             'interest_rate' => 'required|numeric|min:0',
             'province_id' => 'exists:provinces,id',
             'district_id' => 'exists:districts,id',
+            'vendor_id' => 'exists:vendors,id',
+            'vendor_product_id' => 'exists:vendor_products,id',
         ]);
 
         DB::beginTransaction();
@@ -92,7 +103,12 @@ class ProductController extends Controller
         $product = Product::with('province', 'district')->find($id);
         $provinces = Province::all();
         $districts = District::where('province_id', $product->province_id)->get();
-        return view('admin.product.edit', compact('title', 'product', 'provinces', 'districts'));
+
+        $vendors = Vendor::all();
+        $vendorProducts = VendorProduct::where('vendor_id',$product->vendor_id)->get();
+
+
+        return view('admin.product.edit', compact('title', 'product', 'provinces', 'districts' ,'vendors','vendorProducts'));
     }
 
     public function update(Request $request, $id)
@@ -105,6 +121,8 @@ class ProductController extends Controller
             'interest_rate' => 'sometimes|required|numeric|min:0',
             'province_id' => 'sometimes',
             'district_id' => 'sometimes',
+            'vendor_id' => 'exists:vendors,id',
+            'vendor_product_id' => 'exists:vendor_products,id',
         ]);
 
         $product = Product::find($id);

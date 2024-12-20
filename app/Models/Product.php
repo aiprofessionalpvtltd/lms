@@ -17,6 +17,8 @@ class Product extends Model
         'interest_rate',
         'province_id',
         'district_id',
+        'vendor_id',
+        'vendor_product_id',
     ];
 
     public function province()
@@ -27,6 +29,14 @@ class Product extends Model
     public function district()
     {
         return $this->belongsTo(District::class);
+    }
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
+    }
+    public function vendorProduct()
+    {
+        return $this->belongsTo(VendorProduct::class);
     }
 
 }

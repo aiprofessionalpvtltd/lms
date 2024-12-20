@@ -36,6 +36,8 @@
                 <table id="products-table" class="table table-striped datatables-responsive">
                     <thead>
                     <tr>
+                        <th>Vendor</th>
+                        <th>Vendor Product</th>
                         <th>Name</th>
                         <th>Price</th>
                         <th>Processing Fee</th>
@@ -64,6 +66,8 @@
                 serverSide: true,
                 ajax: '{{ route("show-product") }}', // replace with your correct route for loading data
                 columns: [
+                    {data: 'vendor', name: 'vendor'},
+                    {data: 'vendorProduct', name: 'vendorProduct'},
                     {data: 'name', name: 'name'},
                     {data: 'price', name: 'price'},
                     {data: 'processing_fee', name: 'processing_fee'},

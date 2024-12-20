@@ -30,6 +30,40 @@
                         <div class="card mb-0">
                             <div class="card-body">
                                 <div class="row">
+                                    <div class="col-md-4 mt-4">
+                                        <label class="col-form-label">Select Vendor </label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Vendor"
+                                                    name="vendor_id" id="vendor_id"
+                                                    data-type="vendor"
+                                                    class="form-control select2 vendor"
+                                                    data-fouc>
+                                                <option></option>
+                                                @foreach($vendors as $key => $row)
+                                                    <option value="{{ $row->id }}">{{ $row->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @if ($errors->has('vendor_id'))
+                                                <span class="text-danger">{{ $errors->first('vendor_id') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mt-4">
+                                        <label class="col-form-label">Select Vendor Products </label>
+                                        <div class="form-group form-group-feedback form-group-feedback-right">
+                                            <select data-placeholder="Select Vendor"
+                                                    name="vendor_product_id" id="vendor_product_id"
+                                                    data-type="vendor_product"
+                                                    class="form-control select2 vendor_product"
+                                                    data-fouc>
+                                                <option></option>
+
+                                            </select>
+                                            @if ($errors->has('vendor_product_id'))
+                                                <span class="text-danger">{{ $errors->first('vendor_product_id') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
                                     <!-- Name -->
                                     <div class="col-md-4 mt-4">
                                         <label class="col-form-label">Product Name <span

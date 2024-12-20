@@ -11,6 +11,7 @@ use App\Models\LevelFour;
 use App\Models\LevelThree;
 use App\Models\LevelTwo;
 use App\Models\Province;
+use App\Models\VendorProduct;
 use Illuminate\Http\Request;
 
 class AjaxController extends Controller
@@ -31,6 +32,12 @@ class AjaxController extends Controller
     public function getCityByProvinceAjax(Request $request)
     {
         $responseData = City::select('id', 'name')->where('province_id', '=', $request->provinceID)->orderBy('name', 'ASC')->get();
+        return response()->json($responseData);
+    }
+
+    public function getVendorProductByVendor(Request $request)
+    {
+        $responseData = VendorProduct::select('id', 'product_name')->where('vendor_id', '=', $request->vendorID)->orderBy('product_name', 'ASC')->get();
         return response()->json($responseData);
     }
 

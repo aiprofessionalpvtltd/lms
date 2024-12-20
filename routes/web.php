@@ -25,6 +25,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::get('/get-province-by-country', [AjaxController::class, 'getProvinceByCountryAjax']);
 Route::get('/get-district-by-province', [AjaxController::class, 'getDistrictByProvinceAjax']);
 Route::get('/get-city-by-province', [AjaxController::class, 'getCityByProvinceAjax']);
+Route::get('/get-vendor-product-by-vendor', [AjaxController::class, 'getVendorProductByVendor']);
 
 Route::middleware(['auth'])->group(function () {
 

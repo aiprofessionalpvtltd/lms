@@ -104,6 +104,41 @@ $(document).ready(function () {
 
 
 
+    $('.vendor').on('select2:select', function (e) {
+        e.preventDefault();
+        var selectedData = e.params.data;
+        var vendorID = selectedData.id
+        var method = 'GET';
+        var type = $(this).data('type');
+        $.ajax({
+            type: method,
+            url: getVendorProductByProduct,
+            data: {vendorID: vendorID},
+            dataType: 'json',
+            success: function (data, status, xhr) {
+                const responsedata = data;
+                $('#vendor_product_id').empty();
+                $('#vendor_product_id').append('<option></option>');
+                if (responsedata) {
+                    $.each(responsedata, function (key, value) {
+                        $('#vendor_product_id').append($("<option/>", {
+                            value: value.id,
+                            text: value.product_name
+                        }));
+                    });
+                    $('#vendor_product_id').focus();
+
+                }
+            },
+            error: function (jqXhr, textStatus, errorMessage) {
+            }
+        });
+
+
+    });
+
+
+
 });
 
 
