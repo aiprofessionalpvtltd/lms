@@ -30,7 +30,7 @@ class RecoveryController extends Controller
                 $overdueDays = abs($overdueDays);
 
                 // Calculate the late fee (assuming 250 per day as the penalty fee)
-                $lateFee = $overdueDays * env('LATE_FEE', 250); // Default to 250 if not set in .env
+                $lateFee = $overdueDays * env('LATE_FEE', 200); // Default to 250 if not set in .env
                 $lateFee = abs($lateFee);
 
                 // Calculate the total amount (amount due + late fee)
@@ -137,7 +137,7 @@ class RecoveryController extends Controller
             $installmentDetail = InstallmentDetail::findOrFail($request->installment_detail_id);
 
 
-            $penaltyFee = abs($request->overdue_days * config('app.late_fee', 250)); // Late fee from config
+            $penaltyFee = abs($request->overdue_days * env('LATE_FEE', 200)); // Late fee from config
 
              $waiveOffCharges = $request->waive_off_charges;
             $amount = $request->amount;
