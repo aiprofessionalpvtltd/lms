@@ -255,6 +255,7 @@ class TransactionController extends Controller
         $request->validate([
             'installment_detail_id_disbursement' => 'required',
             'disbursement_amount' => 'required',
+            'disbursement_date' => 'required',
             'payment_method' => 'required',
             'remarks' => 'required',
         ]);
@@ -291,11 +292,47 @@ class TransactionController extends Controller
                 'responseCode' => 500,
                 'transactionID' => uniqid(),
                 'referenceID' => $paymentData['referenceId'],
-                'dateTime' => currentDateTimeInsert(),
+                'dateTime' => dateInsert($request->disbursement_date),
             ]);
 
 
             LogActivity::addToLog('Manual Disbursement of loan application '.$installment->loanApplication->application_id.' Created');
+
+//            dd($transaction);
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Transaction updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            dd($e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+    public function UpdateManual(Request $request)
+    {
+
+        $request->validate([
+            'disbursement_edit_id' => 'required',
+            'disbursement_edit_amount' => 'required',
+            'disbursement_edit_date' => 'required',
+            'disbursement_edit_payment_method' => 'required',
+            'disbursement_edit_remarks' => 'required',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $transaction = Transaction::find($request->disbursement_edit_id);
+
+            $transaction->update([
+                'amount' => $request->disbursement_edit_amount,
+                'payment_method' => $request->disbursement_edit_payment_method,
+                'remarks' => $request->disbursement_edit_remarks,
+                'dateTime' => dateInsert($request->disbursement_edit_date),
+            ]);
+
+
+            LogActivity::addToLog('Manual Disbursement Updated');
 
 //            dd($transaction);
             DB::commit();

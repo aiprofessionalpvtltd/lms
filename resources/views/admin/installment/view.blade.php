@@ -72,10 +72,11 @@
                             <td>{{ $detail->amount_due }}</td>
                             <td>{{ $detail->amount_paid }}</td>
                             <td>{{ strtoupper($detail->status)  }}</td>
-                            @if($detail->is_paid == 0)
+{{--                            @if($detail->is_paid == 0)--}}
                                 @can('edit-installments')
 
                                     <td>
+                                        @if($detail->is_paid == 0)
                                         <button class="btn  btn-sm btn-primary open-recovery-modal"
                                                 data-id="{{ $detail->id }}"
                                                 data-amount="{{ $detail->amount_due }}">
@@ -90,17 +91,17 @@
                                                 data-total-payable="{{ number_format($detail->total_payable, 2) }}">
                                             Early Settlement
                                         </button>
-
+                                        @endif
                                         <button class="btn btn-sm btn-primary edit-due-date">Edit</button>
                                         <button class="btn btn-sm btn-danger cancel-update d-none">Cancel</button>
                                     </td>
 
                                 @endcan
-                            @else
-                                <td>
+{{--                            @else--}}
+{{--                                <td>--}}
 
-                                </td>
-                            @endif
+{{--                                </td>--}}
+
                         </tr>
                     @endforeach
                     </tbody>
@@ -465,6 +466,12 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="disbursement_date" class="form-label">Disburse Date</label>
+                                <input type="date"  class="form-control" id="disbursement_date"
+                                       name="disbursement_date"
+                                       required>
+                            </div>
+                            <div class="mb-3">
                                 <label for="payment_method" class="form-label">Payment Method</label>
                                 <select class="form-select" id="payment_method" name="payment_method" required>
                                     <option value="bank">Bank</option>
@@ -475,6 +482,52 @@
                             <div class="mb-3">
                                 <label for="remarks" class="form-label">Remarks</label>
                                 <textarea class="form-control" id="remarks" name="remarks"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="disbursementEditModal" tabindex="-1" aria-labelledby="disbursementEditModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="disbursementEditModalLabel">Disbursement Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="disbursementEditForm">
+                        <div class="modal-body">
+                            <input type="hidden" name="disbursement_edit_id"
+                                   id="disbursement_edit_id">
+                            <div class="mb-3">
+                                <label for="disbursement_edit_amount" class="form-label">Disburse Amount</label>
+                                <input type="number" class="form-control" id="disbursement_edit_amount"
+                                       name="disbursement_edit_amount"
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="disbursement_edit_date" class="form-label">Disburse Date</label>
+                                <input type="date"  class="form-control" id="disbursement_edit_date"
+                                       name="disbursement_edit_date"
+                                       required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="disbursement_edit_payment_method" class="form-label">Payment Method</label>
+                                <select class="form-select" id="disbursement_edit_payment_method" name="disbursement_edit_payment_method" required>
+                                    <option value="bank">Bank</option>
+                                    <option value="cash">Cash</option>
+                                    <option value="online">Online</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="remarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="disbursement_edit_remarks" name="disbursement_edit_remarks"></textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -510,8 +563,9 @@
                         <th>Payment Method</th>
                         <th>Status</th>
                         <th>Remarks</th>
-                        <th>Created At</th>
+                        <th>Date</th>
                         <th>Disbursed By</th>
+                        <th>Action</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -523,8 +577,20 @@
                             <td>{{ ucfirst($installment->loanApplication->transaction->payment_method) }}</td>
                             <td>{{ ucfirst($installment->loanApplication->transaction->status) }}</td>
                             <td>{{ $installment->loanApplication->transaction->remarks }}</td>
-                            <td>{{ showDate($installment->loanApplication->transaction->created_at) }}</td>
+                            <td>{{ showDate($installment->loanApplication->transaction->dateTime) }}</td>
                             <td>{{ $installment->loanApplication->transaction->user->name }}</td>
+                            <td>
+                                <button class="btn btn-primary btn-sm edit-disburse-button"
+                                        data-id="{{ $installment->loanApplication->transaction->id}}"
+                                        data-amount="{{ $installment->loanApplication->transaction->amount  }}"
+                                        data-reference="{{ $installment->loanApplication->transaction->transaction_reference  }}"
+                                        data-payment-method="{{ $installment->loanApplication->transaction->payment_method }}"
+                                        data-remarks="{{ $installment->loanApplication->transaction->remarks }}"
+                                        data-date="{{ dateInsert($installment->loanApplication->transaction->dateTime) }}"
+                                >
+                                    Edit
+                                </button>
+                            </td>
                         </tr>
                     @else
                         <tr>
@@ -929,6 +995,65 @@
                     }
                 });
             });
+
+
+            $(document).on('click', '.edit-disburse-button', function () {
+                const id = $(this).data('id');
+                const disburseAmount = $(this).data('amount');
+                const paymentMethod = $(this).data('payment-method');
+                const remarks = $(this).data('remarks');
+                const date = $(this).data('date');
+
+                // Set hidden field value
+                $('#disbursement_edit_id').val(id);
+                $('#disbursement_edit_amount').val(disburseAmount);
+                $('#disbursement_edit_payment_method').val(paymentMethod);
+                $('#disbursement_edit_remarks').val(remarks);
+                $('#disbursement_edit_date').val(date);
+
+                $('#disbursementEditModal').modal('show');
+
+            });
+
+            $('#disbursementEditForm').on('submit', function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                const url = '{{ url("/transactions/updateManual") }}'; // Use Laravel's `url` helper for dynamic URLs
+                const formData = new FormData(this); // Automatically includes all form inputs
+                formData.append('_token', '{{ csrf_token() }}'); // Ensure CSRF token is included
+
+                // console.log(url); return false;
+                storeRecoveryData(url, formData)
+                    .then(response => {
+                        $('#disbursementEditModal').modal('hide'); // Close the modal
+                        notyf.open({
+                            type: 'success',
+                            message: 'Disbursement Updated successfully.',
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+                        location.reload(); // Reload page if necessary
+                    })
+                    .catch(error => {
+                        let errorMessage = 'Failed to update data.';
+                        if (error.responseJSON?.message) {
+                            errorMessage = error.responseJSON.message;
+                        } else if (error.responseText) {
+                            errorMessage = error.responseText;
+                        }
+                        notyf.open({
+                            type: 'error',
+                            message: errorMessage,
+                            duration: 5000,
+                            ripple: true,
+                            dismissible: true,
+                            position: {x: 'right', y: 'top'},
+                        });
+                    });
+            });
+
 
 
         });
