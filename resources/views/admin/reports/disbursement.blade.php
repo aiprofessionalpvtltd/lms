@@ -183,7 +183,7 @@
                                 <td>{{ $transaction->loanApplication->product->name ?? 'N/A' }}</td>
                                 <td>{{ number_format($transaction->loanApplication->loan_amount, 2) }}</td>
                                 <td>{{ number_format($transaction->loanApplication->transaction->amount, 2) }}</td>
-                                <td>{{ $transaction->created_at->format('Y-m-d') }}</td>
+                                <td>{{ showDate($transaction->dateTime) }}</td>
                                 <td>{{ $transaction->loanApplication->transaction->user->name ?? 'N/A' }}</td>
                                 <td>Disbursement</td>
                             </tr>

@@ -46,7 +46,7 @@ class ReportController extends Controller
         // Fetch transactions with associated loan applications and users
         $result = Transaction::with(['loanApplication.user.province', 'loanApplication.user.district'])
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
-                return $query->whereBetween('created_at', [$startDate, $endDate]);
+                return $query->whereBetween('dateTime', [$startDate, $endDate]);
             })
             ->when($gender_id, function ($query) use ($gender_id) {
                 return $query->whereHas('loanApplication.user.profile', function ($q) use ($gender_id) {
