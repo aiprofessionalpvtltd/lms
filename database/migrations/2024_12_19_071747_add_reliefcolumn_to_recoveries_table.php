@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('recoveries', function (Blueprint $table) {
-            $table->string('waive_off_changes')->nullable();
+            $table->string('waive_off_charges')->nullable();
 
         });
     }
