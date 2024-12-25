@@ -54,30 +54,35 @@
                     </tr>
                     </thead>
                     <tbody>
+                    @php $isFirstInstallment = true; @endphp
+
                     @foreach($installment->details as $detail)
                         <tr data-id="{{ $detail->id }}">
                             <td>{{ $detail->installment_number }}</td>
-                            {{--                            <td>--}}
-                            {{--                                <span>{{ showDate($detail->issue_date) }} </span>--}}
-                            {{--                            </td>--}}
+
+                            @if($isFirstInstallment)
+                                <td>
+                                    <span class="issue-date-text">{{ showDate($detail->issue_date) }}</span>
+                                    <input type="date" class="issue-date-input d-none" value="{{ $detail->issue_date }}"/>
+                                </td>
+                                @php $isFirstInstallment = false; @endphp
+                            @else
+                                <td></td>
+                            @endif
+
                             <td>
-                                <span class="issue-date-text">{{ showDate($detail->issue_date) }} </span>
-                                <input type="date" class="issue-date-input d-none" value="{{ ($detail->issue_date) }}"/>
-                            </td>
-                            <td>
-                                <span class="due-date-text">{{ showDate($detail->due_date) }} </span>
-                                <input type="date" class="due-date-input d-none" value="{{ ($detail->due_date) }}"/>
+                                <span class="due-date-text">{{ showDate($detail->due_date) }}</span>
+                                <input type="date" class="due-date-input d-none" value="{{ $detail->due_date }}"/>
                             </td>
 
                             <td>{{ $detail->amount_due }}</td>
                             <td>{{ $detail->amount_paid }}</td>
-                            <td>{{ strtoupper($detail->status)  }}</td>
-{{--                            @if($detail->is_paid == 0)--}}
-                                @can('edit-installments')
+                            <td>{{ strtoupper($detail->status) }}</td>
 
-                                    <td>
-                                        @if($detail->is_paid == 0)
-                                        <button class="btn  btn-sm btn-primary open-recovery-modal"
+                            @can('edit-installments')
+                                <td>
+                                    @if($detail->is_paid == 0)
+                                        <button class="btn btn-sm btn-primary open-recovery-modal"
                                                 data-id="{{ $detail->id }}"
                                                 data-amount="{{ $detail->amount_due }}">
                                             Recover
@@ -91,19 +96,14 @@
                                                 data-total-payable="{{ number_format($detail->total_payable, 2) }}">
                                             Early Settlement
                                         </button>
-                                        @endif
-                                        <button class="btn btn-sm btn-primary edit-due-date">Edit</button>
-                                        <button class="btn btn-sm btn-danger cancel-update d-none">Cancel</button>
-                                    </td>
-
-                                @endcan
-{{--                            @else--}}
-{{--                                <td>--}}
-
-{{--                                </td>--}}
-
+                                    @endif
+                                    <button class="btn btn-sm btn-primary edit-due-date">Edit</button>
+                                    <button class="btn btn-sm btn-danger cancel-update d-none">Cancel</button>
+                                </td>
+                            @endcan
                         </tr>
                     @endforeach
+
                     </tbody>
                 </table>
             </div>
@@ -683,19 +683,27 @@
                     const newDueDate = row.find('.due-date-input').val();
                     const newIssueDate = row.find('.issue-date-input').val();
 
-                    // Perform AJAX requests sequentially
-                    updateDate(`/installment/details/${detailId}/update-due-date`, {due_date: newDueDate})
-                        .then(() => updateDate(`/installment/details/${detailId}/update-issue-date`, {issue_date: newIssueDate}))
+                    console.log(newIssueDate);
+// Perform AJAX requests sequentially
+                    updateDate(`/installment/details/${detailId}/update-due-date`, { due_date: newDueDate })
                         .then(() => {
-                            // Toggle back to 'Edit' button after both updates
+                            if (newIssueDate) {
+                                // Call the issue date update API only if newIssueDate is present
+                                return updateDate(`/installment/details/${detailId}/update-issue-date`, { issue_date: newIssueDate });
+                            }
+                        })
+                        .then(() => {
+                            // Toggle back to 'Edit' button after updates
                             button.text('Edit').removeClass('updating');
 
                             // Update UI
                             row.find('.due-date-text').removeClass('d-none').text(newDueDate);
                             row.find('.due-date-input').addClass('d-none');
 
-                            row.find('.issue-date-text').removeClass('d-none').text(newIssueDate);
-                            row.find('.issue-date-input').addClass('d-none');
+                            if (newIssueDate) {
+                                row.find('.issue-date-text').removeClass('d-none').text(newIssueDate);
+                                row.find('.issue-date-input').addClass('d-none');
+                            }
 
                             // Reload the page after updates
                             setTimeout(function () {
@@ -710,9 +718,10 @@
                                 duration: 5000,
                                 ripple: true,
                                 dismissible: true,
-                                position: {x: 'right', y: 'top'},
+                                position: { x: 'right', y: 'top' },
                             });
                         });
+
                 } else {
                     // Enter edit mode
                     button.text('Update').addClass('updating');
