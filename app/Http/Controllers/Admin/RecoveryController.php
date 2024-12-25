@@ -159,7 +159,7 @@ class RecoveryController extends Controller
                 'payment_method' => $request->payment_method,
                 'status' => 'completed',
                 'remarks' => $request->remarks,
-                'created_at' => \Carbon\Carbon::parse($request->date)->format('Y-m-d H:i:s')
+                'recovery_date' => dateInsert($request->date)
             ];
             // Save recovery record
             $recovery = Recovery::insert($recoveryData);
@@ -240,7 +240,7 @@ class RecoveryController extends Controller
                 'percentage' => $request->percentage ?? 0,
                 'remaining_amount' => str_replace(',', '', $request->remainingAmount) ?? 0, // Remove commas
                 'erc_amount' => $request->ercAmount ?? 0,
-                'date' => \Carbon\Carbon::parse($request->date)->format('Y-m-d'),
+                'recovery_date' => dateInsert($request->date),
                 'remarks' => $request->remarks,
                 'updated_at' => now(),
             ]);

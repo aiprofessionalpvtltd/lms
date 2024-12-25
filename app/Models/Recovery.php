@@ -24,6 +24,7 @@ class Recovery extends Model
         'percentage',
         'erc_amount',
         'waive_off_changes',
+        'recovery_date',
     ];
 
     public function installmentDetail()

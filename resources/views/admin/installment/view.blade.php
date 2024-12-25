@@ -322,7 +322,7 @@
                                         </b><br>
                                     @endif
                                 </td>
-                                <td>{{ showDate($recovery->created_at) }}</td>
+                                <td>{{ showDate($recovery->recovery_date) }}</td>
                                 <td>
                                     <button class="btn btn-primary btn-sm edit-button"
                                             data-id="{{ $recovery->id }}"
@@ -339,7 +339,7 @@
                                             data-percentage="{{ $recovery->percentage ?? '' }}"
                                             data-remaining-amount="{{ $recovery->remaining_amount ?? '' }}"
                                             data-erc-amount="{{ $recovery->erc_amount ?? '' }}"
-                                            data-created-at="{{ dateInsert($recovery->created_at) }}">
+                                            data-created-at="{{ dateInsert($recovery->recovery_date) }}">
                                         Edit
                                     </button>
                                 </td>
