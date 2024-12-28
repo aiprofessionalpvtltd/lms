@@ -22,7 +22,7 @@
         <!-- Form validation -->
         <div class="card">
             <!-- Product form -->
-            <form action="{{ route('get-principal-report') }}" class="flex-fill form-validate-jquery">
+            <form action="{{ route('get-early-settlement-report') }}" class="flex-fill form-validate-jquery">
                 @csrf
                 <div class="row">
                     <div class="col-lg-12">
@@ -157,7 +157,7 @@
                                     <div class="col-md-12 mt-4">
                                         <button type="submit" class="btn btn-outline-primary float-end">Get Report
                                         </button>
-                                        <a href="{{ route('show-principal-report') }}"
+                                        <a href="{{ route('show-interest-income-report') }}"
                                            class="btn btn-outline-dark me-3 float-end">Reset</a>
                                     </div>
 
@@ -171,7 +171,7 @@
         </div>
         <!-- /form validation -->
 
-    @if(isset($principalData))
+    @if(isset($recoveryData))
         <!-- Basic datatable -->
             <div class="card">
                 <div class="card-body">
@@ -182,37 +182,32 @@
                             <th>Borrower Name</th>
                             <th>CNIC</th>
                             <th>Loan Amount</th>
-                            <th>Principal Amount</th>
-                            <th>Interest Amount</th>
-                            <th>Interest + Principal</th>
-                            <th>Installment Amount</th>
-                            <th>Interest Received</th>
-                            <th>Remaining Interest</th>
-                            <th>Principal Received</th>
-                            <th>Remaining Principal</th>
-
-
+                            <th>Total Installments</th>
+                            <th>Installment Paid</th>
+                            <th>Remaining Loan Amount</th>
+                            <th>Settlement Charges (%)</th>
+                            <th>Settlement Charges (PKR)</th>
+                            <th>Total Payable</th>
+                        </tr>
                         </thead>
                         <tbody>
-                        @foreach($principalData as $row)
+                        @foreach($recoveryData as $row)
                             <tr>
-                                <td>{{ $row['application_id'] ?? 'N/A' }}</td>
+                                <td>{{ $row['loan_id'] ?? 'N/A' }}</td>
                                 <td>{{ $row['borrower_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
-                                <td>{{ number_format($row['loan_amount'], 2) }}</td>
-                                <td>{{ number_format($row['principal'], 2) }}</td>
-                                <td>{{ ($row['interest_amount']) }}</td>
-                                <td>{{ number_format($row['principal_plus_interest'], 2) }}</td>
-                                <td>{{ number_format($row['installment_amount'], 2) }}</td>
-                                <td>{{ number_format($row['interest_received'], 2) }}</td>
-                                <td>{{ number_format($row['remaining_interest'], 2) }}</td>
-                                <td>{{ number_format($row['principal_received'], 2) }}</td>
-                                <td>{{ number_format($row['remaining_principal'], 2) }}</td>
+                                <td>{{ number_format($row['loan_amount'] ?? 0, 2) }}</td>
+                                <td>{{ $row['total_installments'] ?? 0 }}</td>
+                                <td>{{ $row['installment_paid'] ?? 0 }}</td>
+                                <td>{{ number_format($row['remaining_loan_amount'] ?? 0, 2) }}</td>
+                                <td>{{ number_format($row['settlement_charges_percentage'] ?? 0, 2) }}</td>
+                                <td>{{ number_format($row['settlement_charges_pkr'] ?? 0, 2) }}</td>
+                                <td>{{ number_format($row['total_payable'] ?? 0, 2) }}</td>
                             </tr>
                         @endforeach
                         </tbody>
-
                     </table>
+
 
 
                 </div>
@@ -271,7 +266,7 @@
                         className: 'btn btn-danger',
                         titleAttr: 'Export to PDF',
                         orientation: 'landscape', // Set PDF orientation to landscape
-                        title: 'Principal Payment Report',
+                        title: 'EarlySettlement Report',
                         exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer
@@ -282,7 +277,7 @@
                         text: 'Excel',
                         className: 'btn btn-success',
                         titleAttr: 'Export to Excel',
-                        title: 'Principal Payment Report',
+                        title: 'EarlySettlement Report',
                         exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer

@@ -140,6 +140,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-interest-income-report', [ReportController::class, 'showInterestIncomeReport'])->name('show-interest-income-report');
     Route::get('get-interest-income-report', [ReportController::class, 'getInterestIncomeReport'])->name('get-interest-income-report');
 
+    Route::get('show-early-settlement-report', [ReportController::class, 'showEarlySettlementReport'])->name('show-early-settlement-report');
+    Route::get('get-early-settlement-report', [ReportController::class, 'getEarlySettlementReport'])->name('get-early-settlement-report');
+
 
 });
 

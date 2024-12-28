@@ -469,7 +469,7 @@ class ReportController extends Controller
             })
             ->get();
 
-         // Process each loan application to retrieve required details
+        // Process each loan application to retrieve required details
         $agingData = $result->map(function ($loan) {
             $userProfile = $loan->user->profile;
             $latestInstallment = $loan->getLatestInstallment;
@@ -515,7 +515,7 @@ class ReportController extends Controller
         })->filter(); // Remove null entries from skipped loans
 
         // Calculate totals
-         $totalAmount = $agingData->isNotEmpty() ? $agingData->sum('original_loan_amount') : 0;
+        $totalAmount = $agingData->isNotEmpty() ? $agingData->sum('original_loan_amount') : 0;
         $totalOutstanding = $agingData->sum('outstanding_amount');
 
 
@@ -997,6 +997,15 @@ class ReportController extends Controller
             // Remaining principal calculation
             $remainingPrincipal = $loan->loan_amount - $principalReceived;
 
+            // Remaining interest calculation
+            $remainingInterest = $installment->total_markup - $interestReceived;
+
+            // Number of installments calculation
+            $totalInstallments = $loan->installments->count(); // Total installments
+            $paidInstallments = round($principalReceived / $installmentDetail->monthly_installment_amount); // Approximating
+            $remainingInstallments = $totalInstallments - $paidInstallments;
+
+
             // Add to report data
             $principalEntries[] = [
                 'application_id' => $loan->application_id,
@@ -1004,12 +1013,16 @@ class ReportController extends Controller
                 'cnic' => $userProfile->cnic_no,
                 'loan_amount' => round($loan->loan_amount, 2),
                 'principal' => round($loan->loan_amount, 2),
-                'interest_amount' => round($installment->total_markup, 2)  . ' (' .$installmentDetail->interest_rate_percentage.'%)',
+                'interest_amount' => round($installment->total_markup, 2) . ' (' . $installmentDetail->interest_rate_percentage . '%)',
                 'principal_plus_interest' => round($loan->loan_amount + $installment->total_markup, 2),
                 'installment_amount' => round($installmentDetail->monthly_installment_amount, 2),
                 'interest_received' => round($interestReceived, 2),
                 'principal_received' => round($principalReceived, 2),
                 'remaining_principal' => round($remainingPrincipal, 2),
+                'remaining_interest' => round($remainingInterest, 2), // Added
+                'total_installments' => $totalInstallments, // Added
+                'paid_installments' => $paidInstallments, // Added
+                'remaining_installments' => $remainingInstallments, // Added
             ];
 
 
@@ -1127,6 +1140,119 @@ class ReportController extends Controller
 
         return view('admin.reports.interest_income', compact(
             'title', 'interestIncomeData', 'provinces', 'genders',
+            'request', 'districts', 'products'
+        ));
+    }
+
+    public function showEarlySettlementReport()
+    {
+        $title = 'Early Settlement Report';
+        $provinces = Province::all();
+        $genders = Gender::all();
+        $products = Product::all();
+        return view('admin.reports.early_settlement', compact('title', 'provinces', 'genders', 'products'));
+    }
+
+    public function getEarlySettlementReport(Request $request)
+    {
+        $title = 'Early Settlement Report';
+        $provinces = Province::all();
+        $districts = District::all();
+        $genders = Gender::all();
+        $products = Product::all();
+
+        $dateRange = $request->date_range;
+        $gender_id = $request->gender_id;
+        $province_id = $request->province_id;
+        $district_id = $request->district_id;
+        $product_id = $request->product_id;
+
+        // Split the date range
+        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $startDate = $splitDate[0] ?? null;
+        $endDate = $splitDate[1] ?? null;
+
+        $result = LoanApplication::with([
+            'product',
+            'calculatedProduct',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'installments.details.recovery',
+        ])
+            ->whereHas('installments.recoveries', function ($query) {
+                $query->where('is_early_settlement', 1);
+            })
+            ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
+                return $query->whereBetween('created_at', [$startDate, $endDate]);
+            })
+            ->when($gender_id, function ($query) use ($gender_id) {
+                return $query->whereHas('user.profile', function ($q) use ($gender_id) {
+                    $q->where('gender_id', $gender_id);
+                });
+            })
+            ->when($province_id, function ($query) use ($province_id) {
+                return $query->whereHas('user', function ($q) use ($province_id) {
+                    $q->where('province_id', $province_id);
+                });
+            })
+            ->when($district_id, function ($query) use ($district_id) {
+                return $query->whereHas('user', function ($q) use ($district_id) {
+                    $q->where('district_id', $district_id);
+                });
+            })
+            ->when($product_id, function ($query) use ($product_id) {
+                return $query->where('product_id', $product_id);
+            })
+            ->get();
+
+        // Process each loan application
+        $recoveryData = $result->map(function ($loan) {
+            $userProfile = $loan->user->profile;
+            $installments = $loan->installments;
+            $loanAmount = $loan->loan_amount;
+
+            // Filter for early settlement recoveries
+            $earlySettlementRecoveries = $installments->flatMap->recoveries->filter(function ($recovery) {
+                return $recovery->is_early_settlement === 1;
+            });
+
+            // If no early settlement recoveries, skip
+            if ($earlySettlementRecoveries->isEmpty()) {
+                return null;
+            }
+
+            $latestRecovery = $earlySettlementRecoveries->sortByDesc('created_at')->first();
+            $settlementChargesPercentage = $latestRecovery ? $latestRecovery->percentage : 0;
+            $ercAmount = $latestRecovery ? str_replace(',', '', $latestRecovery->erc_amount) : 0;
+
+             // Remaining loan amount
+            $remainingLoanAmount =  $latestRecovery ?  str_replace(',', '', $latestRecovery->remaining_amount) : 0;
+
+            // Calculate Total Payable
+            $totalPayable = $remainingLoanAmount + round($ercAmount, 2);
+
+            return [
+                'loan_id' => $loan->application_id,
+                'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                'cnic' => $userProfile->cnic_no,
+                'loan_amount' => round($loanAmount, 2),
+                'total_installments' => $installments->flatMap->details->count(),
+                'installment_paid' => $installments->flatMap->details->filter(function ($detail) {
+                    return $detail->recovery && $detail->recovery->amount >= $detail->total_amount;
+                })->count(),
+                'remaining_loan_amount' => round($remainingLoanAmount, 2),
+                'settlement_charges_percentage' => round($settlementChargesPercentage, 2),
+                'settlement_charges_pkr' => round($ercAmount, 2),
+                'total_payable' => round($totalPayable, 2),
+            ];
+        })->filter(); // Remove null entries
+
+//        dd($recoveryData);
+        LogActivity::addToLog('Early settlement report generated');
+
+        return view('admin.reports.early_settlement', compact(
+            'title', 'recoveryData', 'provinces', 'genders',
             'request', 'districts', 'products'
         ));
     }
