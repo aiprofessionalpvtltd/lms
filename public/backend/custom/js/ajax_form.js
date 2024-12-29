@@ -137,6 +137,38 @@ $(document).ready(function () {
 
     });
 
+    $('.customer').on('select2:select', function (e) {
+        e.preventDefault();
+        var selectedData = e.params.data;
+        var customerID = selectedData.id
+        var method = 'GET';
+        var type = $(this).data('type');
+        $.ajax({
+            type: method,
+            url: getApplicationByCustomer,
+            data: {customerID: customerID},
+            dataType: 'json',
+            success: function (data, status, xhr) {
+                const responsedata = data;
+                $('#application_id').empty();
+                $('#application_id').append('<option></option>');
+                if (responsedata) {
+                    $.each(responsedata, function (key, value) {
+                        $('#application_id').append($("<option/>", {
+                            value: value.id,
+                            text: value.application_id
+                        }));
+                    });
+                    $('#application_id').focus();
+
+                }
+            },
+            error: function (jqXhr, textStatus, errorMessage) {
+            }
+        });
+
+
+    });
 
 
 });

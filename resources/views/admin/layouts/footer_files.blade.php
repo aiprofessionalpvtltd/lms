@@ -15,6 +15,7 @@
     var getDistrictByProvince = '{{url('get-district-by-province')}}';
     var getCityByProvince = '{{url('get-city-by-province')}}';
     var getVendorProductByProduct = '<?php echo e(url('get-vendor-product-by-vendor')); ?>';
+    var getApplicationByCustomer = '<?php echo e(url('get-application-by-customer')); ?>';
 
     window.sessionMessages = {
         success: @json(session('success')),

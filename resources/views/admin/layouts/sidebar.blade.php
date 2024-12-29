@@ -138,6 +138,8 @@
                         <span class="align-middle">Reports</span>
                     </a>
                     <ul id="reports" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar" style="">
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-invoice-report')}}">Customer Invoice
+                                </a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-disbursement-report')}}">Disbursement
                                 Report</a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-overdue-report')}}">Overdue

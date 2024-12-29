@@ -26,6 +26,7 @@ Route::get('/get-province-by-country', [AjaxController::class, 'getProvinceByCou
 Route::get('/get-district-by-province', [AjaxController::class, 'getDistrictByProvinceAjax']);
 Route::get('/get-city-by-province', [AjaxController::class, 'getCityByProvinceAjax']);
 Route::get('/get-vendor-product-by-vendor', [AjaxController::class, 'getVendorProductByVendor']);
+Route::get('/get-application-by-customer', [AjaxController::class, 'getApplicationByCustomer']);
 
 Route::middleware(['auth'])->group(function () {
 
@@ -142,6 +143,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('show-early-settlement-report', [ReportController::class, 'showEarlySettlementReport'])->name('show-early-settlement-report');
     Route::get('get-early-settlement-report', [ReportController::class, 'getEarlySettlementReport'])->name('get-early-settlement-report');
+
+
+    Route::get('show-invoice-report', [ReportController::class, 'showInvoiceReport'])->name('show-invoice-report');
+    Route::get('get-invoice-report', [ReportController::class, 'getInvoiceReport'])->name('get-invoice-report');
+
 
 
 });

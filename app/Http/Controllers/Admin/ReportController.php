@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\Province;
 use App\Models\Recovery;
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
@@ -1226,8 +1227,8 @@ class ReportController extends Controller
             $settlementChargesPercentage = $latestRecovery ? $latestRecovery->percentage : 0;
             $ercAmount = $latestRecovery ? str_replace(',', '', $latestRecovery->erc_amount) : 0;
 
-             // Remaining loan amount
-            $remainingLoanAmount =  $latestRecovery ?  str_replace(',', '', $latestRecovery->remaining_amount) : 0;
+            // Remaining loan amount
+            $remainingLoanAmount = $latestRecovery ? str_replace(',', '', $latestRecovery->remaining_amount) : 0;
 
             // Calculate Total Payable
             $totalPayable = $remainingLoanAmount + round($ercAmount, 2);
@@ -1256,5 +1257,72 @@ class ReportController extends Controller
             'request', 'districts', 'products'
         ));
     }
+
+    public function showInvoiceReport()
+    {
+        $title = 'Early Settlement Report';
+        $customers = User::with(['roles', 'profile'])
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'Customer');
+            })
+            ->orderBy('created_at', 'DESC')->get();
+//        dd($customers);
+        return view('admin.reports.invoice', compact('title', 'customers'));
+    }
+
+    public function getInvoiceReport(Request $request)
+    {
+        $title = 'Loan Payment Invoice';
+        $customer_id = $request->customer_id;
+        $application_id = $request->application_id;
+        $customers = User::with(['roles', 'profile'])
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'Customer');
+            })
+            ->orderBy('created_at', 'DESC')->get();
+        $loan = LoanApplication::with([
+            'product',
+            'calculatedProduct',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'installments.details',
+        ])
+            ->when($application_id, function ($query) use ($application_id) {
+                $query->where('id', $application_id);
+            })
+            ->when($customer_id, function ($query) use ($customer_id) {
+                $query->where('user_id', $customer_id);
+            })
+            ->first();
+
+        if (!$loan) {
+            return back()->with('error', 'Loan application not found.');
+        }
+
+        $userProfile = $loan->user->profile;
+        $calculatedProduct = $loan->calculatedProduct;
+
+        $installmentDetails = $loan->installments->flatMap->details;
+
+        $invoiceData = [
+            'loan_id' => $loan->application_id,
+            'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+            'cnic' => $userProfile->cnic_no,
+            'mobile_no' => $userProfile->mobile_no,
+            'loan_amount' => round($loan->loan_amount, 2),
+            'loan_account_no' => $loan->application_id,
+            'processing_fee_percentage' =>  $calculatedProduct->processing_fee_percentage  ,
+            'processing_fee' => round($calculatedProduct->processing_fee_amount) ,
+            'total_interest' => round($calculatedProduct->total_interest_amount, 2),
+            'total_payable' => round($calculatedProduct->total_repayable_amount, 2),
+            'monthly_installment' => round($calculatedProduct->monthly_installment_amount, 2),
+            'installments' => $installmentDetails,
+        ];
+
+//        dd($invoiceData);
+        return view('admin.reports.invoice', compact('title', 'invoiceData' ,'customers' ));
+    }
+
 
 }

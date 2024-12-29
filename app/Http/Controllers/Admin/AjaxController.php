@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\LoanApplicationResource;
 use App\Models\City;
 use App\Models\District;
 use App\Models\EmployerDemand;
@@ -10,6 +11,7 @@ use App\Models\InternshipRoleLevel;
 use App\Models\LevelFour;
 use App\Models\LevelThree;
 use App\Models\LevelTwo;
+use App\Models\LoanApplication;
 use App\Models\Province;
 use App\Models\VendorProduct;
 use Illuminate\Http\Request;
@@ -41,6 +43,10 @@ class AjaxController extends Controller
         return response()->json($responseData);
     }
 
-
+    public function getApplicationByCustomer(Request $request)
+    {
+        $responseData = LoanApplication::select('id', 'application_id')->where('user_id', '=', $request->customerID)->orderBy('application_id', 'ASC')->get();
+        return response()->json($responseData);
+    }
 
 }
