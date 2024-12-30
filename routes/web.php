@@ -66,7 +66,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('get-all-loan-applications', [LoanApplicationController::class, 'getAllData'])->name('get-all-loan-applications');
     Route::get('loan-application/{id}/view', [LoanApplicationController::class, 'getSingleData'])->name('view-loan-application');
-    Route::get('loan-application/{id}/complete', [LoanApplicationController::class, 'completeApplication'])->name('complete-loan-application');
+    Route::post('loan-application/{id}/complete', [LoanApplicationController::class, 'completeApplication'])->name('complete-loan-application');
     Route::put('loan-applications/{id}/status', [LoanApplicationController::class, 'updateStatus'])->name('update-loan-application-status');
     Route::get('loan-applications/{id}/approved', [LoanApplicationController::class, 'approveLoan'])->name('approve-loan');
     Route::get('get-customer-loan-applications/{id}/{loanID}', [LoanApplicationController::class, 'getCustomerData'])->name('get-customer-loan-applications');
@@ -147,7 +147,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('show-invoice-report', [ReportController::class, 'showInvoiceReport'])->name('show-invoice-report');
     Route::get('get-invoice-report', [ReportController::class, 'getInvoiceReport'])->name('get-invoice-report');
-
 
 
 });

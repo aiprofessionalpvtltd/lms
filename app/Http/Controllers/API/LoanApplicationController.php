@@ -152,7 +152,7 @@ class LoanApplicationController extends BaseController
             }
             // Prepare loan application data
             $loanDuration = LoanDuration::where('value', $request->loan_duration_id)->firstOrFail();
-             $loanApplicationData = $this->prepareLoanApplicationData($user, $loanDuration, $request);
+            $loanApplicationData = $this->prepareLoanApplicationData($user, $loanDuration, $request);
             $loanApplication = LoanApplication::create($loanApplicationData);
 
             $request->merge(['months' => $loanDuration->value]);
@@ -163,9 +163,9 @@ class LoanApplicationController extends BaseController
             // Calculate loan details
             $loanCalculated = $this->calculateLoan($request);
 
-            if(isset($loanCalculated->getData()->error)){
+            if (isset($loanCalculated->getData()->error)) {
 
-                 return   $loanCalculated->getData()->error;
+                return $loanCalculated->getData()->error;
 
             }
 
@@ -183,7 +183,7 @@ class LoanApplicationController extends BaseController
             // Update tracking data for user
             $user->tracking->update(['is_bank_statement' => 1]);
 
-            LogActivity::addToLog('Loan Application  '.$loanApplication->application_id.' Created');
+            LogActivity::addToLog('Loan Application  ' . $loanApplication->application_id . ' Created');
 
             DB::commit();
 
@@ -202,7 +202,7 @@ class LoanApplicationController extends BaseController
     private function prepareLoanApplicationData($user, $loanDuration, $request)
     {
         return [
-            'application_id' => $this->generateLoanApplicationId(),
+            'application_id' => $this->generateLoanApplicationId($user),
             'name' => $user->name,
             'email' => $user->email,
             'product_id' => $request->product_id,
@@ -272,7 +272,7 @@ class LoanApplicationController extends BaseController
         $this->saveAttachment($loanApplication, $user, 2, $salarySlipPath);
 
         // Upload signature as base64
-        if($request->signature){
+        if ($request->signature) {
             $signaturePath = $this->saveBase64Image($request->signature, 'documents');
             $this->saveAttachment($loanApplication, $user, 3, $signaturePath);
         }
@@ -303,7 +303,7 @@ class LoanApplicationController extends BaseController
         $months = $request->input('months');
         $requestType = $request->input('request_for');
         $old_interest_rate = $request->input('old_interest_rate');
-        $old_processing_fee_amount= $request->input('old_processing_fee_amount');
+        $old_processing_fee_amount = $request->input('old_processing_fee_amount');
         $downPaymentPercentage = $request->input('down_payment_percentage', 10); // Default to 10% if not specified
 
         // Validate input
@@ -319,16 +319,16 @@ class LoanApplicationController extends BaseController
                 return response()->json(['error' => 'Product not found.'], 404);
             }
 
-            if($old_processing_fee_amount){
+            if ($old_processing_fee_amount) {
                 $productProcessingFeePercentage = $old_processing_fee_amount;
-            }else{
+            } else {
                 $productProcessingFeePercentage = $product->processing_fee;
 
             }
 
-            if($old_interest_rate){
+            if ($old_interest_rate) {
                 $productInterestRate = $old_interest_rate;
-            }else{
+            } else {
                 $productInterestRate = $product->interest_rate;
             }
 
@@ -352,16 +352,16 @@ class LoanApplicationController extends BaseController
             $totalUpfrontPayment = 0;
             $productId = NULL;
 
-            if($old_processing_fee_amount){
+            if ($old_processing_fee_amount) {
                 $standardProcessingFeePercentage = $old_processing_fee_amount;
             }
 
-            if($old_interest_rate){
+            if ($old_interest_rate) {
                 $standardInterestRate = $old_interest_rate;
             }
 
             $processingFeeRate = $standardProcessingFeePercentage / 100;
-            $interestRate = ($standardInterestRate / 100) / 12 ;
+            $interestRate = ($standardInterestRate / 100) / 12;
 
             $downPayment = $loanAmount * ($downPaymentPercentage / 100);
             $financedAmount = $loanAmount - round($downPayment);
@@ -547,7 +547,7 @@ class LoanApplicationController extends BaseController
                 $loanApplication->load('calculatedProduct');
                 $loanApplicationProduct = $loanApplication->calculatedProduct;
 
-                LogActivity::addToLog('Loan Application '.$loanApplication->application_id.' Viewed');
+                LogActivity::addToLog('Loan Application ' . $loanApplication->application_id . ' Viewed');
 
                 return view('admin.loan_applications.view', compact('loanApplication', 'toUsers', 'loanApplicationProduct', 'previousLoans'));
             }
@@ -706,10 +706,9 @@ class LoanApplicationController extends BaseController
 
             $toRoleID = $toUsers->roles->first()->id;
 
-//            dd($this->generateLoanApplicationId());
 
             $loanApplication = LoanApplication::create([
-                'application_id' => $this->generateLoanApplicationId(),
+                'application_id' => $this->generateLoanApplicationId($authUser),
                 'name' => $request->name,
                 'email' => $request->email,
                 'user_id' => $userID,
@@ -823,7 +822,7 @@ class LoanApplicationController extends BaseController
         }
     }
 
-    public function completeApplication($id)
+    public function completeApplication(Request $request, $id)
     {
 
 
@@ -833,9 +832,10 @@ class LoanApplicationController extends BaseController
             return redirect()->back()->with('error', 'Loan Application not found.');
         }
 
-        $loanApplication->is_completed = true;
-        $loanApplication->save();
 
+        $loanApplication->application_id = $this->updateLoanApplicationId($id);
+        $loanApplication->is_completed = $request->is_completed;
+        $loanApplication->save();
 
         return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application Completed successfully.');
     }
@@ -1162,7 +1162,7 @@ class LoanApplicationController extends BaseController
                 ]);
                 $startDate = $dueDate->copy()->addDay(); // Update startDate for the next installment
             }
-            LogActivity::addToLog('Loan Application  '.$loanApplication->application_id.' Approved');
+            LogActivity::addToLog('Loan Application  ' . $loanApplication->application_id . ' Approved');
 
             DB::commit(); // Commit the transaction
 

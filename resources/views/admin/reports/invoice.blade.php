@@ -105,53 +105,57 @@
             </div>
 
             <div class="invoice mt-5" id="printInvoice">
-                <div class="card">
-                    <div class="card-header">
-                        <img width="200" src="{{asset('backend/img/icons/logo.jpg')}}" alt="" srcset="">
-                        <h1 class="text-center">Sarmaya Microfinance (Private) Limited </h1>
-                        <h2 class="text-center">{{ $title }}</h2>
+                <div class="card shadow-lg">
+                    <!-- Header Section -->
+                    <div class="card-header text-center bg-info text-white py-4">
+                        <div class="row">
+                            <div class="col-md-6 text-start">
+                                <img width="150" src="{{ asset('backend/img/icons/logo.jpg') }}" alt="Sarmaya Logo">
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <h2 class="mb-0 text-white">Sarmaya Microfinance (Private) Limited</h2>
+                                <h4 class="text-white">{{ $title }}</h4>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="card-body">
-                        <h4>Invoice Details</h4>
-                        <table class="table table-bordered">
+                    <!-- Body Section -->
+                    <div class="card-body px-4">
+                        <!-- Invoice Details -->
+                        <h3 class="border-bottom pb-2">Invoice Details</h3>
+                        <table class="table table-bordered mb-4">
                             <tbody>
                             <tr>
                                 <th>Invoice Number</th>
                                 <td>{{ 'INV-' . now()->timestamp }}</td>
-                            </tr>
-                            <tr>
                                 <th>Date</th>
                                 <td>{{ now()->format('d-m-Y') }}</td>
                             </tr>
                             <tr>
                                 <th>Customer Name</th>
                                 <td>{{ $invoiceData['borrower_name'] }}</td>
-                            </tr>
-                            <tr>
-                                <th>Customer CNIC</th>
+                                <th>CNIC</th>
                                 <td>{{ $invoiceData['cnic'] }}</td>
                             </tr>
                             <tr>
-                                <th>Customer Mobile Number</th>
+                                <th>Mobile Number</th>
                                 <td>{{ $invoiceData['mobile_no'] }}</td>
-                            </tr>
-                            <tr>
                                 <th>Loan Account Number</th>
                                 <td>{{ $invoiceData['loan_account_no'] }}</td>
                             </tr>
                             </tbody>
                         </table>
 
-                        <h4>Loan Details</h4>
-                        <table class="table table-bordered">
+                        <!-- Loan Details -->
+                        <h3 class="border-bottom pb-2">Loan Details</h3>
+                        <table class="table table-bordered mb-4">
                             <tbody>
                             <tr>
                                 <th>Total Loan Amount</th>
                                 <td>{{ number_format($invoiceData['loan_amount'], 2) }}</td>
                             </tr>
                             <tr>
-                                <th>Processing Fee ({{$invoiceData['processing_fee_percentage']}}%)</th>
+                                <th>Processing Fee ({{ $invoiceData['processing_fee_percentage'] }}%)</th>
                                 <td>{{ number_format($invoiceData['processing_fee'], 2) }}</td>
                             </tr>
                             <tr>
@@ -165,10 +169,11 @@
                             </tbody>
                         </table>
 
-                        <h4>Payment Details</h4>
-                        <table class="table table-striped">
+                        <!-- Payment Details -->
+                        <h3 class="border-bottom pb-2">Payment Details</h3>
+                        <table class="table mb-4">
                             <thead>
-                            <tr>
+                            <tr class="bg-info text-white">
                                 <th>#</th>
                                 <th>Issue Date</th>
                                 <th>Due Date</th>
@@ -178,7 +183,6 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @php $isFirstInstallment = true; @endphp
                             @php $totalPaid = 0; $totalDue = 0; @endphp
                             @foreach($invoiceData['installments'] as $index => $detail)
                                 @php
@@ -187,17 +191,7 @@
                                 @endphp
                                 <tr>
                                     <td>{{ $detail->installment_number }}</td>
-                                    @if($isFirstInstallment)
-                                        <td>
-                                            <span class="issue-date-text">{{ showDate($detail->issue_date) }}</span>
-                                            <input type="date" class="issue-date-input d-none"
-                                                   value="{{ $detail->issue_date }}"/>
-                                        </td>
-                                        @php $isFirstInstallment = false; @endphp
-                                    @else
-                                        <td></td>
-                                    @endif
-
+                                    <td>{{ showDate($detail->issue_date) }}</td>
                                     <td>{{ showDate($detail->due_date) }}</td>
                                     <td>{{ number_format($detail->amount_due, 2) }}</td>
                                     <td>{{ number_format($detail->amount_paid, 2) }}</td>
@@ -207,7 +201,8 @@
                             </tbody>
                         </table>
 
-                        <h4>Summary</h4>
+                        <!-- Summary -->
+                        <h3 class="border-bottom pb-2">Summary</h3>
                         <table class="table table-bordered">
                             <tbody>
                             <tr>
@@ -221,28 +216,23 @@
                             </tbody>
                         </table>
 
-                        <p class="mt-4">
-                            <strong>Note:</strong> Please ensure timely payments to maintain a good credit record
-                            with
-                            Sarmaya Microfinance. A penalty of PKR 200 per day will be applied for delayed payments
-                            as per
-                            the loan agreement.
-                            <br>For any discrepancies or questions regarding this invoice, contact us at <a
-                                href="mailto:support@sarmayamf.com">support@sarmayamf.com</a>.
-                            <br>
-                            <br>
-                            <em>ہم آپ کے اعتماد کی قدر کرتے ہیں اور مستقبل میں آپ کی خدمت کے منتظر ہیں۔</em>
-                        </p>
+                        <!-- Footer Notes -->
+                        <div class="bg-danger-light  p-4 mt-4">
+                            <strong>Note:</strong> Please ensure timely payments to maintain a good credit record with Sarmaya Microfinance. A penalty of PKR 200 per day will be applied for delayed payments as per the loan agreement.
+                            <br>For any discrepancies or questions regarding this invoice, contact us at <a href="mailto:support@sarmayamf.com">support@sarmayamf.com</a>.
+                            <br><em>ہم آپ کے اعتماد کی قدر کرتے ہیں اور مستقبل میں آپ کی خدمت کے منتظر ہیں۔</em>
+                        </div>
                     </div>
                 </div>
             </div>
+
         @endif
     </div>
     <!-- /content area -->
 @endsection
 
 @push('script')
- 
+
 
     <script src="{{asset('backend/custom/js/jspdf.umd.min.js')}}"></script>
     <script src="{{asset('backend/custom/js/html2canvas.min.js')}}"></script>

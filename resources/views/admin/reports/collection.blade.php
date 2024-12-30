@@ -192,7 +192,7 @@
                                 <td>{{ ucfirst($transaction->total_amount) }}</td>
                                 <td>{{  $transaction->payment_method }}</td>
                                 <td>{{ showDate($transaction->installmentDetail->due_date) }}</td>
-                                <td>{{ showDate($transaction->created_at) }}</td>
+                                <td>{{ showDate($transaction->recovery_date) }}</td>
 
                             </tr>
                         @endforeach

@@ -282,8 +282,8 @@ class BaseController extends Controller
     }
 
 
-    function generateLoanApplicationId() {
-        $authUser = auth()->user();
+    function generateLoanApplicationId($user) {
+        $authUser = $user;
         $userProvince = $authUser->province->name;
         $userId = $authUser->id;
 
@@ -326,6 +326,92 @@ class BaseController extends Controller
 
         return $applicationId;
     }
+
+//    function updateLoanApplicationId($loanApplicationId) {
+//        // Find the loan application by the given ID
+//        $loanApplication = LoanApplication::with('user.province')->find($loanApplicationId);
+//
+//        if (!$loanApplication) {
+//            return false; // Loan application not found
+//        }
+//
+//        // Get user and other details
+//        $authUser = $loanApplication->user;
+//        $userProvince = $authUser->province->name ?? null; // Handle cases where province might be null
+//        $userId = $authUser->id;
+//
+//        // Define province prefixes
+//        $provincePrefixes = [
+//            'Punjab' => 'PJ',
+//            'Sindh' => 'SN',
+//            'KPK' => 'KP',
+//            'Balochistan' => 'BL',
+//            'Gilgit–Baltistan' => 'GB',
+//            'AJK' => 'AJK',
+//            'Federal' => 'ISB',
+//        ];
+//
+//        // Get the prefix for the province, default to 'NA'
+//        $prefix = $provincePrefixes[$userProvince] ?? 'NA';
+//
+//        return str_replace('NA',$prefix,$loanApplication->application_id);
+//    }
+
+    function updateLoanApplicationId($loanApplicationId) {
+        // Find the loan application by the given ID
+        $loanApplication = LoanApplication::with('user.province')->find($loanApplicationId);
+
+        if (!$loanApplication) {
+            return false; // Loan application not found
+        }
+
+        // Get user and other details
+        $authUser = $loanApplication->user;
+        $userProvince = $authUser->province->name ?? null; // Handle cases where province might be null
+        $userId = $authUser->id;
+
+        // Get the current year
+        $year = date('y');
+
+        // Define province prefixes
+        $provincePrefixes = [
+            'Punjab' => 'PJ',
+            'Sindh' => 'SN',
+            'KPK' => 'KP',
+            'Balochistan' => 'BL',
+            'Gilgit–Baltistan' => 'GB',
+            'AJK' => 'AJK',
+            'Federal' => 'ISB',
+        ];
+
+        // Get the prefix for the province, default to 'NA'
+        $prefix = $provincePrefixes[$userProvince] ?? 'NA';
+
+        // Generate the base application ID
+        $baseApplicationId = sprintf('%s%s%04d', $prefix, $year, $userId);
+
+        // Check for existing records with similar application_id
+        $existingApplication = LoanApplication::where('application_id', 'LIKE', $baseApplicationId . '%')
+            ->where('id', '!=', $loanApplicationId) // Exclude the current loan application
+            ->exists();
+
+        if ($existingApplication) {
+            // If conflicts exist, append a unique suffix
+            $suffix = LoanApplication::where('application_id', 'LIKE', $baseApplicationId . '%')
+                    ->where('id', '!=', $loanApplicationId)
+                    ->count() + 1;
+
+            $newApplicationId = sprintf('%s-%03d', $baseApplicationId, $suffix);
+        } else {
+            // Use the base ID if no conflicts
+            $newApplicationId = $baseApplicationId;
+        }
+
+//     dd($newApplicationId);
+
+        return $newApplicationId;
+    }
+
 
 
 

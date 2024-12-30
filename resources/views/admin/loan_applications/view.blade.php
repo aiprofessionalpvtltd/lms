@@ -335,6 +335,46 @@
 
                     </div>
 
+                    <div class="col-4">
+                        <form action="{{ url('loan-application/'.$loanApplication->id.'/complete') }}" method="POST">
+                            @csrf
+                            @method('POST')
+
+                            <h2>Update Status</h2>
+
+                            @if($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                            <div class="row mb-3">
+                                <div class="col-md-12 mb-3">
+                                     <select class="form-select" id="is_completed" name="is_completed" required>
+                                        <option
+                                            value="0" {{ $loanApplication->is_completed == '0' ? 'selected' : '' }}>
+                                            In-Progress
+                                        </option>
+                                        <option
+                                            value="1" {{ $loanApplication->is_completed == '1' ? 'selected' : '' }}>
+                                            Completed
+                                        </option>
+
+                                    </select>
+                                </div>
+
+
+                            </div>
+
+                             <button type="submit" class="btn btn-primary float-end">Update</button>
+
+                        </form>
+
+                    </div>
+
                 </div>
 
 
