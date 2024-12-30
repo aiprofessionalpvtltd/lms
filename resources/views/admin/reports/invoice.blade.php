@@ -41,7 +41,7 @@
                                                 <option></option>
                                                 @foreach($customers as $key => $row)
                                                     <option
-                                                        {{ request('customer_id') == $row->id ? 'selected' : '' }} value="{{ $row->id }}">{{ $row->name }}</option>
+                                                        {{ request('customer_id') == $row->id ? 'selected' : '' }} value="{{ $row->id }}">{{ $row->name . ' ' . $row->profile->mobile_no }}</option>
                                                 @endforeach
                                             </select>
                                             @if ($errors->has('customer_id'))
