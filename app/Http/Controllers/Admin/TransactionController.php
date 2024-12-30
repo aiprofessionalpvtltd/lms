@@ -295,6 +295,26 @@ class TransactionController extends Controller
                 'dateTime' => dateInsert($request->disbursement_date),
             ]);
 
+            // Set issue and due dates for installments
+            $installmentDetails = $loanApplication->getLatestInstallment->details;
+            $currentDate = Carbon::parse($request->disbursement_date);
+
+            foreach ($installmentDetails as $index => $detail) {
+                if ($index === 0) {
+                    // First installment starts on disbursement date
+                    $detail->issue_date = $currentDate->toDateString();
+                } else {
+                    // Subsequent installments
+                    $detail->issue_date = $currentDate->addMonths(1)->toDateString();
+                }
+
+                // Due date is one month after issue date
+                $detail->due_date = Carbon::parse($detail->issue_date)->addMonths(1)->toDateString();
+
+                // Save the updated details
+                $detail->save();
+            }
+
 
             LogActivity::addToLog('Manual Disbursement of loan application '.$installment->loanApplication->application_id.' Created');
 
@@ -308,9 +328,9 @@ class TransactionController extends Controller
             return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
+
     public function UpdateManual(Request $request)
     {
-
         $request->validate([
             'disbursement_edit_id' => 'required',
             'disbursement_edit_amount' => 'required',
@@ -322,28 +342,57 @@ class TransactionController extends Controller
         DB::beginTransaction();
 
         try {
-            $transaction = Transaction::find($request->disbursement_edit_id);
+            $transaction = Transaction::findOrFail($request->disbursement_edit_id);
+
+            // Check if the date has been changed
+            $existingDate = $transaction->dateTime;
+            $newDate = dateInsert($request->disbursement_edit_date);
 
             $transaction->update([
                 'amount' => $request->disbursement_edit_amount,
                 'payment_method' => $request->disbursement_edit_payment_method,
                 'remarks' => $request->disbursement_edit_remarks,
-                'dateTime' => dateInsert($request->disbursement_edit_date),
+                'dateTime' => $newDate,
             ]);
 
+            if ($existingDate !== $newDate) {
+                // Fetch related loan application and installments
+                $loanApplication = LoanApplication::with('getLatestInstallment.details')
+                    ->findOrFail($transaction->loan_application_id);
 
-            LogActivity::addToLog('Manual Disbursement Updated');
+                $installmentDetails = $loanApplication->getLatestInstallment->details;
 
-//            dd($transaction);
+                // Update issue_date and due_date based on new disbursement date
+                $currentDate = Carbon::parse($newDate);
+
+                foreach ($installmentDetails as $index => $detail) {
+                    if ($index === 0) {
+                        // First installment starts on the new date
+                        $detail->issue_date = $currentDate->toDateString();
+                    } else {
+                        // Subsequent installments
+                        $detail->issue_date = $currentDate->addMonths(1)->toDateString();
+                    }
+
+                    // Due date is one month after issue date
+                    $detail->due_date = Carbon::parse($detail->issue_date)->addMonths(1)->toDateString();
+
+                    // Save the updated details
+                    $detail->save();
+                }
+            }
+
+            LogActivity::addToLog('Manual Disbursement Updated and Installment Dates Adjusted');
+
             DB::commit();
 
-            return redirect()->back()->with('success', 'Transaction updated successfully.');
+            return redirect()->back()->with('success', 'Transaction and Installment dates updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            dd($e->getMessage());
             return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
+
 
 
 }

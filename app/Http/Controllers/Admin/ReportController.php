@@ -1131,7 +1131,7 @@ class ReportController extends Controller
                 'loan_amount' => round($loanAmount, 2),
                 'interest_rate' => round($calculatedProduct->interest_rate_percentage ?? 0, 2) . '%',
                 'interest_income' => round($interestIncome, 2),
-                'disbursement_date' => optional($loan->transaction)->created_at ? showDate($loan->transaction->created_at) : 'N/A',
+                'disbursement_date' => showDate($loan->transaction->dateTime) ,
                 'installment_start_date' => $startDate,
                 'installment_end_date' => $endDate,
             ];

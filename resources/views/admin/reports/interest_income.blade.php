@@ -179,29 +179,29 @@
                         <thead>
                         <tr>
                             <th>Loan ID</th>
-                             <th>Borrower Name</th>
+                            <th>Borrower Name</th>
                             <th>CNIC</th>
                             <th>Loan Amount</th>
-                             <th>Annual Interest Rate</th>
-                            <th>Interest Income/th>
+                            <th>Annual Interest Rate</th>
+                            <th>Interest Income</th>
                             <th>Disbursement Date</th>
                             <th>Repayment Start Date</th>
                             <th>Repayment End Date</th>
-                         </thead>
+                        </thead>
                         <tbody>
                         @foreach($interestIncomeData as $row)
                             <tr>
                                 <td>{{ $row['application_id'] ?? 'N/A' }}</td>
-                                 <td>{{ $row['borrower_name'] ?? 'N/A' }}</td>
+                                <td>{{ $row['borrower_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
-                                 <td>{{ number_format($row['loan_amount'], 2) }}</td>
+                                <td>{{ number_format($row['loan_amount'], 2) }}</td>
                                 <td>{{ ($row['interest_rate']) }}</td>
                                 <td>{{ number_format($row['interest_income'], 2) }}</td>
                                 <td>{{ showDate($row['disbursement_date'], 2) }}</td>
                                 <td>{{ showDate($row['installment_start_date'], 2) }}</td>
                                 <td>{{ showDate($row['installment_end_date'], 2) }}</td>
 
-                             </tr>
+                            </tr>
                         @endforeach
                         </tbody>
 
@@ -265,7 +265,7 @@
                         titleAttr: 'Export to PDF',
                         orientation: 'landscape', // Set PDF orientation to landscape
                         title: 'Penalty Report',
-                                exportOptions: {
+                        exportOptions: {
                             columns: ':visible',
                             footer: true // Include footer
                         }
