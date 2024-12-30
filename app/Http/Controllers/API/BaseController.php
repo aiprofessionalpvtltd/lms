@@ -284,93 +284,8 @@ class BaseController extends Controller
 
     function generateLoanApplicationId($user) {
         $authUser = $user;
-        $userProvince = $authUser->province->name;
+        $userProvince = $authUser->province->name ?? null;
         $userId = $authUser->id;
-
-        // Get the current year
-        $year = date('y');
-
-        // Define the province prefixes
-        $provincePrefixes = [
-            'Punjab' => 'PJ',
-            'Sindh' => 'SN',
-            'KPK' => 'KP',
-            'Balochistan' => 'BL',
-            'Gilgit–Baltistan' => 'GB',
-            'AJK' => 'AJK',
-            'Federal' => 'ISB',
-        ];
-
-        // Get the prefix for the province
-        $prefix = $provincePrefixes[$userProvince] ?? 'NA'; // Default to 'X' if not found
-
-        // Count existing records for the user in the current year
-        $applicationCount = LoanApplication::where('user_id', $userId)
-            ->whereYear('created_at', $year)
-            ->count(); // Increment for the new application
-
-        $count = $applicationCount + 1;
-
-        // Generate the application ID in the format: PREFIX-USERID-YEAR-COUNT
-        $applicationId = sprintf('%s%s%02d', $prefix, $year, $count);
-
-        // Check for uniqueness without recursion
-        $existingApplication = LoanApplication::where('application_id', $applicationId)->exists();
-
-        // If the ID exists, increment the count and try again
-        while ($existingApplication) {
-            $count++;
-            $applicationId = sprintf('%s%s%02d', $prefix, $year, $count);
-            $existingApplication = LoanApplication::where('application_id', $applicationId)->exists();
-        }
-
-        return $applicationId;
-    }
-
-//    function updateLoanApplicationId($loanApplicationId) {
-//        // Find the loan application by the given ID
-//        $loanApplication = LoanApplication::with('user.province')->find($loanApplicationId);
-//
-//        if (!$loanApplication) {
-//            return false; // Loan application not found
-//        }
-//
-//        // Get user and other details
-//        $authUser = $loanApplication->user;
-//        $userProvince = $authUser->province->name ?? null; // Handle cases where province might be null
-//        $userId = $authUser->id;
-//
-//        // Define province prefixes
-//        $provincePrefixes = [
-//            'Punjab' => 'PJ',
-//            'Sindh' => 'SN',
-//            'KPK' => 'KP',
-//            'Balochistan' => 'BL',
-//            'Gilgit–Baltistan' => 'GB',
-//            'AJK' => 'AJK',
-//            'Federal' => 'ISB',
-//        ];
-//
-//        // Get the prefix for the province, default to 'NA'
-//        $prefix = $provincePrefixes[$userProvince] ?? 'NA';
-//
-//        return str_replace('NA',$prefix,$loanApplication->application_id);
-//    }
-
-    function updateLoanApplicationId($loanApplicationId) {
-        // Find the loan application by the given ID
-        $loanApplication = LoanApplication::with('user.province')->find($loanApplicationId);
-
-        if (!$loanApplication) {
-            return false; // Loan application not found
-        }
-
-        // Get user and other details
-        $authUser = $loanApplication->user;
-        $userProvince = $authUser->province->name ?? null; // Handle cases where province might be null
-        $userId = $authUser->id;
-
-        // Get the current year
         $year = date('y');
 
         // Define province prefixes
@@ -388,29 +303,69 @@ class BaseController extends Controller
         $prefix = $provincePrefixes[$userProvince] ?? 'NA';
 
         // Generate the base application ID
-        $baseApplicationId = sprintf('%s%s%04d', $prefix, $year, $userId);
+        $baseApplicationId = sprintf('%s-%s-%04d', $prefix, $year, $userId);
 
-        // Check for existing records with similar application_id
-        $existingApplication = LoanApplication::where('application_id', 'LIKE', $baseApplicationId . '%')
-            ->where('id', '!=', $loanApplicationId) // Exclude the current loan application
-            ->exists();
+        // Find the next unique ID
+        $count = 1;
+        do {
+            $applicationId = sprintf('%s-%03d', $baseApplicationId, $count);
+            $existingApplication = LoanApplication::where('application_id', $applicationId)->exists();
+            $count++;
+        } while ($existingApplication);
 
-        if ($existingApplication) {
-            // If conflicts exist, append a unique suffix
-            $suffix = LoanApplication::where('application_id', 'LIKE', $baseApplicationId . '%')
-                    ->where('id', '!=', $loanApplicationId)
-                    ->count() + 1;
+        return $applicationId;
+    }
 
-            $newApplicationId = sprintf('%s-%03d', $baseApplicationId, $suffix);
-        } else {
-            // Use the base ID if no conflicts
-            $newApplicationId = $baseApplicationId;
+    function updateLoanApplicationId($loanApplicationId) {
+        // Find the loan application by the given ID
+        $loanApplication = LoanApplication::with('user.province')->find($loanApplicationId);
+
+        if (!$loanApplication) {
+            return false; // Loan application not found
         }
 
-//     dd($newApplicationId);
+        // Get user and other details
+        $authUser = $loanApplication->user;
+        $userProvince = $authUser->province->name ?? null;
+        $userId = $authUser->id;
+        $year = date('y');
+
+        // Define province prefixes
+        $provincePrefixes = [
+            'Punjab' => 'PJ',
+            'Sindh' => 'SN',
+            'KPK' => 'KP',
+            'Balochistan' => 'BL',
+            'Gilgit–Baltistan' => 'GB',
+            'AJK' => 'AJK',
+            'Federal' => 'ISB',
+        ];
+
+        // Get the prefix for the province, default to 'NA'
+        $prefix = $provincePrefixes[$userProvince] ?? 'NA';
+
+        // Generate the base application ID
+        $baseApplicationId = sprintf('%s-%s-%04d', $prefix, $year, $userId);
+
+        // Find the next unique ID
+        $count = 1;
+        do {
+            $newApplicationId = sprintf('%s-%03d', $baseApplicationId, $count);
+            $existingApplication = LoanApplication::where('application_id', $newApplicationId)
+                ->where('id', '!=', $loanApplication->id) // Exclude the current loan application
+                ->exists();
+            $count++;
+        } while ($existingApplication);
+
+        // Update the loan application with the new ID
+        if ($loanApplication->application_id !== $newApplicationId) {
+            $loanApplication->application_id = $newApplicationId;
+            $loanApplication->save();
+        }
 
         return $newApplicationId;
     }
+
 
 
 

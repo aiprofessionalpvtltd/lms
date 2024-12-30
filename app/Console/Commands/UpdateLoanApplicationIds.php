@@ -53,7 +53,7 @@ class UpdateLoanApplicationIds extends Command
             ];
 
             $prefix = $provincePrefixes[$userProvince] ?? 'NA';
-            $baseApplicationId = sprintf('%s%s%04d', $prefix, $year, $userId);
+            $baseApplicationId = sprintf('%s-%s-%04d', $prefix, $year, $userId);
 
             // Find the next unique ID based on all records (including updated ones)
             $count = 1;
