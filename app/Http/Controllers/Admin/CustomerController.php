@@ -157,7 +157,6 @@ class CustomerController extends BaseController
 
     public function store(Request $request)
     {
-//        dd($request->all());
         $validator = Validator::make($request->all(), [
             // User validation
             'email' => 'required|email|unique:users,email',
@@ -207,9 +206,6 @@ class CustomerController extends BaseController
             'spouse_name' => 'nullable|string|max:255',
             'spouse_employment_details' => 'nullable|string',
 
-            'guarantor_contact_name' => 'nullable',
-            'relationship_id' => 'nullable|exists:relationships,id',
-            'guarantor_contact_number' => 'nullable',
 
             'education_id' => 'required|exists:educations,id', // Ensure valid education
             'university_name' => 'required|string|max:255',
@@ -227,6 +223,9 @@ class CustomerController extends BaseController
         DB::beginTransaction();
 
         try {
+
+
+
             // Step 1: Create User
             $userInput = $request->only(['email', 'province_id', 'district_id', 'city_id']);
             $userInput['name'] = $request->first_name . ' ' . $request->last_name;
@@ -283,7 +282,7 @@ class CustomerController extends BaseController
             // Create a new Bank Information
             $bankAccount = UserBankAccount::create($request->all());
 
-            if($request->relationship_id ){
+             if(isset($request->relationship_id )){
                 foreach ($request->relationship_id as $key => $relationshipId) {
                     $userGuarantor = [
                         'user_id' => $user->id,
@@ -417,9 +416,9 @@ class CustomerController extends BaseController
             'spouse_name' => 'nullable|string|max:255',
             'spouse_employment_details' => 'nullable|string',
 
-            'guarantor_contact_name' => 'nullable',
-            'relationship_id' => 'nullable|exists:relationships,id',
-            'guarantor_contact_number' => 'nullable',
+//            'guarantor_contact_name' => 'nullable',
+//            'relationship_id' => 'nullable|exists:relationships,id',
+//            'guarantor_contact_number' => 'nullable',
 
             'education_id' => 'required|exists:educations,id', // Ensure valid education
             'university_name' => 'required|string|max:255',
@@ -498,7 +497,7 @@ class CustomerController extends BaseController
                 'education_id', 'university_name'
             ]));
 
-            if($request->relationship_id ) {
+            if(isset($request->relationship_id )) {
                 // Step 4: Update Guarantors
                 $customer->references()->delete(); // Remove old guarantors
                 foreach ($request->relationship_id as $key => $relationshipId) {

@@ -716,7 +716,7 @@
 
                         <div class="tab-pane fade" id="guarantor-tab">
                             <div class="form-check mt-5 mb-3">
-                                <input type="checkbox" class="form-check-input" id="noGuarantorCheckbox">
+                                <input type="checkbox" checked class="form-check-input" name="noGuarantorCheckbox" id="noGuarantorCheckbox">
                                 <label class="form-check-label" for="noGuarantorCheckbox">No Need for Guarantor</label>
                             </div>
 
@@ -806,6 +806,11 @@
 @push('script')
     <script>
         $(document).ready(function () {
+            // By default, check the checkbox and disable all fields
+            $('#noGuarantorCheckbox').prop('checked', true);
+            $('#guarantor-fields').find('input, select').prop('disabled', true);
+
+            // Handle the change event
             $('#noGuarantorCheckbox').change(function () {
                 if ($(this).is(':checked')) {
                     // Disable all fields inside #guarantor-fields
@@ -816,6 +821,7 @@
                 }
             });
         });
+
 
 
         document.addEventListener("DOMContentLoaded", function () {

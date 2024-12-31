@@ -723,8 +723,12 @@
 
                         <div class="tab-pane fade" id="guarantor-tab">
 
-
-                            <div class="row">
+                            <div class="form-check mt-5 mb-3">
+                                <input type="checkbox" {{count($customer->references) == 0 ? 'checked' : ''}} class="form-check-input" name="noGuarantorCheckbox" id="noGuarantorCheckbox">
+                                <label class="form-check-label" for="noGuarantorCheckbox">No Need for Guarantor</label>
+                            </div>
+                            <div id="guarantor-fields">
+                             <div class="row">
 
                                 <div class="col-md-4">
                                     <label class="col-form-label">Relationship</label>
@@ -734,8 +738,12 @@
                                             <option></option>
                                             @foreach($relationships as $row)
                                                 <option
-                                                    value="{{ $row->id }}" {{ old('relationship_id' , $customer->references[0]->relationship_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                    value="{{ $row->id }}"
+                                                    {{ old('relationship_id', isset($customer->references[0]) ? $customer->references[0]->relationship_id : null) == $row->id ? 'selected' : '' }}>
+                                                    {{ $row->name }}
+                                                </option>
                                             @endforeach
+
                                         </select>
                                         @if ($errors->has('relationship_id'))
                                             <span
@@ -750,7 +758,8 @@
                                     <div class="form-group">
                                         <input type="text" name="guarantor_contact_name[]" class="form-control"
                                                placeholder="Guarantor Name 1"
-                                               value="{{ $customer->references[0]->guarantor_contact_name}}">
+                                               value="{{ isset($customer->references[0]) ? $customer->references[0]->guarantor_contact_name : '' }}"
+                                        >
                                         @if ($errors->has('guarantor_contact_name'))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_name') }}</span>
@@ -765,7 +774,7 @@
                                         <input type="text" name="guarantor_contact_number[]" class="form-control"
                                                placeholder="0399-9999999"
                                                data-inputmask="'mask': '0399-9999999'"
-                                               value="{{ $customer->references[0]->guarantor_contact_number}}">
+                                               value="{{ isset($customer->references[0]) ? $customer->references[0]->guarantor_contact_number : '' }}">
                                         @if ($errors->has('guarantor_contact_number' ))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_number') }}</span>
@@ -785,7 +794,10 @@
                                             <option></option>
                                             @foreach($relationships as $row)
                                                 <option
-                                                    value="{{ $row->id }}" {{ old('relationship_id',$customer->references[1]->relationship_id) == $row->id ? 'selected' : '' }}>{{ $row->name }}</option>
+                                                    value="{{ $row->id }}"
+                                                    {{ old('relationship_id', $customer->references[1]->relationship_id ?? null) == $row->id ? 'selected' : '' }}>
+                                                    {{ $row->name }}
+                                                </option>
                                             @endforeach
                                         </select>
                                         @if ($errors->has('relationship_id'))
@@ -801,7 +813,7 @@
                                     <div class="form-group">
                                         <input type="text" name="guarantor_contact_name[]" class="form-control"
                                                placeholder="Guarantor Name 2"
-                                               value="{{$customer->references[1]->guarantor_contact_name}}">
+                                               value="{{ isset($customer->references[0]) ? $customer->references[0]->guarantor_contact_name : '' }}">
                                         @if ($errors->has('guarantor_contact_name'))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_name') }}</span>
@@ -816,7 +828,8 @@
                                         <input type="text" name="guarantor_contact_number[]" class="form-control"
                                                placeholder="0399-9999999"
                                                data-inputmask="'mask': '0399-9999999'"
-                                               value="{{$customer->references[1]->guarantor_contact_number}}">
+                                               value="{{ isset($customer->references[0]) ? $customer->references[0]->guarantor_contact_number : '' }}"
+                                        >
                                         @if ($errors->has('guarantor_contact_number'))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_number') }}</span>
@@ -825,7 +838,7 @@
                                 </div>
 
                             </div>
-
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -843,6 +856,25 @@
 
 @push('script')
     <script>
+        $(document).ready(function () {
+
+            // Check if the checkbox is already checked on page load
+            if ($('#noGuarantorCheckbox').is(':checked')) {
+                $('#guarantor-fields').find('input, select').prop('disabled', true);
+            }
+
+            // Handle the change event
+            $('#noGuarantorCheckbox').change(function () {
+                if ($(this).is(':checked')) {
+                    // Disable all fields inside #guarantor-fields
+                    $('#guarantor-fields').find('input, select').prop('disabled', true);
+                } else {
+                    // Enable all fields inside #guarantor-fields
+                    $('#guarantor-fields').find('input, select').prop('disabled', false);
+                }
+            });
+        });
+
         document.addEventListener("DOMContentLoaded", function () {
             // Initialize Select2
             $('.select2').select2();
