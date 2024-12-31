@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
             ExistingLoanSeeder::class,
             BanksTableSeeder::class,
 
-            VendorsTableSeeder::class,
+            VendorProductsSeeder::class,
 
 
         ]);
