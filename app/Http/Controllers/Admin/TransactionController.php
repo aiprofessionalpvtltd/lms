@@ -34,17 +34,20 @@ class TransactionController extends Controller
 
 
 //        dd($id);
-         return view("admin.disbursement.create", compact('id', 'title' ,'loanApplication'));
+        return view("admin.disbursement.create", compact('id', 'title', 'loanApplication'));
     }
 
     public function storeDisbursement(Request $request)
     {
 
-        if($request->service_api == 'jazz_cash'){
-            $this->jazzCashAPI($request);
+        if ($request->service_api == 'jazz_cash_mw') {
+            $this->jazzCashMWAPI($request);
+        }
+        if ($request->service_api == 'jazz_cash_ibft') {
+            $this->jazzCashIBFTAPI($request);
         }
 
-     }
+    }
 
 
     public function getToken(): JsonResponse
@@ -92,7 +95,7 @@ class TransactionController extends Controller
         }
     }
 
-    public function makePayment(string $accessToken, array $paymentData): JsonResponse
+    public function makePaymentMW(string $accessToken, array $paymentData): JsonResponse
     {
         // Define the endpoint and headers
         $url = 'https://gateway-sandbox.jazzcash.com.pk/jazzcash/third-party-integration/srv6/api/wso2/mw/payment';
@@ -168,9 +171,9 @@ class TransactionController extends Controller
         return $statuses[$responseCode] ?? 'Unknown response code.';
     }
 
-    public function jazzCashAPI($request)
+    public function jazzCashMWAPI($request)
     {
-         $request->validate([
+        $request->validate([
             'loan_application_id' => 'required|exists:loan_applications,id',
         ]);
 
@@ -201,7 +204,7 @@ class TransactionController extends Controller
             ];
 
 
-            $paymentResponse = $this->makePayment($accessToken, $paymentData)->getData(true);
+            $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
             if (!$paymentResponse['success']) {
                 throw new \Exception($this->getStatusDescription($paymentResponse['error']['code'] ?? 'Unknown error'));
@@ -249,6 +252,136 @@ class TransactionController extends Controller
         }
     }
 
+    public function jazzCashIBFTAPI($request)
+    {
+        $request->validate([
+            'loan_application_id' => 'required|exists:loan_applications,id',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $request->merge(['payment_method' => 'Bank']);
+
+            $loanApplication = LoanApplication::with('getLatestInstallment.details', 'user.bank_account')
+                ->findOrFail($request->loan_application_id);
+
+            $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
+
+            $userBankDetail = $loanApplication->user->bank_account;
+            $tokenResponse = $this->getToken()->getData(true);
+
+            if (!$tokenResponse['success']) {
+                throw new \Exception($tokenResponse['message']);
+            }
+
+            $accessToken = $tokenResponse['data']['access_token'];
+
+            $paymentData = [
+                'bankAccountNumber' => $userBankDetail->account_number,
+                'bankCode' => $userBankDetail->swift_code,
+                'amount' => $disburseAmount,
+                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
+                'referenceId' => 'moneyIBFT_' . uniqid(),
+            ];
+
+
+            $paymentResponse = $this->makePaymentIBFT($accessToken, $paymentData)->getData(true);
+
+            if (!$paymentResponse['success']) {
+                throw new \Exception($this->getStatusDescription($paymentResponse['error']['code'] ?? 'Unknown error'));
+            }
+
+            $transaction = Transaction::create([
+                'loan_application_id' => $loanApplication->id,
+                'user_id' => Auth::id(),
+                'amount' => $paymentResponse['data']['amount'],
+                'payment_method' => $request->payment_method,
+                'status' => 'completed',
+                'transaction_reference' => $paymentData['referenceId'],
+                'remarks' => $paymentResponse['data']['responseDescription'] .
+                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
+                    ' receiverMSISDN: ' . $paymentResponse['data']['receiverMSISDN'] .
+                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
+                    ' bankName: ' . $paymentResponse['data']['bankName'] .
+                    ' balance: ' . $paymentResponse['data']['balance']
+                ,
+                'responseCode' => $paymentResponse['data']['responseCode'],
+                'transactionID' => $paymentResponse['data']['transactionID'],
+                'referenceID' => $paymentResponse['data']['referenceID'],
+                'dateTime' => $paymentResponse['data']['dateTime'],
+            ]);
+
+            $installments = $loanApplication->getLatestInstallment->details;
+
+            if ($installments->isEmpty()) {
+                throw new \Exception('No installments found for this loan application.');
+            }
+
+            $startDate = Carbon::now();
+
+            foreach ($installments as $installment) {
+                $dueDate = $startDate->copy()->addMonths(1);
+
+                $installment->update([
+                    'issue_date' => $startDate,
+                    'due_date' => $dueDate,
+                ]);
+
+                $startDate = $dueDate->copy()->addDay();
+            }
+
+            DB::commit();
+
+            return redirect()->route('show-installment')->with('success', 'Transaction and installments updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+
+    public function makePaymentIBFT(string $accessToken, array $paymentData): JsonResponse
+    {
+        // Define the endpoint and headers
+        $url = 'https://gateway-sandbox.jazzcash.com.pk /jazzcash/third-party-integration/srv2/api/wso2/ibft/inquiry';
+        $headers = [
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $accessToken,
+        ];
+
+        try {
+            // Make the HTTP POST request
+            $response = Http::withHeaders($headers)
+                ->post($url, $paymentData);
+
+            // Check if the request was successful
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment processed successfully.',
+                    'data' => $response->json(),
+                ]);
+            }
+
+            // Handle unsuccessful responses
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process payment.',
+                'error' => $response->json(),
+            ], $response->status());
+        } catch (RequestException $exception) {
+            // Handle exceptions during the HTTP request
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while processing the payment.',
+                'error' => $exception->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////
     public function storeManual(Request $request)
     {
 
@@ -268,7 +401,7 @@ class TransactionController extends Controller
             $loanApplication = LoanApplication::with('getLatestInstallment.details')
                 ->findOrFail($installment->loan_application_id);
 
-            $disburseAmount = $request->disbursement_amount ;
+            $disburseAmount = $request->disbursement_amount;
 
 
             $paymentData = [
@@ -278,7 +411,6 @@ class TransactionController extends Controller
                 'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
                 'referenceId' => 'money_' . uniqid(),
             ];
-
 
 
             $transaction = Transaction::create([
@@ -316,7 +448,7 @@ class TransactionController extends Controller
             }
 
 
-            LogActivity::addToLog('Manual Disbursement of loan application '.$installment->loanApplication->application_id.' Created');
+            LogActivity::addToLog('Manual Disbursement of loan application ' . $installment->loanApplication->application_id . ' Created');
 
 //            dd($transaction);
             DB::commit();
@@ -392,7 +524,6 @@ class TransactionController extends Controller
             return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-
 
 
 }
