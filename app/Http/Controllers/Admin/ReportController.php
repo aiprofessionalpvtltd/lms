@@ -14,6 +14,7 @@ use App\Models\Recovery;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReportController extends Controller
 {
@@ -1131,7 +1132,7 @@ class ReportController extends Controller
                 'loan_amount' => round($loanAmount, 2),
                 'interest_rate' => round($calculatedProduct->interest_rate_percentage ?? 0, 2) . '%',
                 'interest_income' => round($interestIncome, 2),
-                'disbursement_date' => showDate($loan->transaction->dateTime) ,
+                'disbursement_date' => showDate($loan->transaction->dateTime),
                 'installment_start_date' => $startDate,
                 'installment_end_date' => $endDate,
             ];
@@ -1312,8 +1313,8 @@ class ReportController extends Controller
             'mobile_no' => $userProfile->mobile_no,
             'loan_amount' => round($loan->loan_amount, 2),
             'loan_account_no' => $loan->application_id,
-            'processing_fee_percentage' =>  $calculatedProduct->processing_fee_percentage  ,
-            'processing_fee' => round($calculatedProduct->processing_fee_amount) ,
+            'processing_fee_percentage' => $calculatedProduct->processing_fee_percentage,
+            'processing_fee' => round($calculatedProduct->processing_fee_amount),
             'total_interest' => round($calculatedProduct->total_interest_amount, 2),
             'total_payable' => round($calculatedProduct->total_repayable_amount, 2),
             'monthly_installment' => round($calculatedProduct->monthly_installment_amount, 2),
@@ -1321,7 +1322,70 @@ class ReportController extends Controller
         ];
 
 //        dd($invoiceData);
-        return view('admin.reports.invoice', compact('title', 'invoiceData' ,'customers' ));
+        return view('admin.reports.invoice', compact('title', 'invoiceData', 'customers'));
+    }
+
+    public function generatePDF(Request $request)
+    {
+        $title = 'Loan Payment Invoice';
+        $customer_id = $request->customer_id;
+        $application_id = $request->application_id;
+
+        $loan = LoanApplication::with([
+            'product',
+            'calculatedProduct',
+            'user.profile',
+            'user.province',
+            'user.district',
+            'installments.details',
+        ])
+            ->when($application_id, function ($query) use ($application_id) {
+                $query->where('id', $application_id);
+            })
+            ->when($customer_id, function ($query) use ($customer_id) {
+                $query->where('user_id', $customer_id);
+            })
+            ->first();
+
+        if (!$loan) {
+            return back()->with('error', 'Loan application not found.');
+        }
+
+        $userProfile = $loan->user->profile;
+        $calculatedProduct = $loan->calculatedProduct;
+
+        $installmentDetails = $loan->installments->flatMap->details;
+
+        $invoiceData = [
+            'loan_id' => $loan->application_id,
+            'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+            'cnic' => $userProfile->cnic_no,
+            'mobile_no' => $userProfile->mobile_no,
+            'loan_amount' => round($loan->loan_amount, 2),
+            'loan_account_no' => $loan->application_id,
+            'processing_fee_percentage' => $calculatedProduct->processing_fee_percentage,
+            'processing_fee' => round($calculatedProduct->processing_fee_amount),
+            'total_interest' => round($calculatedProduct->total_interest_amount, 2),
+            'total_payable' => round($calculatedProduct->total_repayable_amount, 2),
+            'monthly_installment' => round($calculatedProduct->monthly_installment_amount, 2),
+            'installments' => $installmentDetails,
+        ];
+
+        $path = public_path('backend/img/icons/logo.jpg'); // Adjust path as needed
+        if (file_exists($path)) {
+            $imageData = base64_encode(file_get_contents($path));
+            $imageSrc = 'data:image/jpeg;base64,' . $imageData;
+        } else {
+            $imageSrc = ''; // Default to an empty string or placeholder image
+        }
+
+
+         // Generate PDF
+        $pdf = Pdf::loadView('admin.reports.invoice-pdf', compact('title', 'invoiceData' ,'imageSrc'))->setPaper('a4', 'portrait');;
+
+
+        // Return the PDF for download
+        return $pdf->download($invoiceData['borrower_name'].'_Invoice.pdf');
     }
 
 
@@ -1333,7 +1397,7 @@ class ReportController extends Controller
         $districts = District::all();
         $genders = Gender::all();
 //        dd($customers);
-        return view('admin.reports.complete', compact('title', 'genders','provinces'));
+        return view('admin.reports.complete', compact('title', 'genders', 'provinces'));
     }
 
     public function getCompleteReport(Request $request)
@@ -1365,8 +1429,7 @@ class ReportController extends Controller
                 $query->with('details'); // Load installment details for outstanding calculation
             }
         ])
-            ->where('is_completed', '=',1)
-
+            ->where('is_completed', '=', 1)
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
                 return $query->whereBetween('created_at', [$startDate, $endDate]);
             })
@@ -1386,9 +1449,6 @@ class ReportController extends Controller
                 });
             })
             ->get();
-
-
-
 
 
         LogActivity::addToLog('Completed Application report generated');
