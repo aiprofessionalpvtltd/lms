@@ -154,14 +154,14 @@
                                 <th>Total Loan Amount</th>
                                 <td>{{ number_format($invoiceData['loan_amount'], 2) }}</td>
                             </tr>
-                            <tr>
-                                <th>Processing Fee ({{ $invoiceData['processing_fee_percentage'] }}%)</th>
-                                <td>{{ number_format($invoiceData['processing_fee'], 2) }}</td>
-                            </tr>
-                            <tr>
-                                <th>Total Interest</th>
-                                <td>{{ number_format($invoiceData['total_interest'], 2) }}</td>
-                            </tr>
+{{--                            <tr>--}}
+{{--                                <th>Processing Fee ({{ $invoiceData['processing_fee_percentage'] }}%)</th>--}}
+{{--                                <td>{{ number_format($invoiceData['processing_fee'], 2) }}</td>--}}
+{{--                            </tr>--}}
+{{--                            <tr>--}}
+{{--                                <th>Total Interest</th>--}}
+{{--                                <td>{{ number_format($invoiceData['total_interest'], 2) }}</td>--}}
+{{--                            </tr>--}}
                             <tr>
                                 <th>Total Payable Amount</th>
                                 <td>{{ number_format($invoiceData['total_payable'], 2) }}</td>
