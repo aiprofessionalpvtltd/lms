@@ -59,7 +59,8 @@
 
 
 {{--                                @endif--}}
-                                @if(!$installment->loanApplication->transaction)
+{{--                                {{ dd(isset($installment->loanApplication->transaction)) }}--}}
+                                @if(isset($installment->loanApplication->transaction) == false)
 {{--                                    <form action="{{ route('transactions.store') }}" method="POST" class="d-inline">--}}
 {{--                                    @csrf <!-- CSRF token for security -->--}}
 {{--                                        <input type="hidden" name="loan_application_id"--}}

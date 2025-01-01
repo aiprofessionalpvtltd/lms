@@ -835,7 +835,6 @@ class LoanApplicationController extends BaseController
         }
 
 
-        $loanApplication->application_id = $this->updateLoanApplicationId($id);
         $loanApplication->is_completed = $request->is_completed;
         $loanApplication->save();
 
