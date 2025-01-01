@@ -174,6 +174,10 @@
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-early-settlement-report')}}">Early Settlement
                                 Report</a></li>
 
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-complete-report')}}">
+                               Completed Application
+                                Report</a></li>
+
                     </ul>
                 </li>
 

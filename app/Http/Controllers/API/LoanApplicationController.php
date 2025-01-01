@@ -146,10 +146,12 @@ class LoanApplicationController extends BaseController
                 return redirect()->back()->with('error', "The loan amount cannot exceed " . number_format($maxAmount) . " PKR.");
             }
 
-            $existingApplication = LoanApplication::where('user_id', $user->id)->where('is_completed', 0)->first();
-            if ($existingApplication) {
-                return redirect()->back()->with('error', 'An application is already in progress. A new application cannot be submitted.');
-            }
+//            $existingApplication = LoanApplication::where('user_id', $user->id)->where('is_completed', 0)->first();
+
+//            if ($existingApplication) {
+//                return redirect()->back()->with('error', 'An application is already in progress. A new application cannot be submitted.');
+//            }
+
             // Prepare loan application data
             $loanDuration = LoanDuration::where('value', $request->loan_duration_id)->firstOrFail();
             $loanApplicationData = $this->prepareLoanApplicationData($user, $loanDuration, $request);

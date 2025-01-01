@@ -92,6 +92,7 @@
                                                 data-amount="{{ number_format($detail->amount_due, 2) }}"
                                                 data-remaining-loan="{{ number_format($detail->remaining_loan, 2) }}"
                                                 data-penalty-percentage="{{ $detail->penalty_percentage }}"
+                                                data-penalty-amount="{{ $detail->penalty_amount }}"
                                                 data-waive-off-changes="{{ $detail->waive_off_charges ?? '0' }}"
                                                 data-total-payable="{{ number_format($detail->total_payable, 2) }}">
                                             Early Settlement

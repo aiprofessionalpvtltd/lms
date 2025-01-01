@@ -148,6 +148,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('show-invoice-report', [ReportController::class, 'showInvoiceReport'])->name('show-invoice-report');
     Route::get('get-invoice-report', [ReportController::class, 'getInvoiceReport'])->name('get-invoice-report');
 
+    Route::get('show-complete-report', [ReportController::class, 'showCompleteReport'])->name('show-complete-report');
+    Route::get('get-complete-report', [ReportController::class, 'getCompleteReport'])->name('get-complete-report');
+
 
 });
 
