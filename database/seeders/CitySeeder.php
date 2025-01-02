@@ -1284,14 +1284,89 @@ class CitySeeder extends Seeder
                     'province_id' => 101,
                     'created_at' => '2023-02-25 13:09:42',
                     'updated_at' => '2023-02-25 13:09:42'
-                ),
+                ), array(
+                'id' => 159,
+                'name' => 'Muree',
+                'province_id' => 1,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 160,
+                'name' => 'Kotli Sattian',
+                'province_id' => 1,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 161,
+                'name' => 'Palandri',
+                'province_id' => 145,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ),
+                array(
+                    'id' => 162,
+                    'name' => 'Layyah',
+                    'province_id' => 1,
+                    'created_at' => '2023-02-25 13:09:42',
+                    'updated_at' => '2023-02-25 13:09:42'
+                ), array(
+                'id' => 163,
+                'name' => 'Faiz Ganj',
+                'province_id' => 37,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 164,
+                'name' => 'Gambat',
+                'province_id' => 37,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 165,
+                'name' => 'Khairpur',
+                'province_id' => 37,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 166,
+                'name' => 'Kingri',
+                'province_id' => 37,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 167,
+                'name' => 'Kot Diji',
+                'province_id' => 37,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 168,
+                'name' => 'Nara Chundiko',
+                'province_id' => 37,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 169,
+                'name' => 'Sobho Dero',
+                'province_id' => 37,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ), array(
+                'id' => 170,
+                'name' => 'Thari Mirwah',
+                'province_id' => 37,
+                'created_at' => '2023-02-25 13:09:42',
+                'updated_at' => '2023-02-25 13:09:42'
+            ),
             );
 
         foreach ($array as $row) {
-            City::create([
-                'name' => $row['name'],
-                'province_id' => $row['province_id'],
-            ]);
+            if (!City::where('name', $row['name'])->exists()) {
+                City::create([
+                    'name' => $row['name'],
+                    'province_id' => $row['province_id'],
+                ]);
+            }
         }
 
 

@@ -2069,17 +2069,72 @@ class DistrictSeeder extends Seeder
                 "Latitude" => 33.58088754,
                 "Longitude" => 73.00471605,
                 "ProvinceId" => 1,
-                "DivisionId" => 7)
+                "DivisionId" => 7),
+            array(
+                "Id" => 301,
+                "GeolocationType" => 8,
+                "Code" => "Muree",
+                "Name" => "",
+                "IsActive" => 1,
+                "SortOrder" => 0,
+                "CreatedBy" => "Admin",
+                "CreatedDate" => "00:00.0",
+                "Latitude" => 33.58088754,
+                "Longitude" => 73.00471605,
+                "ProvinceId" => 1,
+                "DivisionId" => 7),
+            array(
+                "Id" => 302,
+                "GeolocationType" => 8,
+                "Code" => "Sudhanoti",
+                "Name" => "",
+                "IsActive" => 1,
+                "SortOrder" => 0,
+                "CreatedBy" => "Admin",
+                "CreatedDate" => "00:00.0",
+                "Latitude" => 33.58088754,
+                "Longitude" => 73.00471605,
+                "ProvinceId" => 145,
+                "DivisionId" => 7),
+            array(
+                "Id" => 303,
+                "GeolocationType" => 8,
+                "Code" => "Palandri",
+                "Name" => "",
+                "IsActive" => 1,
+                "SortOrder" => 0,
+                "CreatedBy" => "Admin",
+                "CreatedDate" => "00:00.0",
+                "Latitude" => 33.58088754,
+                "Longitude" => 73.00471605,
+                "ProvinceId" => 145,
+                "DivisionId" => 7),
+            array(
+                "Id" => 304,
+                "GeolocationType" => 8,
+                "Code" => "Kotli Sattian",
+                "Name" => "",
+                "IsActive" => 1,
+                "SortOrder" => 0,
+                "CreatedBy" => "Admin",
+                "CreatedDate" => "00:00.0",
+                "Latitude" => 33.58088754,
+                "Longitude" => 73.00471605,
+                "ProvinceId" => 1,
+                "DivisionId" => 7),
+
         );
 
         foreach ($arr as $a => $district) {
-            District::create([
-                'id' => $district['Id'],
-                'name' => $district['Code'],
-                'province_id' => $district['ProvinceId'],
-                'lat' => $district['Latitude'],
-                'lng' => $district['Longitude'],
-            ]);
+            if (!District::where('name', $district['Code'])->exists()) {
+                District::create([
+                    'id' => $district['Id'],
+                    'name' => $district['Code'],
+                    'province_id' => $district['ProvinceId'],
+                    'lat' => $district['Latitude'],
+                    'lng' => $district['Longitude'],
+                ]);
+            }
 
         }//end of foreach
 

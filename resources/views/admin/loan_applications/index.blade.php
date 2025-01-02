@@ -38,53 +38,60 @@
 
             <div class="card-body">
                 <table id="" class="table table-striped datatables-reponsive">
-                <thead>
-                <tr>
-                    <th>Loan ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Asisgned To</th>
-                    <th>Loan Amount</th>
-                    <th>Duration</th>
-{{--                    <th>Service</th>--}}
-{{--                    <th>Purpose</th>--}}
-{{--                    <th>Address</th>--}}
-                    <th>Completed</th>
-                      <th class="text-center">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach($loanApplications as $loanApplication)
+                    <thead>
                     <tr>
-                        <td>{{$loanApplication->application_id}}</td>
-                        <td>{{$loanApplication->name}}</td>
-                        <td>{{$loanApplication->email}}</td>
-                        <td>{{$loanApplication->getLatestHistory->toUser->name}}</td>
-                        <td>{{$loanApplication->loan_amount}}</td>
-                        <td>{{$loanApplication->loanDuration->name}}</td>
-{{--                        <td>{{$loanApplication->productService->name}}</td>--}}
-{{--                        <td>{{$loanApplication->loanPurpose->name}}</td>--}}
-{{--                        <td>{{$loanApplication->address}}</td>--}}
-                        <td>{{showBoolean($loanApplication->is_completed)}}</td>
-                          <td>
-                            <div class="d-flex">
-                                @can('view-loan-management')
-                                    <a title="View" href="{{ route('view-loan-application', $loanApplication->id) }}"
-                                       class="text-primary mr-1"><i
-                                            class="fas fa-eye"></i></a>
-
-{{--                                    <a title="Complete" href="{{ route('complete-loan-application', $loanApplication->id) }}"--}}
-{{--                                       class="text-primary mr-3 ml-3"><i--}}
-{{--                                            class="fas fa-check"></i></a>--}}
-                                @endcan
-
-
-                            </div>
-                        </td>
+                        <th>Loan ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Asisgned To</th>
+                        <th>Loan Amount</th>
+                        <th>Duration</th>
+                        {{--                    <th>Service</th>--}}
+                        {{--                    <th>Purpose</th>--}}
+                        {{--                    <th>Address</th>--}}
+                        <th>Completed</th>
+                        <th class="text-center">Actions</th>
                     </tr>
-                @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    @foreach($loanApplications as $loanApplication)
+                        <tr>
+                            <td>{{$loanApplication->application_id}}</td>
+                            <td>{{$loanApplication->name}}</td>
+                            <td>{{$loanApplication->email}}</td>
+                            <td>{{$loanApplication->getLatestHistory->toUser->name}}</td>
+                            <td>{{$loanApplication->loan_amount}}</td>
+                            <td>{{$loanApplication->loanDuration->name}}</td>
+                            {{--                        <td>{{$loanApplication->productService->name}}</td>--}}
+                            {{--                        <td>{{$loanApplication->loanPurpose->name}}</td>--}}
+                            {{--                        <td>{{$loanApplication->address}}</td>--}}
+                            <td>{{showBoolean($loanApplication->is_completed)}}</td>
+                            <td>
+                                <div class="d-flex">
+                                    @can('view-loan-management')
+                                        <a title="View"
+                                           href="{{ route('view-loan-application', $loanApplication->id) }}"
+                                           class="text-success m-1"><i
+                                                class="fas fa-eye"></i></a>
+
+                                        @if($loanApplication->is_completed == 0)
+                                            <a title="Edit"
+                                               href="{{ route('edit-loan-application', $loanApplication->id) }}"
+                                               class="text-primary m-1"><i
+                                                    class="fas fa-edit"></i></a>
+                                        @endif
+                                        {{--                                    <a title="Complete" href="{{ route('complete-loan-application', $loanApplication->id) }}"--}}
+                                        {{--                                       class="text-primary mr-3 ml-3"><i--}}
+                                        {{--                                            class="fas fa-check"></i></a>--}}
+                                    @endcan
+
+
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                    </tbody>
+                </table>
             </div>
         </div>
         <!-- /basic datatable -->

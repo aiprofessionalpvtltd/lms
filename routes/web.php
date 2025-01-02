@@ -65,7 +65,9 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::get('get-all-loan-applications', [LoanApplicationController::class, 'getAllData'])->name('get-all-loan-applications');
+    Route::get('loan-application/{id}/edit', [LoanApplicationController::class, 'edit'])->name('edit-loan-application');
     Route::get('loan-application/{id}/view', [LoanApplicationController::class, 'getSingleData'])->name('view-loan-application');
+    Route::put('update-loan-application/{id}', [LoanApplicationController::class, 'updateApplication'])->name('update-loan-application');
     Route::post('loan-application/{id}/complete', [LoanApplicationController::class, 'completeApplication'])->name('complete-loan-application');
     Route::put('loan-applications/{id}/status', [LoanApplicationController::class, 'updateStatus'])->name('update-loan-application-status');
     Route::get('loan-applications/{id}/approved', [LoanApplicationController::class, 'approveLoan'])->name('approve-loan');

@@ -111,6 +111,7 @@ class LoanApplicationController extends BaseController
             compact('title', 'customers', 'products', 'loanDurations', 'loanPurposes'));
     }
 
+
     public function storeApplication(Request $request)
     {
 //        dd($request->all());
@@ -197,6 +198,154 @@ class LoanApplicationController extends BaseController
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
+
+    public function edit($id)
+    {
+        // Get the status from the request, defaulting to 'pending' if not provided
+        $loanApplicationID = $id;
+        $customers = User::with(['roles', 'profile', 'tracking'])
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'Customer');
+            })->get();
+        $products = Product::all();
+        $loanDurations = LoanDuration::orderBy('id', 'asc')->get();
+        $loanPurposes = LoanPurpose::all();
+        try {
+            // Fetch loan applications based on the status
+            $loanApplication = LoanApplication::with('calculatedProduct', 'attachments')->find($loanApplicationID);
+
+            // Check if any loan applications are found
+            if ($loanApplication == null) {
+                return $this->sendError('No Loan Applications found');
+            }
+
+
+//            dd($loanApplication);
+            LogActivity::addToLog('Loan Application ' . $loanApplication->application_id . ' Edit');
+
+            return view('admin.loan_applications.edit', compact('loanApplication', 'customers', 'products', 'loanDurations', 'loanPurposes'));
+
+
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
+
+            // Return a generic error response
+            return $this->sendError($e->getMessage());
+        }
+    }
+
+    public function updateApplication(Request $request, $loanApplicationId)
+    {
+         // Fetch maximum loan amount from .env
+        $maxAmount = env('MAX_AMOUNT', 300000); // Default to 300,000 PKR
+
+        // Validate the request
+        $validator = Validator::make($request->all(), [
+            'customer_id' => 'required|exists:users,id',
+            'product_id' => 'nullable|exists:products,id',
+            'loan_amount' => 'required|numeric',
+            'loan_duration_id' => 'required',
+            'loan_purpose_id' => 'required|exists:loan_purposes,id',
+            'down_payment_percentage' => 'nullable|numeric|min:0|max:100',
+            'bank_document' => 'nullable|file|mimes:pdf,jpg,png|max:2048', // Document is optional for update
+            'salary_slip_document' => 'nullable|file|mimes:pdf,jpg,png|max:2048', // Document is optional for update
+            'signature' => 'nullable|string', // Ensure signature is a base64 string
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Fetch loan application to update
+            $loanApplication = LoanApplication::findOrFail($loanApplicationId);
+
+            // Fetch user and validate specific conditions
+            $user = User::findOrFail($request->customer_id);
+
+            if ($request->loan_amount > $maxAmount) {
+                return redirect()->back()->with('error', "The loan amount cannot exceed " . number_format($maxAmount) . " PKR.");
+            }
+
+            // Update loan application data
+            $loanDuration = LoanDuration::where('value', $request->loan_duration_id)->firstOrFail();
+            $loanApplication->update([
+                'product_id' => $request->product_id,
+                'loan_amount' => $request->loan_amount,
+                'loan_duration_id' => $loanDuration->id,
+                'loan_purpose_id' => $request->loan_purpose_id,
+                'approved_by' => auth()->id(),
+            ]);
+
+             $request->merge(['months' => $loanDuration->value]);
+
+            // Calculate loan details
+            $loanCalculated = $this->calculateLoan($request);
+
+            if (isset($loanCalculated->getData()->error)) {
+                return $loanCalculated->getData()->error;
+            }
+
+            $calculatedData = $loanCalculated->getData()->data;
+
+             // Save updated loan details
+            $loanApplicationProduct = $loanApplication->calculatedProduct()->firstOrNew(['loan_application_id' => $loanApplication->id]);
+
+            $loanApplicationProduct->fill([
+                'request_for' => $request->input('request_for'),
+                'loan_duration_id' => $loanDuration->id,
+                'loan_amount' => $calculatedData->loan_amount,
+                'down_payment_percentage' => $calculatedData->down_payment_percentage,
+                'processing_fee_percentage' => $calculatedData->processing_fee_percentage,
+                'interest_rate_percentage' => $calculatedData->interest_rate_percentage,
+                'financed_amount' => $calculatedData->financed_amount,
+                'processing_fee_amount' => round($calculatedData->processing_fee_amount, 2),
+                'down_payment_amount' => round($calculatedData->down_payment_amount, 2),
+                'total_upfront_payment' => round($calculatedData->total_upfront_payment, 2),
+                'disbursement_amount' => round($calculatedData->disbursement_amount, 2),
+                'total_interest_amount' => round($calculatedData->total_interest_amount, 2),
+                'total_repayable_amount' => round($calculatedData->total_repayable_amount, 2),
+                'monthly_installment_amount' => round($calculatedData->monthly_installment_amount, 2),
+            ]);
+            $loanApplicationProduct->save();
+
+            // Handle document uploads (only if a new document is provided)
+            if ($request->hasFile('bank_document')) {
+                $bankDocumentPath = $request->file('bank_document')->store('documents', 'public');
+                $this->saveAttachment($loanApplication, $user, 1, $bankDocumentPath);
+            }
+
+            if ($request->hasFile('salary_slip_document')) {
+                $salarySlipPath = $request->file('salary_slip_document')->store('documents', 'public');
+                $this->saveAttachment($loanApplication, $user, 2, $salarySlipPath);
+            }
+
+            if ($request->signature) {
+                $signaturePath = $this->saveBase64Image($request->signature, 'documents');
+                $this->saveAttachment($loanApplication, $user, 3, $signaturePath);
+            }
+
+            // Update tracking data for user (if required)
+            $user->tracking->update(['is_bank_statement' => 1]);
+
+            LogActivity::addToLog('Loan Application ' . $loanApplication->application_id . ' Updated');
+
+            DB::commit();
+
+            return redirect()->route('get-all-loan-applications')->with('success', 'Loan Application Updated Successfully');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            dd($e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
 
     /**
      * Prepare loan application data.
