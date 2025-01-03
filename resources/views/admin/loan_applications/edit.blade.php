@@ -165,32 +165,37 @@
                                         <label class="col-form-label">Down Payment (%) <span
                                                 class="text-danger">*</span></label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
-                                            <select data-placeholder="Select Option"
-                                                    name="down_payment_percentage" id="down_payment_percentage"
-                                                    class="form-control select2"
-                                                    data-fouc>
-                                                <option></option>
-                                                <option
-                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '10' ? 'selected' : ''}} value="10">
-                                                    10%
-                                                </option>
-                                                <option
-                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '20' ? 'selected' : ''}}  value="20">
-                                                    20%
-                                                </option>
-                                                <option
-                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '30' ? 'selected' : ''}}  value="30">
-                                                    30%
-                                                </option>
-                                                <option
-                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '40' ? 'selected' : ''}}  value="40">
-                                                    40%
-                                                </option>
-                                                <option
-                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '50' ? 'selected' : ''}}  value="50">
-                                                    50%
-                                                </option>
-                                            </select>
+{{--                                            <select data-placeholder="Select Option"--}}
+{{--                                                    name="down_payment_percentage" id="down_payment_percentage"--}}
+{{--                                                    class="form-control select2"--}}
+{{--                                                    data-fouc>--}}
+{{--                                                <option></option>--}}
+{{--                                                <option--}}
+{{--                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '10' ? 'selected' : ''}} value="10">--}}
+{{--                                                    10%--}}
+{{--                                                </option>--}}
+{{--                                                <option--}}
+{{--                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '20' ? 'selected' : ''}}  value="20">--}}
+{{--                                                    20%--}}
+{{--                                                </option>--}}
+{{--                                                <option--}}
+{{--                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '30' ? 'selected' : ''}}  value="30">--}}
+{{--                                                    30%--}}
+{{--                                                </option>--}}
+{{--                                                <option--}}
+{{--                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '40' ? 'selected' : ''}}  value="40">--}}
+{{--                                                    40%--}}
+{{--                                                </option>--}}
+{{--                                                <option--}}
+{{--                                                    {{$loanApplication->calculatedProduct->down_payment_percentage == '50' ? 'selected' : ''}}  value="50">--}}
+{{--                                                    50%--}}
+{{--                                                </option>--}}
+{{--                                            </select>--}}
+
+                                            <input type="number"  class="form-control"
+                                                   name="down_payment_percentage" id="down_payment_percentage"
+                                                   value="{{$loanApplication->calculatedProduct->down_payment_percentage}}"
+                                                   placeholder="Down Payment (%)">
                                             @if ($errors->has('down_payment_percentage'))
                                                 <span
                                                     class="text-danger">{{ $errors->first('down_payment_percentage') }}</span>

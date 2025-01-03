@@ -153,17 +153,21 @@
                                         <label class="col-form-label">Down Payment (%) <span
                                                 class="text-danger">*</span></label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
-                                            <select data-placeholder="Select Option"
-                                                    name="down_payment_percentage" id="down_payment_percentage"
-                                                    class="form-control select2"
-                                                    data-fouc>
-                                                <option></option>
-                                                <option value="10">10%</option>
-                                                <option value="20">20%</option>
-                                                <option value="30">30%</option>
-                                                <option value="40">40%</option>
-                                                <option value="50">50%</option>
-                                            </select>
+{{--                                            <select data-placeholder="Select Option"--}}
+{{--                                                    name="down_payment_percentage" id="down_payment_percentage"--}}
+{{--                                                    class="form-control select2"--}}
+{{--                                                    data-fouc>--}}
+{{--                                                <option></option>--}}
+{{--                                                <option value="10">10%</option>--}}
+{{--                                                <option value="20">20%</option>--}}
+{{--                                                <option value="30">30%</option>--}}
+{{--                                                <option value="40">40%</option>--}}
+{{--                                                <option value="50">50%</option>--}}
+{{--                                            </select>--}}
+                                            <input type="number"  class="form-control"
+                                                   name="down_payment_percentage" id="down_payment_percentage"
+                                                   value="{{old('down_payment_percentage')}}"
+                                                   placeholder="Down Payment (%)">
                                             @if ($errors->has('down_payment_percentage'))
                                                 <span
                                                     class="text-danger">{{ $errors->first('down_payment_percentage') }}</span>
@@ -455,7 +459,7 @@
             }
         }
 
-        $(document).on('change', '#loan_duration_id,#interest_rate,#old_processing_fee_amount,   input[name="loan_amount"]', function () {
+        $(document).on('change', '#loan_duration_id,#interest_rate,#old_processing_fee_amount, #down_payment_percentage,  input[name="loan_amount"]', function () {
             console.log('yy')
              calculateLoan();
         });
