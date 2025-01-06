@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\Dashboard\SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\InstallmentController;
+use App\Http\Controllers\Admin\NactaListController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RecoveryController;
 use App\Http\Controllers\Admin\ReportController;
@@ -13,7 +14,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\API\LoanApplicationController;
-use Illuminate\Support\Facades\Route;
+ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -47,6 +48,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('delete-user', [UserController::class, 'delete'])->name('delete-user');
     Route::post('changePassword', [UserController::class, 'changePassword'])->name('changePassword');
 
+
+    Route::get('show-nacta', [NactaListController::class, 'index'])->name('show-nacta');
+    Route::get('create-nacta', [NactaListController::class, 'create'])->name('create-nacta');
+    Route::post('nacta/upload', [NactaListController::class, 'upload'])->name('upload-nacta');
 
     Route::get('show-customer', [CustomerController::class, 'show'])->name('show-customer');
     Route::get('add-customer', [CustomerController::class, 'index'])->name('add-customer');

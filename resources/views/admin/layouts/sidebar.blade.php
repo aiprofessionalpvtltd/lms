@@ -99,6 +99,12 @@
 
             @endcan
             @can('view-customer')
+                <li class="sidebar-item {{ request()->routeIs('show-nacta-list') ? 'active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('show-nacta') }}">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">NACTA  List</span>
+                    </a>
+                </li>
 
                 <li class="sidebar-item {{ request()->routeIs('show-customer') ? 'active' : '' }}">
                     <a class="sidebar-link" href="{{ route('show-customer') }}">

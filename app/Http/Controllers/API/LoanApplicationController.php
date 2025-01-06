@@ -144,7 +144,7 @@ class LoanApplicationController extends BaseController
             $user = User::findOrFail($request->customer_id);
 
             if ($request->loan_amount > $maxAmount) {
-                return redirect()->back()->with('error', "The loan amount cannot exceed " . number_format($maxAmount) . " PKR.");
+                return redirect()->route('get-all-loan-applications')->with('error', "The loan amount cannot exceed " . number_format($maxAmount) . " PKR.");
             }
 
 //            $existingApplication = LoanApplication::where('user_id', $user->id)->where('is_completed', 0)->first();
