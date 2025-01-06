@@ -839,7 +839,7 @@
                                     <div class="form-group">
                                         <input type="text" name="guarantor_contact_name[]" class="form-control"
                                                placeholder="Guarantor Name 2"
-                                               value="{{ isset($customer->references[1]) ? $customer->references[10]->guarantor_contact_name : '' }}">
+                                               value="{{ isset($customer->references[1]) ? $customer->references[1]->guarantor_contact_name : '' }}">
                                         @if ($errors->has('guarantor_contact_name'))
                                             <span
                                                 class="text-danger">{{ $errors->first('guarantor_contact_name') }}</span>
