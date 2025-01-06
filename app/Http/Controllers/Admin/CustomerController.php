@@ -135,6 +135,7 @@ class CustomerController extends BaseController
         return view('admin.customer.view', compact('title', 'customer'));
     }
 
+
     public function index()
     {
         $title = 'Customer';

@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('customer/{id}/edit', [CustomerController::class, 'edit'])->name('edit-customer');
     Route::put('update-customer{id}', [CustomerController::class, 'update'])->name('update-customer');
     Route::get('user/{id}/view', [CustomerController::class, 'view'])->name('view-customer');
+    Route::get('user/{id}/agreement', [CustomerController::class, 'agreement'])->name('view-customer-agreement');
 
 
     Route::get('show-role', [RoleController::class, 'show'])->name('show-role');
@@ -72,6 +73,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('get-all-loan-applications', [LoanApplicationController::class, 'getAllData'])->name('get-all-loan-applications');
     Route::get('loan-application/{id}/edit', [LoanApplicationController::class, 'edit'])->name('edit-loan-application');
     Route::get('loan-application/{id}/view', [LoanApplicationController::class, 'getSingleData'])->name('view-loan-application');
+    Route::get('loan-application/{id}/agreement', [LoanApplicationController::class, 'agreement'])->name('view-loan-agreement');
     Route::put('update-loan-application/{id}', [LoanApplicationController::class, 'updateApplication'])->name('update-loan-application');
     Route::post('loan-application/{id}/complete', [LoanApplicationController::class, 'completeApplication'])->name('complete-loan-application');
     Route::put('loan-applications/{id}/status', [LoanApplicationController::class, 'updateStatus'])->name('update-loan-application-status');

@@ -68,6 +68,11 @@
                             <td>{{showBoolean($loanApplication->is_completed)}}</td>
                             <td>
                                 <div class="d-flex">
+                                    <a title="Generate Agreement"
+                                       href="{{route('view-loan-agreement', $loanApplication->id) }}"
+                                       class=" btn btn-info me-3">Agreement</a>
+
+
                                     @can('view-loan-management')
                                         <a title="View"
                                            href="{{ route('view-loan-application', $loanApplication->id) }}"

@@ -136,6 +136,11 @@ function currentDate()
     return date('d-M-Y');
 }
 
+function currentDateAgreement()
+{
+    return date('F d,Y');
+}
+
 function currentDatePicker()
 {
     return date('m/d/Y');

@@ -630,6 +630,52 @@ class LoanApplicationController extends BaseController
         }
     }
 
+    public function agreement($id)
+    {
+        $title = 'Agreement User';
+        $loanApplicationID = $id;
+
+
+
+        try {
+            // Fetch loan applications based on the status
+            $loanApplication = LoanApplication::find($loanApplicationID);
+
+            // Check if any loan applications are found
+            if ($loanApplication == null) {
+                return $this->sendError('No Loan Applications found');
+            }
+
+            // Retrieve the user's existing or previous loan applications
+            $userId = $loanApplication->user_id;
+
+
+            $customer = User::with('roles', 'profile', 'bank_account', 'tracking',
+                'employment.employmentStatus', 'employment.incomeSource', 'employment.existingLoan',
+                'familyDependent', 'education.education', 'references.relationship')
+                ->find($userId);
+
+
+                $loanApplication->load('loanDuration');
+
+                 $loanApplicationProduct = $loanApplication->calculatedProduct;
+                 $loanApplicationFirstInstallments = $loanApplication->getLatestInstallment->details[0];
+
+
+
+
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
+
+            // Return a generic error response
+            return $this->sendError($e->getMessage());
+        }
+
+        return view('admin.customer.agreement', compact('title', 'customer','loanApplication',
+            'loanApplicationProduct' ,'loanApplicationFirstInstallments'));
+    }
+
 
     public function getSingleData(Request $request, $id)
     {
