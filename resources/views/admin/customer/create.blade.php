@@ -149,6 +149,34 @@
                                 </div>
 
                             </fieldset>
+                            <fieldset class="border p-3 mb-4">
+                                <legend class="mb-3 azm-color-444">Nacta Information</legend>
+                                <div class="row mt-3">
+
+
+                                    <!-- State -->
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Is Nacta Clear?</label>
+                                        <div class="form-group">
+                                            <select name="is_nacta_clear" class="form-control select2"
+                                                    data-placeholder="Select Status">
+                                                <option></option>
+                                                <option value="1">YES</option>
+                                                <option value="0">No</option>
+                                            </select>
+                                            @if ($errors->has('is_nacta_clear'))
+                                                <span class="text-danger">{{ $errors->first('is_nacta_clear') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
+
+
+
+                                </div>
+
+                            </fieldset>
+
 
 
                             <fieldset class="border p-3 mb-4">

@@ -96,6 +96,13 @@ class CustomerController extends BaseController
                     $riskAssessment = $this->determineRiskLevel($score);
                     return '<span title="' . $riskAssessment['loan_eligibility'] . '">' . $riskAssessment['risk_level'] . '</span>';
                 })
+                ->addColumn('is_nacta_clear', function ($customer) {
+                    $status = $customer->is_nacta_clear ?? 0;
+                    $class = $status == 1 ? 'text-success' : 'text-danger';
+                    $label = $status == 1 ? 'Clear' : 'Not Clear';
+                    return '<span class="' . $class . '">' . $label . '</span>';
+                })
+
                 ->addColumn('actions', function ($customer) {
                     $actions = '';
                     if (auth()->user()->can('view-customer')) {
@@ -104,7 +111,7 @@ class CustomerController extends BaseController
                     }
                     return '<div class="d-flex">' . $actions . '</div>';
                 })
-                ->rawColumns(['risk_assessment', 'actions'])
+                ->rawColumns(['risk_assessment', 'actions' ,'is_nacta_clear'])
                 ->make(true);
         }
 
@@ -163,6 +170,7 @@ class CustomerController extends BaseController
             'province_id' => 'required|exists:provinces,id',
             'city_id' => 'required|exists:cities,id',
             'district_id' => 'required|exists:districts,id',
+            'is_nacta_clear' => 'required',
 
             // User Profile validation
             'gender_id' => 'required|exists:genders,id',
@@ -230,6 +238,7 @@ class CustomerController extends BaseController
             $userInput = $request->only(['email', 'province_id', 'district_id', 'city_id']);
             $userInput['name'] = $request->first_name . ' ' . $request->last_name;
             $userInput['password'] = 123456; // Hash password
+            $userInput['is_nacta_clear'] = $request->is_nacta_clear; // Hash password
             $user = User::create($userInput);
 
             $request->merge(['user_id' => $user->id]);
@@ -373,6 +382,7 @@ class CustomerController extends BaseController
              'province_id' => 'required|exists:provinces,id',
             'city_id' => 'required|exists:cities,id',
             'district_id' => 'required|exists:districts,id',
+            'is_nacta_clear' => 'required',
 
             // User Profile validation
             'gender_id' => 'required|exists:genders,id',
@@ -437,7 +447,7 @@ class CustomerController extends BaseController
             $request->merge(['name' => $request->first_name . ' ' . $request->last_name]);
 
             // Step 1: Update User Basic Data
-            $customer->update($request->only(['name','email', 'province_id', 'district_id', 'city_id']));
+            $customer->update($request->only(['name','email', 'province_id', 'district_id', 'city_id' ,'is_nacta_clear']));
 
             // Step 2: Update User Profile
             $profileData = $request->only([

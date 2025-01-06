@@ -34,6 +34,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'province_id',
         'district_id',
         'city_id',
+        'is_nacta_clear',
     ];
 
     /**

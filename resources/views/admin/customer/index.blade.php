@@ -49,6 +49,7 @@
                         <th>City</th>
                         <th>Score Level</th>
                         <th>Risk Assessment</th>
+                        <th>Nacta</th>
                         <th class="text-center">Actions</th>
                     </tr>
                     </thead>
@@ -80,6 +81,7 @@
                     {data: 'city', name: 'cities.name',searchable: false},
                     {data: 'score_level', name: 'tracking.score',searchable: false},
                     {data: 'risk_assessment', name: 'risk_assessment', orderable: false, searchable: false},
+                    {data: 'is_nacta_clear', name: 'is_nacta_clear', orderable: false, searchable: false},
                     {data: 'actions', name: 'actions', orderable: false, searchable: false, class: 'text-center'}
                 ]
             });
