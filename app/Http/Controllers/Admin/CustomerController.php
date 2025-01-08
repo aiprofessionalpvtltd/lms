@@ -15,7 +15,9 @@ use App\Models\EmploymentStatus;
 use App\Models\ExistingLoan;
 use App\Models\Gender;
 use App\Models\IncomeSource;
+use App\Models\Installment;
 use App\Models\JobTitle;
+use App\Models\LoanApplication;
 use App\Models\MaritalStatus;
 use App\Models\Nationality;
 use App\Models\Province;
@@ -35,6 +37,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Spatie\Permission\Models\Role;
@@ -105,6 +108,7 @@ class CustomerController extends BaseController
 
                 ->addColumn('actions', function ($customer) {
                     $actions = '';
+                    $actions .= '<a title="View Profile" href="' . route('view-customer-profile', $customer->id) . '" class="text-primary me-3"><i class="fas fa-user-astronaut"></i></a><br>';
                     if (auth()->user()->can('view-customer')) {
                         $actions .= '<a title="View" href="' . route('view-customer', $customer->id) . '" class="text-primary me-3"><i class="fas fa-eye"></i></a>';
                         $actions .= '<a title="Edit" href="' . route('edit-customer', $customer->id) . '" class="text-success me-3"><i class="fas fa-edit"></i></a>';
@@ -133,6 +137,33 @@ class CustomerController extends BaseController
         LogActivity::addToLog('Customer ID : '.$id.' View');
 
         return view('admin.customer.view', compact('title', 'customer'));
+    }
+
+    public function profile($id)
+    {
+        $title = 'User Profie';
+        $customer = User::with('roles', 'profile', 'bank_account', 'tracking',
+            'employment.employmentStatus', 'employment.incomeSource', 'employment.existingLoan',
+            'familyDependent', 'education.education', 'references.relationship')
+            ->find($id);
+
+
+        try {
+            // Fetch loan applications based on the status
+            $loanApplications = LoanApplication::where('user_id',$id)->get();
+            $installments = Installment::with('details')->where('user_id',$id)->get();
+
+//            dd($loanApplications);
+
+
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Loan Application Retrieval Error: ' . $e->getMessage());
+
+            // Return a generic error response
+            return $this->sendError($e->getMessage());
+        }
+        return view('admin.customer.profile', compact('title', 'customer' ,'loanApplications','installments'));
     }
 
 

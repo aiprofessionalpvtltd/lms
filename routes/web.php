@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('customer/{id}/edit', [CustomerController::class, 'edit'])->name('edit-customer');
     Route::put('update-customer{id}', [CustomerController::class, 'update'])->name('update-customer');
     Route::get('user/{id}/view', [CustomerController::class, 'view'])->name('view-customer');
+    Route::get('user/{id}/profile', [CustomerController::class, 'profile'])->name('view-customer-profile');
     Route::get('user/{id}/agreement', [CustomerController::class, 'agreement'])->name('view-customer-agreement');
 
 

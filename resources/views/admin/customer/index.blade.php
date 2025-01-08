@@ -37,7 +37,7 @@
             </div>
 
             <div class="card-body">
-                <table id="customers-table" class="table table-striped datatables-responsive">
+                <table id="customers-table" class="table table-striped">
                     <thead>
                     <tr>
                         <th>Customer Name</th>
