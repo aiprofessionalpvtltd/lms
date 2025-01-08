@@ -65,6 +65,7 @@ class TransactionController extends Controller
             'grant_type' => 'client_credentials',
         ];
 
+        dd($headers,$url,$data);
         try {
             // Make the HTTP POST request
             $response = Http::withHeaders($headers)
