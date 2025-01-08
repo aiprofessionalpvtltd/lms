@@ -76,7 +76,7 @@
                         {{--                        <strong>{{ $customer->bank_account->account_number }}</strong> or through the mobile wallet--}}
                         {{--                        [JazzCash/Easypaisa/Zindagi] after signing this Agreement.</p>--}}
                         <p>
-                            The loan amount will be disbursed to the Borrower’s designated account through one of the
+                            1.2. The loan amount will be disbursed to the Borrower’s designated account through one of the
                             following methods:
                         <p>(a) Direct Bank Transfer to the Borrower’s account  as per details provided. </p>
                         <p> (b) Cash Over the Counter (COC) at the designated branch or partner bank. </p>
