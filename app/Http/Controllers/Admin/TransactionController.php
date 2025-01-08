@@ -72,7 +72,7 @@ class TransactionController extends Controller
                 ->asForm()
                 ->post($url, $data);
 
-            dd($response->json());
+//            dd($response->json());
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
@@ -90,6 +90,8 @@ class TransactionController extends Controller
             ], $response->status());
         } catch (RequestException $exception) {
             // Handle exceptions during the HTTP request
+            dd('Handle exceptions',$exception->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while retrieving the token.',
