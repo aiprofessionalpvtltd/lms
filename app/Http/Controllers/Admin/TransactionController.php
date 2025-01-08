@@ -56,7 +56,7 @@ class TransactionController extends Controller
         $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
         $stagingToken = 'MjlwT1BmSVBTRXRkZGY2THRVQjRtX2F5YjdvYTpGSnF1eTlIRjNySkVlYUNDZWs1RXZFa2xFRjBh';
         $headers = [
-            'Authorization' => 'Basic ' . base64_encode($stagingToken), // Replace with actual client credentials
+            'Authorization' => 'Basic ' .  ($stagingToken), // Replace with actual client credentials
             'Content-Type' => 'application/x-www-form-urlencoded',
         ];
 
