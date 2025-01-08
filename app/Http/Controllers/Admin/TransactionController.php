@@ -54,8 +54,9 @@ class TransactionController extends Controller
     {
         // Define the endpoint and headers
         $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
+        $stagingToken = 'MjlwT1BmSVBTRXRkZGY2THRVQjRtX2F5YjdvYTpGSnF1eTlIRjNySkVlYUNDZWs1RXZFa2xFRjBh';
         $headers = [
-            'Authorization' => 'Basic ' . base64_encode('your-client-id:your-client-secret'), // Replace with actual client credentials
+            'Authorization' => 'Basic ' . base64_encode($stagingToken), // Replace with actual client credentials
             'Content-Type' => 'application/x-www-form-urlencoded',
         ];
 
@@ -70,6 +71,7 @@ class TransactionController extends Controller
                 ->asForm()
                 ->post($url, $data);
 
+            dd($response);
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
