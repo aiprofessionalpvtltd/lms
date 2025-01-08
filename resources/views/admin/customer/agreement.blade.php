@@ -91,7 +91,7 @@
                         due on the
                         <strong>{{ formatOrdinal(date('d',strtotime($loanApplicationFirstInstallments->issue_date)))}}</strong>
                         of each month.</p>
-                    <p>2.3. Late payments shall incur a penalty fee of PKR <strong>{{env('late_fee')}}</strong> per day,
+                    <p>2.3. Late payments shall incur a penalty fee of PKR <strong>{{env('LATE_FEE')}}</strong> per day,
                         calculated from the day after the
                         installment due date.</p>
                     <p>2.4. In case the Borrower fails to make payments for 90 days, the Lender has the right to present
@@ -139,7 +139,7 @@
                     <h4>5. Late Payment Charges</h4>
                     <p>5.1. In the event that the Borrower fails to repay any installment by the due date, a late
                         payment
-                        charge of <strong>PKR {{env('late_fee')}} per day</strong> will apply until the installment is
+                        charge of <strong>PKR {{env('LATE_FEE')}} per day</strong> will apply until the installment is
                         paid in
                         full.</p>
                     <p>5.2. If the Borrower does not make the overdue payment within <strong>90 days</strong>, the
