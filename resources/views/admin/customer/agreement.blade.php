@@ -78,7 +78,7 @@
                         <p>
                             The loan amount will be disbursed to the Borrower’s designated account through one of the
                             following methods:
-                        <p>(a) Direct Bank Transfer to the Borrower’s account as per details provided. </p>
+                        <p>(a) Direct Bank Transfer to the Borrower’s account  as per details provided. </p>
                         <p> (b) Cash Over the Counter (COC) at the designated branch or partner bank. </p>
                         <p> (c) Mobile wallet transfer via JazzCash, Easypaisa, or Zindagi Wallet. </p>
                         <b>All disbursement methods must comply with regulatory requirements</b>
