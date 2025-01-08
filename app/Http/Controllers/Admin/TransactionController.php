@@ -65,14 +65,14 @@ class TransactionController extends Controller
             'grant_type' => 'client_credentials',
         ];
 
-        dd($headers,$url,$data);
+//        dd($headers,$url,$data);
         try {
             // Make the HTTP POST request
             $response = Http::withHeaders($headers)
                 ->asForm()
                 ->post($url, $data);
 
-//            dd($response->json());
+            dd($response->successful() , $response->status());
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
