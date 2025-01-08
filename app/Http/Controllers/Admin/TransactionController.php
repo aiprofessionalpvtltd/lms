@@ -71,7 +71,7 @@ class TransactionController extends Controller
                 ->asForm()
                 ->post($url, $data);
 
-            dd($response);
+            dd($response->json());
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
