@@ -56,14 +56,13 @@
                             registered office
                             at <strong>{{env('COMPANY_ADDRESS')}}</strong>, hereinafter referred to as the "Lender,"</p>
                         <p>AND</p>
-                        <p><strong>{{$customer->profile->first_name .' ' . $customer->profile->last_name}}</strong>,
+                        <p><strong>{{$customer->profile->first_name .' ' . $customer->profile->last_name}}</strong>  holding cnic
+                            <strong>{{$customer->profile->cnic_no}}</strong>
                             residing at {{$customer->profile->permanent_address}}, hereinafter referred to as the
                             "Borrower,"</p>
                         <p>AND</p>
-                        <p><strong>{{$customer->references[0]->guarantor_contact_name ?? ''}}</strong>, residing
-                            at {{$customer->references[0]->guarantor_contact_number ?? ''}},
-                            <strong>{{$customer->references[1]->guarantor_contact_name ?? ''}}</strong>, residing
-                            at {{$customer->references[1]->guarantor_contact_number ?? ''}},
+                        <p><strong>{{$customer->references[0]->guarantor_contact_name ?? ''}}</strong> {{$customer->references[0]->guarantor_contact_number ?? ''}},
+                            <strong>{{$customer->references[1]->guarantor_contact_name ?? ''}}</strong> {{$customer->references[1]->guarantor_contact_number ?? ''}},
                             hereinafter referred to as the "Guarantor."</p>
                         <p>Both the Lender, the Borrower, and the Guarantor may be referred to individually as a "Party"
                             and
