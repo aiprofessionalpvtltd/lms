@@ -183,7 +183,7 @@ class ReportController extends Controller
         // Fetch overdue installment details with associated loan applications and users
         $result = Recovery::with(['installmentDetail', 'installment.loanApplication.user.province', 'installment.loanApplication.user.district'])
             ->when($startDate && $endDate, function ($query) use ($startDate, $endDate) {
-                return $query->whereBetween('created_at', [$startDate, $endDate]);
+                return $query->whereBetween('recovery_date', [$startDate, $endDate]);
             })
             ->when($gender_id, function ($query) use ($gender_id) {
                 return $query->whereHas('installment.loanApplication.user.profile', function ($q) use ($gender_id) {
