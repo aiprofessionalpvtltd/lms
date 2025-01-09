@@ -258,8 +258,8 @@ class TransactionController extends Controller
 
             $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
 
-//            $tokenResponse = $this->getToken()->getData(true);
-            $tokenResponse = $this->getTokenWithCurl()->getData(true);
+            $tokenResponse = $this->getToken()->getData(true);
+//            $tokenResponse = $this->getTokenWithCurl()->getData(true);
 
             dd($tokenResponse);
             if (!$tokenResponse['success']) {

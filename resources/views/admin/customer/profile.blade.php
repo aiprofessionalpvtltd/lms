@@ -2,6 +2,16 @@
 
 @push('style')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <style>
+        .star {
+            font-size: 1.5rem;
+            color: #ddd;
+            cursor: pointer;
+        }
+        .star.active {
+            color: #ffc107;
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -460,6 +470,33 @@
                         </table>
                     @endif
 
+                    <div id="commentForm">
+                        <h4>Leave a Comment</h4>
+                        <form id="commentBox">
+                            <div class="mb-3">
+                                <label for="comment" class="form-label">Comment</label>
+                                <textarea class="form-control" id="comment" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <div id="starRating" class="d-flex">
+                                    <i class="star bi bi-star-fill" data-rating="1"></i>
+                                    <i class="star bi bi-star-fill" data-rating="2"></i>
+                                    <i class="star bi bi-star-fill" data-rating="3"></i>
+                                    <i class="star bi bi-star-fill" data-rating="4"></i>
+                                    <i class="star bi bi-star-fill" data-rating="5"></i>
+                                </div>
+                            </div>
+                            <button type="button" id="saveComment" class="btn btn-primary">Save</button>
+                        </form>
+                    </div>
+
+                    <div id="commentDisplay" class="mt-5 d-none">
+                        <h4>Your Comment</h4>
+                        <p id="displayComment" class="fw-bold"></p>
+                        <p id="displayRating" class="fw-bold"></p>
+                    </div>
+
                     <div class="row signature-section mt-5">
                         <div class="col-6">
                             <p>Name Of
@@ -498,6 +535,33 @@
     <script src="{{asset('backend/custom/js/html2canvas.js')}}"></script>
     <script src="{{asset('backend/custom/js/printThis.js')}}"></script>
     <script>
+        $(document).ready(function () {
+            let selectedRating = 0;
+
+            // Handle star rating selection
+            $('.star').on('click', function () {
+                selectedRating = $(this).data('rating');
+                $('.star').removeClass('active');
+                $(this).prevAll().addBack().addClass('active');
+            });
+
+            // Handle save button click
+            $('#saveComment').on('click', function () {
+                const comment = $('#comment').val();
+
+                if (!comment || selectedRating === 0) {
+                    alert('Please provide a comment and select a rating.');
+                    return;
+                }
+
+                // Show the comment and rating in the display div
+                $('#displayComment').text('Comment: ' + comment);
+                $('#displayRating').text('Rating: ' + selectedRating + ' star(s)');
+                $('#commentForm').hide();
+                $('#commentDisplay').removeClass('d-none');
+            });
+        });
+
         $(document).ready(function () {
             window.html2canvas = html2canvas; // add this line of code
             window.jsPDF = window.jspdf.jsPDF; // add this line of code
