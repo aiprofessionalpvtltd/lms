@@ -40,6 +40,7 @@ class TransactionController extends Controller
     public function storeDisbursement(Request $request)
     {
 
+//        dd($request->service_api);
         if ($request->service_api == 'jazz_cash_mw') {
             $this->jazzCashMWAPI($request);
         }
@@ -47,8 +48,73 @@ class TransactionController extends Controller
             $this->jazzCashIBFTAPI($request);
         }
 
+        if ($request->service_api == 'js_bank') {
+            $this->jazzBankIBFTAPI($request);
+        }
+
     }
 
+    public function getTokenWithCurl(): JsonResponse
+    {
+        // Define the endpoint and credentials
+        $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
+        $stagingToken = 'MjlwT1BmSVBTRXRkZGY2THRVQjRtX2F5YjdvYTpGSnF1eTlIRjNySkVlYUNDZWs1RXZFa2xFRjBh';
+
+        // Initialize cURL
+        $curl = curl_init();
+
+        // Set cURL options
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query(['grant_type' => 'client_credentials']),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Basic ' . $stagingToken,
+                'Content-Type: application/x-www-form-urlencoded',
+            ],
+        ]);
+
+        // Execute the cURL request
+        $response = curl_exec($curl);
+
+        // Check for cURL errors
+        if (curl_errno($curl)) {
+            $error = curl_error($curl);
+            curl_close($curl);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while retrieving the token.',
+                'error' => $error,
+            ], 500);
+        }
+
+        // Get HTTP status code
+        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+        // Close the cURL session
+        curl_close($curl);
+
+        // Decode the JSON response
+        $decodedResponse = json_decode($response, true);
+
+        // Handle the response
+        if ($httpStatus >= 200 && $httpStatus < 300) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Token retrieved successfully.',
+                'data' => $decodedResponse,
+            ]);
+        }
+
+        // Handle unsuccessful responses
+        return response()->json([
+            'success' => false,
+            'message' => $decodedResponse['error_description'] ?? 'Failed to retrieve token.',
+            'error' => $decodedResponse,
+        ], $httpStatus);
+    }
 
     public function getToken(): JsonResponse
     {
@@ -56,7 +122,7 @@ class TransactionController extends Controller
         $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
         $stagingToken = 'MjlwT1BmSVBTRXRkZGY2THRVQjRtX2F5YjdvYTpGSnF1eTlIRjNySkVlYUNDZWs1RXZFa2xFRjBh';
         $headers = [
-            'Authorization' => 'Basic ' .  ($stagingToken), // Replace with actual client credentials
+            'Authorization' => 'Basic ' . ($stagingToken), // Replace with actual client credentials
             'Content-Type' => 'application/x-www-form-urlencoded',
         ];
 
@@ -72,7 +138,7 @@ class TransactionController extends Controller
                 ->asForm()
                 ->post($url, $data);
 
-            dd($response->json() , $response->successful() ,'Status : '.$response->status());
+            dd($response->json(), $response->successful(), 'Status : ' . $response->status());
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
@@ -90,7 +156,7 @@ class TransactionController extends Controller
             ], $response->status());
         } catch (RequestException $exception) {
             // Handle exceptions during the HTTP request
-            dd('Handle exceptions',$exception->getMessage());
+            dd('Handle exceptions', $exception->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -192,8 +258,10 @@ class TransactionController extends Controller
 
             $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
 
-            $tokenResponse = $this->getToken()->getData(true);
+//            $tokenResponse = $this->getToken()->getData(true);
+            $tokenResponse = $this->getTokenWithCurl()->getData(true);
 
+            dd($tokenResponse);
             if (!$tokenResponse['success']) {
                 throw new \Exception($tokenResponse['message']);
             }
@@ -380,6 +448,145 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred while processing the payment.',
+                'error' => $exception->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function jazzBankIBFTAPI($request)
+    {
+        $request->validate([
+            'loan_application_id' => 'required|exists:loan_applications,id',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $request->merge(['payment_method' => 'Bank']);
+
+            $loanApplication = LoanApplication::with('getLatestInstallment.details', 'user.bank_account')
+                ->findOrFail($request->loan_application_id);
+
+            $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
+
+            $userBankDetail = $loanApplication->user->bank_account;
+            $tokenResponse = $this->getTokenJSBank()->getData(true);
+
+            dd($tokenResponse);
+            if (!$tokenResponse['success']) {
+                throw new \Exception($tokenResponse['message']);
+            }
+
+            $accessToken = $tokenResponse['data']['access_token'];
+
+            $paymentData = [
+                'bankAccountNumber' => $userBankDetail->account_number,
+                'bankCode' => $userBankDetail->swift_code,
+                'amount' => $disburseAmount,
+                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
+                'referenceId' => 'moneyIBFT_' . uniqid(),
+            ];
+
+
+            $paymentResponse = $this->makePaymentIBFT($accessToken, $paymentData)->getData(true);
+
+            if (!$paymentResponse['success']) {
+                throw new \Exception($this->getStatusDescription($paymentResponse['error']['code'] ?? 'Unknown error'));
+            }
+
+            $transaction = Transaction::create([
+                'loan_application_id' => $loanApplication->id,
+                'user_id' => Auth::id(),
+                'amount' => $paymentResponse['data']['amount'],
+                'payment_method' => $request->payment_method,
+                'status' => 'completed',
+                'transaction_reference' => $paymentData['referenceId'],
+                'remarks' => $paymentResponse['data']['responseDescription'] .
+                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
+                    ' receiverMSISDN: ' . $paymentResponse['data']['receiverMSISDN'] .
+                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
+                    ' bankName: ' . $paymentResponse['data']['bankName'] .
+                    ' balance: ' . $paymentResponse['data']['balance']
+                ,
+                'responseCode' => $paymentResponse['data']['responseCode'],
+                'transactionID' => $paymentResponse['data']['transactionID'],
+                'referenceID' => $paymentResponse['data']['referenceID'],
+                'dateTime' => $paymentResponse['data']['dateTime'],
+            ]);
+
+            $installments = $loanApplication->getLatestInstallment->details;
+
+            if ($installments->isEmpty()) {
+                throw new \Exception('No installments found for this loan application.');
+            }
+
+            $startDate = Carbon::now();
+
+            foreach ($installments as $installment) {
+                $dueDate = $startDate->copy()->addMonths(1);
+
+                $installment->update([
+                    'issue_date' => $startDate,
+                    'due_date' => $dueDate,
+                ]);
+
+                $startDate = $dueDate->copy()->addDay();
+            }
+
+            DB::commit();
+
+            return redirect()->route('show-installment')->with('success', 'Transaction and installments updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+
+    public function getTokenJSBank(): JsonResponse
+    {
+        // Define the endpoint and credentials
+        $url = 'https://connect.jsbl.com/JSQuickPayAPI/gettoken';
+        $userID = 'AKHTRSMPL';
+        $userPassword = 'Sarmaya@2025';
+
+        // Encode credentials in base64
+        $encodedUserID = base64_encode($userID);
+        $encodedPassword = base64_encode($userPassword);
+
+         try {
+            // Make the GET request with query parameters
+            $response = Http::get($url, [
+                'UserID' => $encodedUserID,
+                'Password' => $encodedPassword,
+            ]);
+
+            // Check if the request was successful
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                 if(isset($responseData['data'])){
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Token retrieved successfully.',
+                        'data' => $responseData['data'] ?? null,
+                    ]);
+                }else{
+                    return response()->json([
+                        'success' => false,
+                        'message' => $response->json()['ResponseMessage'] ?? 'Failed to retrieve token.',
+                        'error_code' => $response->json()['ResponseCode'] ?? null,
+                        'transaction_data' => $response->json()['TransactionData'] ?? null,
+                    ], $response->status());
+                }
+
+            }
+
+
+        } catch (RequestException $exception) {
+            // Handle exceptions during the HTTP request
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while retrieving the token.',
                 'error' => $exception->getMessage(),
             ], 500);
         }

@@ -152,8 +152,8 @@ class CustomerController extends BaseController
             // Fetch loan applications based on the status
             $loanApplications = LoanApplication::where('user_id',$id)->get();
             $installments = Installment::with('details')->where('user_id',$id)->get();
-
-//            dd($loanApplications);
+            $score = $customer->tracking->score ?? 0;
+            $riskAssessment = $this->determineRiskLevel($score);
 
 
         } catch (\Exception $e) {
@@ -163,7 +163,8 @@ class CustomerController extends BaseController
             // Return a generic error response
             return $this->sendError($e->getMessage());
         }
-        return view('admin.customer.profile', compact('title', 'customer' ,'loanApplications','installments'));
+        return view('admin.customer.profile', compact('title', 'customer' ,'loanApplications',
+            'installments','riskAssessment'));
     }
 
 
