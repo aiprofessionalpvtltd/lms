@@ -47,7 +47,7 @@
                             <u><strong> {{ $loanApplication->application_id ?? 'N/A'}}</strong></u></h2>
                         <br>
                         <h2 class="text-center fw-bold mb-4 mt-4">Loan Agreement</h2>
-                        <p>This Loan Agreement (the "Agreement") is entered into on this {{ currentDate() }}, by
+                        <p>This Loan Agreement (the "Agreement") is entered into on this {{ showDate($loanApplicationDisbursment->dateTime) }}, by
                             and between:</p>
 
                         <p><strong>{{env('COMPANY_NAME')}}</strong>, a company duly registered under the laws of

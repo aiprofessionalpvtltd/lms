@@ -656,6 +656,8 @@ class LoanApplicationController extends BaseController
             $loanApplication->load('loanDuration');
 
             $loanApplicationProduct = $loanApplication->calculatedProduct;
+            $loanApplicationDisbursment= $loanApplication->transaction;
+//            dd($loanApplicationDisbursment);
             $loanApplicationFirstInstallments = $loanApplication->getLatestInstallment->details[0];
 
 
@@ -668,7 +670,7 @@ class LoanApplicationController extends BaseController
         }
 
         return view('admin.customer.agreement', compact('title', 'customer', 'loanApplication',
-            'loanApplicationProduct', 'loanApplicationFirstInstallments'));
+            'loanApplicationProduct', 'loanApplicationFirstInstallments' ,'loanApplicationDisbursment'));
     }
 
 
