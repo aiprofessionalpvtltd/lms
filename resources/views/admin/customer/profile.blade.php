@@ -247,31 +247,42 @@
 
                     <h2>The reference risk categorization and scoring range is as under:</h2>
                     <table class="table table-bordered">
-
                         <tr>
                             <th>Indicator</th>
                             <th>Scoring Range</th>
-
+                            <th>Your Score Level</th>
                         </tr>
                         <tr>
                             <th>Low</th>
                             <th>0-22</th>
-
+                            <th>
+                                @if($customer->tracking->score >= 0 && $customer->tracking->score <= 22)
+                                    <span class="text-success">{{ $customer->tracking->score }}</span>
+                                @endif
+                            </th>
                         </tr>
                         <tr>
                             <th>Medium</th>
                             <th>23-34</th>
-
+                            <th>
+                                @if($customer->tracking->score >= 23 && $customer->tracking->score <= 34)
+                                    <span class="text-warning">{{ $customer->tracking->score }}</span>
+                                @endif
+                            </th>
                         </tr>
                         <tr>
                             <th>High</th>
-                            <th>Greater Than or Equal To:35</th>
-
+                            <th>Greater Than or Equal To: 35</th>
+                            <th>
+                                @if($customer->tracking->score >= 35)
+                                    <span class="text-danger">{{ $customer->tracking->score }}</span>
+                                @endif
+                            </th>
                         </tr>
-
                     </table>
 
-                    @if(count($loanApplications) > 0)
+
+                @if(count($loanApplications) > 0)
                         <h2>Loan Application</h2>
                         <table class="table table-bordered">
                             <thead>
@@ -585,13 +596,10 @@
                     loadCSS: "", // Path to external CSS file (if needed)
                     header: null, // Exclude header from the printed output
                     footer: null, // Exclude footer from the printed output
-                    pageTitle: "All Invoices", // Set a custom page title
-                    printDelay: 500, // Adjust delay if needed for large content
+                     printDelay: 500, // Adjust delay if needed for large content
                     pageSize: 'A4', // Force the page size to A4
                     canvas: true, // Render canvas content if necessary
-                    afterPrint: function () {
-                        console.log("All invoices printed");
-                    }
+
                 });
             });
         });
