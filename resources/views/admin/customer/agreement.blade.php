@@ -58,7 +58,7 @@
                         <p>AND</p>
                         <p><strong>{{$customer->profile->first_name .' ' . $customer->profile->last_name}}</strong>  holding cnic
                             <strong>{{$customer->profile->cnic_no}}</strong>
-                            residing at {{$customer->profile->permanent_address}}, hereinafter referred to as the
+                            residing at <strong>{{$customer->profile->permanent_address}}</strong>, hereinafter referred to as the
                             "Borrower,"</p>
                         <p>AND</p>
                         <p><strong>{{$customer->references[0]->guarantor_contact_name ?? ''}}</strong> {{$customer->references[0]->guarantor_contact_number ?? ''}},
