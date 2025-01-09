@@ -80,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('loan-applications/{id}/status', [LoanApplicationController::class, 'updateStatus'])->name('update-loan-application-status');
     Route::get('loan-applications/{id}/approved', [LoanApplicationController::class, 'approveLoan'])->name('approve-loan');
     Route::get('get-customer-loan-applications/{id}/{loanID}', [LoanApplicationController::class, 'getCustomerData'])->name('get-customer-loan-applications');
+    Route::post('destroy-loan-application', [LoanApplicationController::class, 'destroy'])->name('destroy-loan-application');
 
     Route::get('create-loan-application', [LoanApplicationController::class, 'create'])->name('create-loan-application');
     Route::get('calculate-loan-application', [LoanApplicationController::class, 'calculateLoan'])->name('calculate-loan-application');

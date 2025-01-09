@@ -237,7 +237,7 @@ class LoanApplicationController extends BaseController
 
     public function updateApplication(Request $request, $loanApplicationId)
     {
-         // Fetch maximum loan amount from .env
+        // Fetch maximum loan amount from .env
         $maxAmount = env('MAX_AMOUNT', 300000); // Default to 300,000 PKR
 
         // Validate the request
@@ -282,7 +282,7 @@ class LoanApplicationController extends BaseController
                 'approved_by' => auth()->id(),
             ]);
 
-             $request->merge(['months' => $loanDuration->value]);
+            $request->merge(['months' => $loanDuration->value]);
 
             // Calculate loan details
             $loanCalculated = $this->calculateLoan($request);
@@ -293,7 +293,7 @@ class LoanApplicationController extends BaseController
 
             $calculatedData = $loanCalculated->getData()->data;
 
-             // Save updated loan details
+            // Save updated loan details
             $loanApplicationProduct = $loanApplication->calculatedProduct()->firstOrNew(['loan_application_id' => $loanApplication->id]);
 
             $loanApplicationProduct->fill([
@@ -612,7 +612,6 @@ class LoanApplicationController extends BaseController
         try {
             $loanApplications = [];
 
-
             $loanApplications = LoanApplication::with('getLatestHistory')
                 ->where('id', '!=', $loanID) // Exclude the current loan application
                 ->where('user_id', $id)->get();
@@ -635,8 +634,6 @@ class LoanApplicationController extends BaseController
         $title = 'Agreement User';
         $loanApplicationID = $id;
 
-
-
         try {
             // Fetch loan applications based on the status
             $loanApplication = LoanApplication::find($loanApplicationID);
@@ -656,12 +653,10 @@ class LoanApplicationController extends BaseController
                 ->find($userId);
 
 
-                $loanApplication->load('loanDuration');
+            $loanApplication->load('loanDuration');
 
-                 $loanApplicationProduct = $loanApplication->calculatedProduct;
-                 $loanApplicationFirstInstallments = $loanApplication->getLatestInstallment->details[0];
-
-
+            $loanApplicationProduct = $loanApplication->calculatedProduct;
+            $loanApplicationFirstInstallments = $loanApplication->getLatestInstallment->details[0];
 
 
         } catch (\Exception $e) {
@@ -672,8 +667,8 @@ class LoanApplicationController extends BaseController
             return $this->sendError($e->getMessage());
         }
 
-        return view('admin.customer.agreement', compact('title', 'customer','loanApplication',
-            'loanApplicationProduct' ,'loanApplicationFirstInstallments'));
+        return view('admin.customer.agreement', compact('title', 'customer', 'loanApplication',
+            'loanApplicationProduct', 'loanApplicationFirstInstallments'));
     }
 
 
@@ -1565,6 +1560,14 @@ class LoanApplicationController extends BaseController
         $suffixes = ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'];
         $mod = $number % 100;
         return $number . ($suffixes[($mod - 20) % 10] ?? $suffixes[$mod] ?? 'th');
+    }
+
+    public function destroy(Request $request)
+    {
+        $loanApplication = LoanApplication::find($request->id);
+        $loanApplication->delete();
+
+        return response()->json(['success' => 'Loan Application Deleted Successfully']);
     }
 
 

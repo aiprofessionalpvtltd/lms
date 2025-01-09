@@ -73,6 +73,8 @@
                                        class=" btn btn-info me-3">Agreement</a>
 
 
+
+
                                     @can('view-loan-management')
                                         <a title="View"
                                            href="{{ route('view-loan-application', $loanApplication->id) }}"
@@ -89,7 +91,13 @@
                                         {{--                                       class="text-primary mr-3 ml-3"><i--}}
                                         {{--                                            class="fas fa-check"></i></a>--}}
                                     @endcan
-
+                                    @can('delete-loan-management')
+                                        <a href="javascript:void(0)" data-url="{{route('destroy-loan-application')}}"
+                                           data-status='0' data-label="delete"
+                                           data-id="{{$loanApplication->id}}"
+                                           class=" text-danger mr-1 change-status-record "
+                                           title="Suspend Record"><i class="fas fa-trash"></i></a>
+                                    @endcan
 
                                 </div>
                             </td>
