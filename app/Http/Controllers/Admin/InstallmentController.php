@@ -7,8 +7,10 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Installment;
 use App\Models\InstallmentDetail;
+use App\Models\LoanApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class InstallmentController extends Controller
 {
@@ -117,5 +119,29 @@ class InstallmentController extends Controller
 
         return response()->json(['message' => 'Issue date updated successfully.'], 200);
     }
+
+    public function destroy(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $installment = Installment::findOrFail($request->id);
+
+            $loanApplication = LoanApplication::findOrFail($installment->loan_application_id);
+            $loanApplication->status = 'pending';
+            $loanApplication->save();
+
+            $installment->delete();
+
+            DB::commit();
+
+            return response()->json(['success' => 'Installment Deleted Successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json(['error' => 'An error occurred while deleting the installment.', 'message' => $e->getMessage()], 500);
+        }
+    }
+
 
 }

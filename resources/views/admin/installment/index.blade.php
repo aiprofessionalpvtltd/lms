@@ -71,6 +71,14 @@
 
                                 @endif
 
+                                @can('delete-installments')
+                                    <a href="javascript:void(0)" data-url="{{route('destroy-installment')}}"
+                                       data-status='0' data-label="delete"
+                                       data-id="{{$installment->id}}"
+                                       class=" text-danger mr-1 change-status-record "
+                                       title="Suspend Record"><i class="fas fa-trash"></i></a>
+                                @endcan
+
 
                             </td>
                         </tr>
