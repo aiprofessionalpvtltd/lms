@@ -38,7 +38,7 @@
                 </div>
 
                 <div class="card-body">
-                    <h4 class="text-center"><u>Micro Finance Development Program</u></h4>
+                    <h4 class="text-center"><u>Customer Profile</u></h4>
 
                     <h6><u>CREDIT SANCTION FORM</u></h6>
                     <div class="row">
@@ -49,7 +49,7 @@
                                     <th>Cell #</th>
                                     <th>Score Level</th>
                                     <th>Risk Assessment</th>
-                                    <th>Product</th>
+                                     <th>Nacta Clear</th>
 
                                 </tr>
                                 <tr>
@@ -57,9 +57,7 @@
                                     <td>{{  $customer->profile->mobile_no  }}</td>
                                     <td>{{ $customer->tracking->score }}</td>
                                     <td>{{ $riskAssessment['risk_level'] }}</td>
-                                    <td> Conventional</td>
-
-
+                                    <td>{{ $customer->is_nacta_clear == 1 ?  'Clear' : 'Not Clear' }}</td>
                                 </tr>
 
                             </table>
@@ -485,6 +483,11 @@
                                     <i class="star bi bi-star-fill" data-rating="3"></i>
                                     <i class="star bi bi-star-fill" data-rating="4"></i>
                                     <i class="star bi bi-star-fill" data-rating="5"></i>
+                                    <i class="star bi bi-star-fill" data-rating="6"></i>
+                                    <i class="star bi bi-star-fill" data-rating="7"></i>
+                                    <i class="star bi bi-star-fill" data-rating="8"></i>
+                                    <i class="star bi bi-star-fill" data-rating="9"></i>
+                                    <i class="star bi bi-star-fill" data-rating="10"></i>
                                 </div>
                             </div>
                             <button type="button" id="saveComment" class="btn btn-primary">Save</button>
