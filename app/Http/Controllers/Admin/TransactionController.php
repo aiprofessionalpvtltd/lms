@@ -175,13 +175,12 @@ class TransactionController extends Controller
             'Authorization' => 'Bearer ' . $accessToken,
         ];
 
-        dd($url,$headers , $paymentData);
         try {
             // Make the HTTP POST request
             $response = Http::withHeaders($headers)
                 ->post($url, $paymentData);
 
-            dd($response->successful(), $response->status());
+            dd($response->successful(), $response->status() ,$response->json());
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
