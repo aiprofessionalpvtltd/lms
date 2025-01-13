@@ -228,7 +228,7 @@ class TransactionController extends Controller
 
             $depcrytedData = $this->decrypt( $responseData['data'],$this->iv);
 
-            dd($response->successful(), $response->status() ,$response->json(), $depcrytedData);
+            dd($paymentData ,$response->json(), $depcrytedData);
 
             // Check if the request was successful
             if ($response->successful()) {
@@ -324,9 +324,9 @@ class TransactionController extends Controller
 //            ];
 
             $paymentData = [
-                'amount' => 10.00,
                 'receiverCNIC' => '9203000055897',
                 'receiverMSISDN' => '03000055897',
+                'amount' => '1.00',
                 'referenceId' =>'moneyMW_' . mt_rand(0, 10)
             ];
 
