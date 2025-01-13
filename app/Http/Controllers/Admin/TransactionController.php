@@ -322,7 +322,7 @@ class TransactionController extends Controller
                 'receiverMSISDN' => $this->encrypt('03000055897', $this->iv),
                 'referenceId' => $this->encrypt('moneyMW_' . mt_rand(0, 10), $this->iv),
             ];
-            dd($this->encrypt(10.00, $this->iv));
+            dd($paymentData);
 
 //            $paymentData = [
 //                'amount' => $disburseAmount,
