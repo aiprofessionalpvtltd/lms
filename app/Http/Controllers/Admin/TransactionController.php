@@ -22,7 +22,7 @@ class TransactionController extends Controller
 {
 
     // Define the encryption key and IV
-    private $key = 'mYjC!nc3dibleY3k'; // Must be 16 bytes;  // Must be 16 bytes
+    private $key = 'mYjC!nc3dibleY3k'; // Must be 16 bytes
     private $iv = 'Myin!tv3ctorjCM@';  // Must be 16 bytes
 
 
@@ -316,11 +316,18 @@ class TransactionController extends Controller
 
             $accessToken = $tokenResponse['data']['access_token'];
 
+//            $paymentData = [
+//                'amount' => $this->encrypt(10.00, $this->iv),
+//                'receiverCNIC' => $this->encrypt('9203000055897', $this->iv),
+//                'receiverMSISDN' => $this->encrypt('03000055897', $this->iv),
+//                'referenceId' => $this->encrypt('moneyMW_' . mt_rand(0, 10), $this->iv),
+//            ];
+
             $paymentData = [
-                'amount' => $this->encrypt(10.00, $this->iv),
-                'receiverCNIC' => $this->encrypt('9203000055897', $this->iv),
-                'receiverMSISDN' => $this->encrypt('03000055897', $this->iv),
-                'referenceId' => $this->encrypt('moneyMW_' . mt_rand(0, 10), $this->iv),
+                'amount' => 10.00,
+                'receiverCNIC' => '9203000055897',
+                'receiverMSISDN' => '03000055897',
+                'referenceId' =>'moneyMW_' . mt_rand(0, 10)
             ];
 
 //            $paymentData = [
