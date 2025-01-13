@@ -327,8 +327,9 @@ class TransactionController extends Controller
                 'receiverCNIC'   => '9203000055897',
                 'receiverMSISDN' => '03000055897',
                 'amount'         => '1.00',
-                'referenceId'    => 'moneyMW_' . random_int(0, 10),
+                'referenceId'    => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
             ];
+
 
 //            $paymentData = [
 //                'amount' => $disburseAmount,
