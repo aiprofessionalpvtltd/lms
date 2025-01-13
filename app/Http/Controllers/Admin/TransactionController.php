@@ -222,13 +222,13 @@ class TransactionController extends Controller
             $response = Http::withHeaders($headers)
                 ->post($url, $paymentData);
 
-            dd($response->successful(), $response->status() ,$response->json());
+//            dd($response->successful(), $response->status() ,$response->json());
 
             $responseData = $response->json();
-            $encryptedData = $responseData['data'];
 
+            $depcrytedData = $this->decrypt( $responseData['data'],$this->iv);
 
-            dd($depcrytedData);
+            dd($response->successful(), $response->status() ,$response->json(), $depcrytedData);
 
             // Check if the request was successful
             if ($response->successful()) {
