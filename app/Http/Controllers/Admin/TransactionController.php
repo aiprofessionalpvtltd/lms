@@ -270,7 +270,6 @@ class TransactionController extends Controller
 
             $paymentData = [
                 'amount' => 1,
-                'loan_application_id' => $loanApplication->id,
                 'receiverCNIC' => '9203000055897',
                 'receiverMSISDN' => '03000055897',
                 'referenceId' => 'moneyMW_' . uniqid(),
