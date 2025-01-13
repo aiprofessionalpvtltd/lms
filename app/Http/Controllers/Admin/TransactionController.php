@@ -15,9 +15,50 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\JsonResponse;
+use Ramsey\Uuid\Uuid;
+use const Symfony\Component\Routing\Requirement\UUID;
 
 class TransactionController extends Controller
 {
+
+    // Define the encryption key and IV
+    private $key = 'mYjC!nc3dibleY3k'; // Must be 16 bytes;  // Must be 16 bytes
+    private $iv = 'Myin!tv3ctorjCM@';  // Must be 16 bytes
+
+
+    // Encrypt function with IV parameter
+    public function encrypt($plaintext, $iv)
+    {
+        $cipher = 'AES-128-CBC';
+
+        // Validate IV length
+        if (strlen($iv) !== openssl_cipher_iv_length($cipher)) {
+            throw new \Exception("Invalid IV length. Must be 16 bytes.");
+        }
+
+        // Encrypt the plaintext
+        $encrypted = openssl_encrypt($plaintext, $cipher, $this->key, OPENSSL_RAW_DATA, $iv);
+
+        // Encode the result in HEX
+        return bin2hex($encrypted);
+    }
+
+    // Decrypt function with IV parameter
+    public function decrypt($hexCipherText, $iv)
+    {
+        $cipher = 'AES-128-CBC';
+
+        // Validate IV length
+        if (strlen($iv) !== openssl_cipher_iv_length($cipher)) {
+            throw new \Exception("Invalid IV length. Must be 16 bytes.");
+        }
+
+        // Decode the HEX string
+        $encrypted = hex2bin($hexCipherText);
+
+        // Decrypt the data
+        return openssl_decrypt($encrypted, $cipher, $this->key, OPENSSL_RAW_DATA, $iv);
+    }
 
 
     public function index($id)
@@ -165,6 +206,7 @@ class TransactionController extends Controller
         }
     }
 
+
     public function makePaymentMW(string $accessToken, array $paymentData): JsonResponse
     {
         // Define the endpoint and headers
@@ -186,20 +228,7 @@ class TransactionController extends Controller
             $encryptedData = $responseData['data'];
 
 
-            $cipher = 'AES-128-CBC';
-             $key = 'mYjC!nc3dibleY3k'; // Change this to your secure key
-
-            // Decode HEX and extract IV and encrypted data
-            $data = hex2bin($encryptedData);
-            $ivLength = openssl_cipher_iv_length($cipher);
-            $iv = substr($data, 0, $ivLength); // Extract IV
-            $encrypted = substr($data, $ivLength); // Extract encrypted data
-
-            var_dump($iv);
-            // Decrypt the data
-             $depcrytedData = openssl_decrypt($encrypted, $cipher, $key, OPENSSL_RAW_DATA, $iv);
-
-             dd($depcrytedData);
+            dd($depcrytedData);
 
             // Check if the request was successful
             if ($response->successful()) {
@@ -281,17 +310,17 @@ class TransactionController extends Controller
             $tokenResponse = $this->getToken()->getData(true);
 //            $tokenResponse = $this->getTokenWithCurl()->getData(true);
 
-             if (!$tokenResponse['success']) {
+            if (!$tokenResponse['success']) {
                 throw new \Exception($tokenResponse['message']);
             }
 
             $accessToken = $tokenResponse['data']['access_token'];
 
             $paymentData = [
-                'amount' => 1,
-                'receiverCNIC' => '9203000055897',
-                'receiverMSISDN' => '03000055897',
-                'referenceId' => 'moneyMW_' . uniqid(),
+                'amount' => $this->encrypt(10.00, $this->iv),
+                'receiverCNIC' => $this->encrypt('9203000055897', $this->iv),
+                'receiverMSISDN' => $this->encrypt('03000055897', $this->iv),
+                'referenceId' => $this->encrypt('moneyMW_' . mt_rand(0, 10), $this->iv),
             ];
 
 //            $paymentData = [
@@ -302,7 +331,7 @@ class TransactionController extends Controller
 //                'referenceId' => 'moneyMW_' . uniqid(),
 //            ];
 
-             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
+            $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
             dd($paymentResponse);
             if (!$paymentResponse['success']) {
@@ -579,7 +608,7 @@ class TransactionController extends Controller
         $encodedUserID = base64_encode($userID);
         $encodedPassword = base64_encode($userPassword);
 
-         try {
+        try {
             // Make the GET request with query parameters
             $response = Http::get($url, [
                 'UserID' => $encodedUserID,
@@ -590,13 +619,13 @@ class TransactionController extends Controller
             if ($response->successful()) {
                 $responseData = $response->json();
 
-                 if(isset($responseData['data'])){
+                if (isset($responseData['data'])) {
                     return response()->json([
                         'success' => true,
                         'message' => 'Token retrieved successfully.',
                         'data' => $responseData['data'] ?? null,
                     ]);
-                }else{
+                } else {
                     return response()->json([
                         'success' => false,
                         'message' => $response->json()['ResponseMessage'] ?? 'Failed to retrieve token.',
