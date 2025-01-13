@@ -180,6 +180,7 @@ class TransactionController extends Controller
             $response = Http::withHeaders($headers)
                 ->post($url, $paymentData);
 
+            dd($response->successful(), $response->status());
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
@@ -260,24 +261,32 @@ class TransactionController extends Controller
             $tokenResponse = $this->getToken()->getData(true);
 //            $tokenResponse = $this->getTokenWithCurl()->getData(true);
 
-            dd($tokenResponse);
-            if (!$tokenResponse['success']) {
+             if (!$tokenResponse['success']) {
                 throw new \Exception($tokenResponse['message']);
             }
 
             $accessToken = $tokenResponse['data']['access_token'];
 
             $paymentData = [
-                'amount' => $disburseAmount,
+                'amount' => 1,
                 'loan_application_id' => $loanApplication->id,
-                'receiverCNIC' => inputMaskDash($loanApplication->user->profile->cnic_no),
-                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
+                'receiverCNIC' => '9203000055897',
+                'receiverMSISDN' => '03000055897',
                 'referenceId' => 'moneyMW_' . uniqid(),
             ];
+
+//            $paymentData = [
+//                'amount' => $disburseAmount,
+//                'loan_application_id' => $loanApplication->id,
+//                'receiverCNIC' => inputMaskDash($loanApplication->user->profile->cnic_no),
+//                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
+//                'referenceId' => 'moneyMW_' . uniqid(),
+//            ];
 
 
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
+            dd($paymentResponse);
             if (!$paymentResponse['success']) {
                 throw new \Exception($this->getStatusDescription($paymentResponse['error']['code'] ?? 'Unknown error'));
             }
