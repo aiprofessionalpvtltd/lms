@@ -197,7 +197,7 @@ class TransactionController extends Controller
 
             var_dump($iv);
             // Decrypt the data
-             $depcrytedData = penssl_decrypt($encrypted, $cipher, $key, OPENSSL_RAW_DATA, $iv);
+             $depcrytedData = openssl_decrypt($encrypted, $cipher, $key, OPENSSL_RAW_DATA, $iv);
 
              dd($depcrytedData);
 
