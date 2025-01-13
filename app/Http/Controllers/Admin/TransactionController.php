@@ -180,7 +180,27 @@ class TransactionController extends Controller
             $response = Http::withHeaders($headers)
                 ->post($url, $paymentData);
 
-            dd($response->successful(), $response->status() ,$response->json());
+//            dd($response->successful(), $response->status() ,$response->json());
+
+            $responseData = $response->json();
+            $encryptedData = $responseData['data'];
+
+
+            $cipher = 'AES-128-CBC';
+             $key = 'mYjC!nc3dibleY3k'; // Change this to your secure key
+
+            // Decode HEX and extract IV and encrypted data
+            $data = hex2bin($encryptedData);
+            $ivLength = openssl_cipher_iv_length($cipher);
+            $iv = substr($data, 0, $ivLength); // Extract IV
+            $encrypted = substr($data, $ivLength); // Extract encrypted data
+
+            var_dump($iv);
+            // Decrypt the data
+             $depcrytedData = penssl_decrypt($encrypted, $cipher, $key, OPENSSL_RAW_DATA, $iv);
+
+             dd($depcrytedData);
+
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([

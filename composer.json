@@ -15,7 +15,8 @@
         "spatie/laravel-permission": "^6.9",
         "yajra/laravel-datatables-oracle": "^11.1",
       "ext-curl": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+      "ext-openssl": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
