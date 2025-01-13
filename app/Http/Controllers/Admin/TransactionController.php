@@ -324,10 +324,10 @@ class TransactionController extends Controller
 //            ];
 
             $paymentData = [
-                'receiverCNIC' => '9203000055897',
+                'receiverCNIC'   => '9203000055897',
                 'receiverMSISDN' => '03000055897',
-                'amount' => '1.00',
-                'referenceId' =>'moneyMW_' . mt_rand(0, 10)
+                'amount'         => '1.00',
+                'referenceId'    => 'moneyMW_' . random_int(0, 10),
             ];
 
 //            $paymentData = [
