@@ -175,6 +175,7 @@ class TransactionController extends Controller
             'Authorization' => 'Bearer ' . $accessToken,
         ];
 
+        dd($url,$headers , $paymentData);
         try {
             // Make the HTTP POST request
             $response = Http::withHeaders($headers)
@@ -283,8 +284,7 @@ class TransactionController extends Controller
 //                'referenceId' => 'moneyMW_' . uniqid(),
 //            ];
 
-
-            $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
+             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
             dd($paymentResponse);
             if (!$paymentResponse['success']) {
