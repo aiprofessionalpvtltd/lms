@@ -36,8 +36,14 @@ class TransactionController extends Controller
             throw new \Exception("Invalid IV length. Must be 16 bytes.");
         }
 
+        // Convert array to JSON if it's not a string
+        if (is_array($plaintext)) {
+            $plaintext = json_encode($plaintext);
+        }
+
         // Encrypt the plaintext
         $encrypted = openssl_encrypt($plaintext, $cipher, $this->key, OPENSSL_RAW_DATA, $iv);
+
 
         // Encode the result in HEX
         return bin2hex($encrypted);
@@ -219,6 +225,7 @@ class TransactionController extends Controller
         ];
 
         $paymentData = $this->encrypt($paymentData, $this->iv);
+        dd($paymentData);
         $testData = '86928ea8e1b0efa3c42bb84ac4e362296a2cdc28235b569c76db413d6dff2e856359faddeadbfb4221d1049c5a6a81b67a15ad6356a8c72ee70b9fea4ee355f89e3fdb8d9c2902362f10727ff0de170ad92123d4cbeffc716d4ab6ab60ca13ab6d1b9c42dc78233742938cce0f4344a0bf9f78e1c2dde610c5b6e19bd377bf3b35ab35f6f4b7771bfcb07b0d55266588';
         try {
             // Make the HTTP POST request
