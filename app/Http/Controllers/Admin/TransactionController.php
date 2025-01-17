@@ -430,7 +430,8 @@ class TransactionController extends Controller
             // Commit transaction
             DB::commit();
 
-            return true;
+            return redirect()->route('show-installment')->with('success', 'Transaction completed successfully.');
+
         } catch (\Exception $e) {
             // Rollback in case of any exception
             DB::rollBack();
