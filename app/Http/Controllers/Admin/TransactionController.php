@@ -349,7 +349,6 @@ class TransactionController extends Controller
             $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
 
             $tokenResponse = $this->getToken()->getData(true);
-//            $tokenResponse = $this->getTokenWithCurl()->getData(true);
 
             if (!$tokenResponse['success']) {
                 throw new \Exception($tokenResponse['message']);
@@ -375,8 +374,10 @@ class TransactionController extends Controller
 
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
- 
-// Check if the payment was successful
+            // Debugging response (you can remove this in production)
+//            dd($paymentResponse);
+
+            // Check if the payment was successful
             if (!$paymentResponse['success']) {
                 DB::rollBack();
 
@@ -385,7 +386,7 @@ class TransactionController extends Controller
                 ]);
             }
 
-// Create the transaction
+            // Create the transaction
             $transaction = Transaction::create([
                 'loan_application_id' => $loanApplication->id,
                 'user_id' => Auth::id(),
@@ -400,9 +401,8 @@ class TransactionController extends Controller
                 'dateTime' => $paymentResponse['data']['dateTime'],
             ]);
 
-// Debugging the transaction (you can remove this in production)
-            dd($transaction);
-
+            // Debugging the transaction (you can remove this in production)
+//            dd($transaction);
 
             $installments = $loanApplication->getLatestInstallment->details;
 
