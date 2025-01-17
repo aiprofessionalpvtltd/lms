@@ -69,9 +69,9 @@ class TransactionController extends Controller
         $decrypted = openssl_decrypt($encrypted, $cipher, $this->key, OPENSSL_RAW_DATA, $iv);
 
         // Decode JSON string back to array if applicable
-        $jsonDecoded = json_encode($decrypted);
+//        $jsonDecoded = json_encode($decrypted);
 //        return $jsonDecoded !== null ? $jsonDecoded : $decrypted;
-        return $jsonDecoded;
+        return $decrypted;
     }
 
 
@@ -251,22 +251,30 @@ class TransactionController extends Controller
 
 //            dd($paymentData , $encryptedPaymentData ,$response->json(), $depcrytedData);
 
-            // Check if the request was successful
+            // Decode the decrypted data if it's in JSON format
+            $decryptedData = json_decode($decryptedData, true); // Decode as an associative array
+
+            if (!is_array($decryptedData)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid decrypted data format.',
+                ], 400); // Return a 400 Bad Request response
+            }
+
+            // Check the response code
             if ($decryptedData['responseCode'] === 'G2P-T-0') {
                 return response()->json([
                     'success' => true,
-                    'message' => $decryptedData['responseDescription'], // Dynamically include the responseDescription
-                    'data' => $decryptedData, // Include the entire decrypted data in the response
+                    'message' => $decryptedData['responseDescription'], // Use the description from the response
+                    'data' => $decryptedData, // Include the entire decrypted data
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment failed.',
+                    'data' => $decryptedData, // Include data for debugging purposes
                 ]);
             }
-
-
-            // Handle unsuccessful responses
-            return response()->json([
-                'success' => false,
-                'message' => $decryptedData['responseDescription'],
-                'error' => $decryptedData,
-            ], $response->status());
         } catch (RequestException $exception) {
             // Handle exceptions during the HTTP request
             return response()->json([
