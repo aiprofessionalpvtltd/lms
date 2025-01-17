@@ -254,6 +254,7 @@ class TransactionController extends Controller
             // Decode the decrypted data if it's in JSON format
             $decryptedData = json_decode($decryptedData, true); // Decode as an associative array
 
+            dd($decryptedData);
             if (!is_array($decryptedData)) {
                 return response()->json([
                     'success' => false,
