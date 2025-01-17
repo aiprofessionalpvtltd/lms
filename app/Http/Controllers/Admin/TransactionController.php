@@ -68,9 +68,10 @@ class TransactionController extends Controller
         // Decrypt the data
         $decrypted = openssl_decrypt($encrypted, $cipher, $this->key, OPENSSL_RAW_DATA, $iv);
 
-        // Decode JSON string back to array if applicable
-        $jsonDecoded = json_decode($decrypted, true);
-        return $jsonDecoded !== null ? $jsonDecoded : $decrypted;
+         // Decode JSON string back to array if applicable
+//        $jsonDecoded = json_encode($decrypted);
+//        return $jsonDecoded !== null ? $jsonDecoded : $decrypted;
+        return  $decrypted;
     }
 
 
@@ -94,8 +95,9 @@ class TransactionController extends Controller
 
     public function storeDisbursement(Request $request)
     {
-//        $data = '86928ea8e1b0efa3c42bb84ac4e362296a2cdc28235b569c76db413d6dff2e856359faddeadbfb4221d1049c5a6a81b67a15ad6356a8c72ee70b9fea4ee355f89e3fdb8d9c2902362f10727ff0de170ad92123d4cbeffc716d4ab6ab60ca13ab6d1b9c42dc78233742938cce0f4344a0bf9f78e1c2dde610c5b6e19bd377bf3b35ab35f6f4b7771bfcb07b0d55266588';
+        $data = '86928ea8e1b0efa3c42bb84ac4e362296a2cdc28235b569c76db413d6dff2e856359faddeadbfb4221d1049c5a6a81b67a15ad6356a8c72ee70b9fea4ee355f89e3fdb8d9c2902362f10727ff0de170ad92123d4cbeffc716d4ab6ab60ca13ab6d1b9c42dc78233742938cce0f4344a0db13d88568ffd2aee12271a01455e1252a1ddfbcba7027d845970578129bde3b';
 
+//        dd($this->decrypt($data,$this->iv));
  //        dd($request->service_api);
         if ($request->service_api == 'jazz_cash_mw') {
             $this->jazzCashMWAPI($request);
