@@ -375,29 +375,34 @@ class TransactionController extends Controller
 
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
-            dd($paymentResponse);
-             if ($paymentResponse['success'] != true) {
-                 DB::rollBack();
+ 
+// Check if the payment was successful
+            if (!$paymentResponse['success']) {
+                DB::rollBack();
 
-                return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $paymentResponse['message']]);
-
+                return redirect()->back()->withErrors([
+                    'error' => 'An error occurred: ' . $paymentResponse['message']
+                ]);
             }
 
-
+// Create the transaction
             $transaction = Transaction::create([
                 'loan_application_id' => $loanApplication->id,
                 'user_id' => Auth::id(),
                 'amount' => $paymentResponse['data']['amount'],
                 'payment_method' => $request->payment_method,
                 'status' => 'completed',
-                'transaction_reference' => $paymentData['referenceID'],
+                'transaction_reference' => $paymentResponse['data']['referenceID'], // Corrected to use $paymentResponse
                 'remarks' => $paymentResponse['data']['responseDescription'],
                 'responseCode' => $paymentResponse['data']['responseCode'],
                 'transactionID' => $paymentResponse['data']['transactionID'],
                 'referenceID' => $paymentResponse['data']['referenceID'],
                 'dateTime' => $paymentResponse['data']['dateTime'],
             ]);
+
+// Debugging the transaction (you can remove this in production)
             dd($transaction);
+
 
             $installments = $loanApplication->getLatestInstallment->details;
 
