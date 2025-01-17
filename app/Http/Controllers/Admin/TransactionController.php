@@ -94,22 +94,28 @@ class TransactionController extends Controller
 
     public function storeDisbursement(Request $request)
     {
-        $data = '86928ea8e1b0efa3c42bb84ac4e362296a2cdc28235b569c76db413d6dff2e856359faddeadbfb4221d1049c5a6a81b67a15ad6356a8c72ee70b9fea4ee355f89e3fdb8d9c2902362f10727ff0de170ad92123d4cbeffc716d4ab6ab60ca13ab6d1b9c42dc78233742938cce0f4344a0db13d88568ffd2aee12271a01455e1252a1ddfbcba7027d845970578129bde3b';
+        try {
+            // Call the respective API based on the service API type
+            if ($request->service_api == 'jazz_cash_mw') {
+                return $this->jazzCashMWAPI($request);
+            }
 
-//        dd($this->decrypt($data,$this->iv));
-        //        dd($request->service_api);
-        if ($request->service_api == 'jazz_cash_mw') {
-            $this->jazzCashMWAPI($request);
-        }
-        if ($request->service_api == 'jazz_cash_ibft') {
-            $this->jazzCashIBFTAPI($request);
-        }
+            if ($request->service_api == 'jazz_cash_ibft') {
+                return $this->jazzCashIBFTAPI($request);
+            }
 
-        if ($request->service_api == 'js_bank') {
-            $this->jazzBankIBFTAPI($request);
-        }
+            if ($request->service_api == 'js_bank') {
+                return $this->jazzBankIBFTAPI($request);
+            }
 
+            // Handle unsupported service APIs
+            return redirect()->back()->withErrors(['error' => 'Invalid service API provided.']);
+        } catch (\Exception $e) {
+            // Handle unexpected errors
+            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
     }
+
 
     public function getTokenWithCurl(): JsonResponse
     {
@@ -334,6 +340,7 @@ class TransactionController extends Controller
 
     public function jazzCashMWAPI($request)
     {
+        // Validate request input
         $request->validate([
             'loan_application_id' => 'required|exists:loan_applications,id',
         ]);
@@ -341,13 +348,17 @@ class TransactionController extends Controller
         DB::beginTransaction();
 
         try {
+            // Set default payment method
             $request->merge(['payment_method' => 'Bank']);
 
+            // Fetch the loan application with related installments and details
             $loanApplication = LoanApplication::with('getLatestInstallment.details')
                 ->findOrFail($request->loan_application_id);
 
+            // Calculate the disbursement amount
             $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
 
+            // Fetch the access token
             $tokenResponse = $this->getToken()->getData(true);
 
             if (!$tokenResponse['success']) {
@@ -356,13 +367,13 @@ class TransactionController extends Controller
 
             $accessToken = $tokenResponse['data']['access_token'];
 
+            // Prepare payment data
             $paymentData = [
                 'receiverCNIC' => '9203000055897',
                 'receiverMSISDN' => '03000055897',
                 'amount' => '50.00',
                 'referenceId' => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
             ];
-
 
 //            $paymentData = [
 //                'amount' => $disburseAmount,
@@ -372,28 +383,22 @@ class TransactionController extends Controller
 //                'referenceId' => 'moneyMW_' . uniqid(),
 //            ];
 
+            // Send payment request to the JazzCash API
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
-            // Debugging response (you can remove this in production)
-//            dd($paymentResponse);
-
-            // Check if the payment was successful
+            // Handle unsuccessful payment
             if (!$paymentResponse['success']) {
-                DB::rollBack();
-
-                return redirect()->back()->withErrors([
-                    'error' => 'An error occurred: ' . $paymentResponse['message']
-                ]);
+                throw new \Exception('Payment failed: ' . $paymentResponse['message']);
             }
 
-            // Create the transaction
+            // Create a new transaction
             $transaction = Transaction::create([
                 'loan_application_id' => $loanApplication->id,
                 'user_id' => Auth::id(),
                 'amount' => $paymentResponse['data']['amount'],
                 'payment_method' => $request->payment_method,
                 'status' => 'completed',
-                'transaction_reference' => $paymentResponse['data']['referenceID'], // Corrected to use $paymentResponse
+                'transaction_reference' => $paymentResponse['data']['referenceID'],
                 'remarks' => $paymentResponse['data']['responseDescription'],
                 'responseCode' => $paymentResponse['data']['responseCode'],
                 'transactionID' => $paymentResponse['data']['transactionID'],
@@ -401,19 +406,14 @@ class TransactionController extends Controller
                 'dateTime' => $paymentResponse['data']['dateTime'],
             ]);
 
-            // Debugging the transaction (you can remove this in production)
-//            dd($transaction);
-
+            // Validate if installments exist
             $installments = $loanApplication->getLatestInstallment->details;
- 
+
             if ($installments->isEmpty()) {
-                DB::rollBack();
-                dd('aa');
-
-                return redirect()->back()->withErrors(['error' => 'No installments found for this loan application.']);
-
+                throw new \Exception('No installments found for this loan application.');
             }
 
+            // Update installment dates
             $startDate = Carbon::now();
 
             foreach ($installments as $installment) {
@@ -424,14 +424,17 @@ class TransactionController extends Controller
                     'due_date' => $dueDate,
                 ]);
 
-                $startDate = $dueDate->copy()->addDay();
+                $startDate = $dueDate->copy()->addDay(); // Prepare for the next installment
             }
-            dd('bbb');
+
+            // Commit transaction
             DB::commit();
-            dd('ccc');
-            return redirect()->route('show-installment')->with('success', 'Transaction and installments updated successfully.');
+
+            return true;
         } catch (\Exception $e) {
+            // Rollback in case of any exception
             DB::rollBack();
+
             return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
