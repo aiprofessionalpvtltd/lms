@@ -376,6 +376,7 @@ class TransactionController extends Controller
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
             if (!$paymentResponse['success']) {
+                dd('$transaction');
                 throw new \Exception($paymentResponse['message'] ?? 'Unknown error');
             }
 
@@ -393,6 +394,7 @@ class TransactionController extends Controller
                 'referenceID' => $paymentResponse['data']['referenceID'],
                 'dateTime' => $paymentResponse['data']['dateTime'],
             ]);
+            dd($transaction);
 
             $installments = $loanApplication->getLatestInstallment->details;
 
