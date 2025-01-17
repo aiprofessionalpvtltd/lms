@@ -375,25 +375,23 @@ class TransactionController extends Controller
 
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
-            dd($paymentResponse);
-            if ($paymentResponse['responseCode'] != 'G2P-T-0') {
-                throw new \Exception($this->getStatusDescription($paymentResponse['responseDescription'] ?? 'Unknown error'));
+            if (!$paymentResponse['success']) {
+                throw new \Exception($paymentResponse['message'] ?? 'Unknown error');
             }
 
 
-            dd($paymentResponse);
             $transaction = Transaction::create([
-                'loan_application_id' => $loanApplication->id, // Make sure $loanApplication is passed correctly
+                'loan_application_id' => $loanApplication->id,
                 'user_id' => Auth::id(),
-                'amount' => $paymentResponse['amount'], // Access directly from the response
-                'payment_method' => $request->payment_method, // Assuming $request has payment_method
+                'amount' => $paymentResponse['data']['amount'],
+                'payment_method' => $request->payment_method,
                 'status' => 'completed',
-                'transaction_reference' => $paymentData['referenceId'], // Ensure $paymentData has referenceId
-                'remarks' => $paymentResponse['responseDescription'], // Access responseDescription directly
-                'responseCode' => $paymentResponse['responseCode'], // Access responseCode directly
-                'transactionID' => $paymentResponse['transactionID'], // Access transactionID directly
-                'referenceID' => $paymentResponse['referenceID'], // Access referenceID directly
-                'dateTime' => $paymentResponse['dateTime'], // Access dateTime directly
+                'transaction_reference' => $paymentData['referenceID'],
+                'remarks' => $paymentResponse['data']['responseDescription'],
+                'responseCode' => $paymentResponse['data']['responseCode'],
+                'transactionID' => $paymentResponse['data']['transactionID'],
+                'referenceID' => $paymentResponse['data']['referenceID'],
+                'dateTime' => $paymentResponse['data']['dateTime'],
             ]);
 
             $installments = $loanApplication->getLatestInstallment->details;
