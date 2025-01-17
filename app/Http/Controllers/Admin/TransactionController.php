@@ -375,6 +375,7 @@ class TransactionController extends Controller
 
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
+            dd($paymentResponse['success']);
             if (!$paymentResponse['success']) {
                 dd('$transaction');
                 throw new \Exception($paymentResponse['message'] ?? 'Unknown error');
