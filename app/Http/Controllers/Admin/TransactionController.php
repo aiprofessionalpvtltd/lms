@@ -405,9 +405,11 @@ class TransactionController extends Controller
 //            dd($transaction);
 
             $installments = $loanApplication->getLatestInstallment->details;
+            dd($transaction);
 
             if ($installments->isEmpty()) {
                 DB::rollBack();
+                dd('aa');
 
                 return redirect()->back()->withErrors(['error' => 'No installments found for this loan application.']);
 
@@ -425,9 +427,9 @@ class TransactionController extends Controller
 
                 $startDate = $dueDate->copy()->addDay();
             }
-
+            dd('bbb');
             DB::commit();
-
+            dd('ccc');
             return redirect()->route('show-installment')->with('success', 'Transaction and installments updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
