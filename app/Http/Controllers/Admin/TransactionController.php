@@ -396,7 +396,7 @@ class TransactionController extends Controller
                 'loan_application_id' => $loanApplication->id,
                 'user_id' => Auth::id(),
                 'amount' => $paymentResponse['data']['amount'],
-                'payment_method' => $request->payment_method,
+                'payment_method' => 'Jazz Cash MW',
                 'status' => 'completed',
                 'transaction_reference' => $paymentResponse['data']['referenceID'],
                 'remarks' => $paymentResponse['data']['responseDescription'],
