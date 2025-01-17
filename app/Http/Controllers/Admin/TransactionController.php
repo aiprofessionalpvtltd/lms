@@ -375,10 +375,12 @@ class TransactionController extends Controller
 
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
-            dd($paymentResponse['success']);
-            if (!$paymentResponse['success']) {
-                dd('$transaction');
-                throw new \Exception($paymentResponse['message'] ?? 'Unknown error');
+            dd($paymentResponse);
+             if ($paymentResponse['success'] != true) {
+                 DB::rollBack();
+
+                return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $paymentResponse['message']]);
+
             }
 
 
@@ -400,7 +402,10 @@ class TransactionController extends Controller
             $installments = $loanApplication->getLatestInstallment->details;
 
             if ($installments->isEmpty()) {
-                throw new \Exception('No installments found for this loan application.');
+                DB::rollBack();
+
+                return redirect()->back()->withErrors(['error' => 'No installments found for this loan application.']);
+
             }
 
             $startDate = Carbon::now();
