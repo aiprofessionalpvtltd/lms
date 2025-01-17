@@ -240,26 +240,24 @@ class TransactionController extends Controller
             'data' => $encryptedPaymentData,
         ];
 
-//         $testData = '86928ea8e1b0efa3c42bb84ac4e362296a2cdc28235b569c76db413d6dff2e856359faddeadbfb4221d1049c5a6a81b67a15ad6356a8c72ee70b9fea4ee355f89e3fdb8d9c2902362f10727ff0de170ad92123d4cbeffc716d4ab6ab60ca13ab6d1b9c42dc78233742938cce0f4344a0bf9f78e1c2dde610c5b6e19bd377bf3b35ab35f6f4b7771bfcb07b0d55266588';
-        try {
+         try {
             // Make the HTTP POST request
             $response = Http::withHeaders($headers)
                 ->post($url, $data);
 
-//            dd($response->successful(), $response->status() ,$response->json());
 
             $responseData = $response->json();
 
             $depcrytedData = $this->decrypt( $responseData['data'],$this->iv);
 
-            dd($paymentData , $encryptedPaymentData ,$response->json(), $depcrytedData);
+//            dd($paymentData , $encryptedPaymentData ,$response->json(), $depcrytedData);
 
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Payment processed successfully.',
-                    'data' => $response->json(),
+                    'data' => $depcrytedData,
                 ]);
             }
 
@@ -267,7 +265,7 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to process payment.',
-                'error' => $response->json(),
+                'error' => $depcrytedData,
             ], $response->status());
         } catch (RequestException $exception) {
             // Handle exceptions during the HTTP request
@@ -365,23 +363,24 @@ class TransactionController extends Controller
 
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
-            dd($paymentResponse);
-            if (!$paymentResponse['success']) {
-                throw new \Exception($this->getStatusDescription($paymentResponse['error']['code'] ?? 'Unknown error'));
+             if ($paymentResponse['responseCode'] != 'G2P-T-0') {
+                throw new \Exception($this->getStatusDescription($paymentResponse['responseDescription'] ?? 'Unknown error'));
             }
 
+
+             dd($paymentResponse);
             $transaction = Transaction::create([
-                'loan_application_id' => $loanApplication->id,
+                'loan_application_id' => $loanApplication->id, // Make sure $loanApplication is passed correctly
                 'user_id' => Auth::id(),
-                'amount' => $paymentResponse['data']['amount'],
-                'payment_method' => $request->payment_method,
+                'amount' => $paymentResponse['amount'], // Access directly from the response
+                'payment_method' => $request->payment_method, // Assuming $request has payment_method
                 'status' => 'completed',
-                'transaction_reference' => $paymentData['referenceId'],
-                'remarks' => $paymentResponse['data']['responseDescription'],
-                'responseCode' => $paymentResponse['data']['responseCode'],
-                'transactionID' => $paymentResponse['data']['transactionID'],
-                'referenceID' => $paymentResponse['data']['referenceID'],
-                'dateTime' => $paymentResponse['data']['dateTime'],
+                'transaction_reference' => $paymentData['referenceId'], // Ensure $paymentData has referenceId
+                'remarks' => $paymentResponse['responseDescription'], // Access responseDescription directly
+                'responseCode' => $paymentResponse['responseCode'], // Access responseCode directly
+                'transactionID' => $paymentResponse['transactionID'], // Access transactionID directly
+                'referenceID' => $paymentResponse['referenceID'], // Access referenceID directly
+                'dateTime' => $paymentResponse['dateTime'], // Access dateTime directly
             ]);
 
             $installments = $loanApplication->getLatestInstallment->details;
