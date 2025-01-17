@@ -80,8 +80,9 @@ class TransactionController extends Controller
 
     public function storeDisbursement(Request $request)
     {
+//        $data = '86928ea8e1b0efa3c42bb84ac4e362296a2cdc28235b569c76db413d6dff2e856359faddeadbfb4221d1049c5a6a81b67a15ad6356a8c72ee70b9fea4ee355f89e3fdb8d9c2902362f10727ff0de170ad92123d4cbeffc716d4ab6ab60ca13ab6d1b9c42dc78233742938cce0f4344a0bf9f78e1c2dde610c5b6e19bd377bf3b35ab35f6f4b7771bfcb07b0d55266588';
 
-//        dd($request->service_api);
+ //        dd($request->service_api);
         if ($request->service_api == 'jazz_cash_mw') {
             $this->jazzCashMWAPI($request);
         }
@@ -217,10 +218,11 @@ class TransactionController extends Controller
             'Authorization' => 'Bearer ' . $accessToken,
         ];
 
+        $testData = '86928ea8e1b0efa3c42bb84ac4e362296a2cdc28235b569c76db413d6dff2e856359faddeadbfb4221d1049c5a6a81b67a15ad6356a8c72ee70b9fea4ee355f89e3fdb8d9c2902362f10727ff0de170ad92123d4cbeffc716d4ab6ab60ca13ab6d1b9c42dc78233742938cce0f4344a0bf9f78e1c2dde610c5b6e19bd377bf3b35ab35f6f4b7771bfcb07b0d55266588';
         try {
             // Make the HTTP POST request
             $response = Http::withHeaders($headers)
-                ->post($url, $paymentData);
+                ->post($url, $testData);
 
 //            dd($response->successful(), $response->status() ,$response->json());
 
@@ -316,19 +318,19 @@ class TransactionController extends Controller
 
             $accessToken = $tokenResponse['data']['access_token'];
 
-//            $paymentData = [
-//                'amount' => $this->encrypt(10.00, $this->iv),
-//                'receiverCNIC' => $this->encrypt('9203000055897', $this->iv),
-//                'receiverMSISDN' => $this->encrypt('03000055897', $this->iv),
-//                'referenceId' => $this->encrypt('moneyMW_' . mt_rand(0, 10), $this->iv),
-//            ];
-
             $paymentData = [
-                'receiverCNIC'   => '9203000055897',
-                'receiverMSISDN' => '03000055897',
-                'amount'         => '1.00',
-                'referenceId'    => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
+                'amount' => $this->encrypt(10.00, $this->iv),
+                'receiverCNIC' => $this->encrypt('9203000055897', $this->iv),
+                'receiverMSISDN' => $this->encrypt('03000055897', $this->iv),
+                'referenceId' => $this->encrypt('moneyMW_' . mt_rand(0, 10), $this->iv),
             ];
+
+//            $paymentData = [
+//                'receiverCNIC'   => '9203000055897',
+//                'receiverMSISDN' => '03000055897',
+//                'amount'         => '1.00',
+//                'referenceId'    => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
+//            ];
 
 
 //            $paymentData = [
