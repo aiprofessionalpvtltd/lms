@@ -233,49 +233,58 @@ class TransactionController extends Controller
             'Authorization' => 'Bearer ' . $accessToken,
         ];
 
+        // Encrypt the payment data
         $encryptedPaymentData = $this->encrypt($paymentData, $this->iv);
 
-        $data = [
+        // Prepare the request payload
+        $payload = [
             'data' => $encryptedPaymentData,
         ];
 
         try {
             // Make the HTTP POST request
-            $response = Http::withHeaders($headers)
-                ->post($url, $data);
+            $response = Http::withHeaders($headers)->post($url, $payload);
 
-
+            // Decode the JSON response
             $responseData = $response->json();
 
+            // Check if the response contains encrypted data
+            if (!isset($responseData['data'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid response from the payment gateway.',
+                    'data' => $responseData,
+                ], 400);
+            }
+
+            // Decrypt the response data
             $decryptedData = $this->decrypt($responseData['data'], $this->iv);
-
-//            dd($paymentData , $encryptedPaymentData ,$response->json(), $depcrytedData);
-
-            // Decode the decrypted data if it's in JSON format
             $decryptedData = json_decode($decryptedData, true); // Decode as an associative array
 
-            dd($decryptedData);
-            if (!is_array($decryptedData)) {
+            // Validate the decrypted data structure
+            if (!is_array($decryptedData) || !isset($decryptedData['responseCode'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Invalid decrypted data format.',
-                ], 400); // Return a 400 Bad Request response
+                    'data' => $decryptedData,
+                ], 400);
             }
 
-            // Check the response code
+            // Handle the response based on the response code
             if ($decryptedData['responseCode'] === 'G2P-T-0') {
                 return response()->json([
                     'success' => true,
-                    'message' => $decryptedData['responseDescription'], // Use the description from the response
-                    'data' => $decryptedData, // Include the entire decrypted data
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Payment failed.',
-                    'data' => $decryptedData, // Include data for debugging purposes
+                    'message' => $decryptedData['responseDescription'] ?? 'Payment processed successfully.',
+                    'data' => $decryptedData,
                 ]);
             }
+
+            // Handle failure response
+            return response()->json([
+                'success' => false,
+                'message' => $decryptedData['responseDescription'] ?? 'Payment failed.',
+                'data' => $decryptedData,
+            ]);
         } catch (RequestException $exception) {
             // Handle exceptions during the HTTP request
             return response()->json([
@@ -285,6 +294,7 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
 
     public function getStatusDescription(string $responseCode): string
     {
@@ -365,6 +375,7 @@ class TransactionController extends Controller
 
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
+            dd($paymentResponse);
             if ($paymentResponse['responseCode'] != 'G2P-T-0') {
                 throw new \Exception($this->getStatusDescription($paymentResponse['responseDescription'] ?? 'Unknown error'));
             }
