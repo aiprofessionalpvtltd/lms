@@ -405,8 +405,7 @@ class TransactionController extends Controller
 //            dd($transaction);
 
             $installments = $loanApplication->getLatestInstallment->details;
-            dd($transaction);
-
+ 
             if ($installments->isEmpty()) {
                 DB::rollBack();
                 dd('aa');
