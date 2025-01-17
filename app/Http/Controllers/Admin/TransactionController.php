@@ -252,6 +252,7 @@ class TransactionController extends Controller
 
 //            dd($paymentData , $encryptedPaymentData ,$response->json(), $depcrytedData);
 
+             dd($depcrytedData);
             // Check if the request was successful
             if ($depcrytedData['responseCode'] == 'G2P-T-0') {
                 return response()->json([
