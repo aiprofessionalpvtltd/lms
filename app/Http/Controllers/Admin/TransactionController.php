@@ -368,10 +368,17 @@ class TransactionController extends Controller
             $accessToken = $tokenResponse['data']['access_token'];
 
             // Prepare payment data
+//            $paymentData = [
+//                'receiverCNIC' => '9203000055897',
+//                'receiverMSISDN' => '03000055897',
+//                'amount' => '50.00',
+//                'referenceId' => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
+//            ];
+
             $paymentData = [
-                'receiverCNIC' => '9203000055897',
-                'receiverMSISDN' => '03000055897',
-                'amount' => '50.00',
+                'receiverCNIC' => '3320214988957',
+                'receiverMSISDN' => '03336754846',
+                'amount' => '10.00',
                 'referenceId' => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
             ];
 
