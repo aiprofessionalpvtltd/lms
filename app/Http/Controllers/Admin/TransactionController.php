@@ -22,8 +22,7 @@ class TransactionController extends Controller
 {
 
     // Define the encryption key and IV
-//    private $key = 'mYjC!nc3dibleY3k'; // Must be 16 bytes
-    private $key = 'mdfC!vc3dibleY44'; // Must be 16 bytes
+    private $key = 'mYjC!nc3dibleY3k'; // Must be 16 bytes
     private $iv = 'Myin!tv3ctorjCM@';  // Must be 16 bytes
 
 
