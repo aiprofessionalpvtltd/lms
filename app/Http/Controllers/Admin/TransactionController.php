@@ -393,7 +393,7 @@ class TransactionController extends Controller
             // Send payment request to the JazzCash API
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
-            dd($paymentData , $paymentResponse);
+//            dd($paymentData , $paymentResponse);
             // Handle unsuccessful payment
             if (!$paymentResponse['success']) {
                 throw new \Exception('Payment failed: ' . $paymentResponse['message']);
