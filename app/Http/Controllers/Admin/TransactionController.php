@@ -370,8 +370,7 @@ class TransactionController extends Controller
             // Prepare payment data
             $paymentData = [
                 'receiverCNIC' => '9203000055897',
-//                'receiverMSISDN' => '03000055897',
-                'receiverMSISDN' => '03000000000',
+                'receiverMSISDN' => '03000055897',
                 'amount' => '100.00',
                 'referenceId' => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
             ];
@@ -392,7 +391,7 @@ class TransactionController extends Controller
 //            ];
 
             // Send payment request to the JazzCash API
-            $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
+            $paymentResponse = $this->makePaymentMW('', $paymentData)->getData(true);
 
             dd($paymentData , $paymentResponse);
             // Handle unsuccessful payment
