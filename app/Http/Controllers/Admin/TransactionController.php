@@ -22,7 +22,8 @@ class TransactionController extends Controller
 {
 
     // Define the encryption key and IV
-    private $key = 'mYjC!nc3dibleY3k'; // Must be 16 bytes
+//    private $key = 'mYjC!nc3dibleY3k'; // Must be 16 bytes
+    private $key = 'mdfC!vc3dibleY44'; // Must be 16 bytes
     private $iv = 'Myin!tv3ctorjCM@';  // Must be 16 bytes
 
 
@@ -391,7 +392,7 @@ class TransactionController extends Controller
 //            ];
 
             // Send payment request to the JazzCash API
-            $paymentResponse = $this->makePaymentMW('', $paymentData)->getData(true);
+            $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
             dd($paymentData , $paymentResponse);
             // Handle unsuccessful payment
