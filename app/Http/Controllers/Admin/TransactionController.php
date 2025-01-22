@@ -375,13 +375,13 @@ class TransactionController extends Controller
                 'referenceId' => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
             ];
 
-//            $paymentData = [
-//                'amount' => $disburseAmount,
-//                'loan_application_id' => $loanApplication->id,
-//                'receiverCNIC' => inputMaskDash($loanApplication->user->profile->cnic_no),
-//                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
-//                'referenceId' => 'moneyMW_' . uniqid(),
-//            ];
+            $paymentData = [
+                'amount' => $disburseAmount,
+                'loan_application_id' => $loanApplication->id,
+                'receiverCNIC' => inputMaskDash($loanApplication->user->profile->cnic_no),
+                'receiverMSISDN' => env('JAZZ_CASH_MSISDN'),
+                'referenceId' => 'moneyMW_' . uniqid(),
+            ];
 
             // Send payment request to the JazzCash API
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
