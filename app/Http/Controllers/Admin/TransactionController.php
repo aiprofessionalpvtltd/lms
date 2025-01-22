@@ -370,7 +370,7 @@ class TransactionController extends Controller
             // Prepare payment data
             $paymentData = [
                 'receiverCNIC' => '9203000055897',
-                'receiverMSISDN' => '',
+                'receiverMSISDN' => '03000055897',
                 'amount' => '10.00',
                 'referenceId' => 'moneyMW_' . substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'), 0, 10),
             ];
