@@ -94,6 +94,12 @@
                         <th>CNIC</th>
                         <td>{{ $invoiceData['cnic'] }}</td>
                     </tr>
+                    <tr>
+                        <th>Mobile Number</th>
+                        <td>{{ $invoiceData['mobile_no'] }}</td>
+                        <th>Loan Account Number</th>
+                        <td>{{ $invoiceData['loan_account_no'] }}</td>
+                    </tr>
                 </table>
 
                 <!-- Loan Details -->
@@ -143,6 +149,59 @@
                             <td>{{ $detail->status }}</td>
                         </tr>
                     @endforeach
+                </table>
+
+                <h3  class="border-bottom pb-2">Recovery Details</h3>
+
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Installment</th>
+                        <th>Installment Amount</th>
+                        <th>OverDue Days (PKR{{ env('LATE_FEE') }}/day)</th>
+                        <th>Late Fee</th>
+                        <th>Waive Off Charges</th>
+                        <th>Total Amount</th>
+                        <th>Payment Method</th>
+                        <th>Status</th>
+                        <th>Remarks</th>
+                        <th>Date</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @if(count($invoiceData['recoveries']) > 0)
+                        @foreach($invoiceData['recoveries'] as $recovery)
+                            <tr>
+                                <td>{{ $recovery->installmentDetail->installment_number }}</td>
+                                <td>{{ $recovery->amount }}</td>
+                                <td>{{ $recovery->overdue_days ?? 'N/A' }}</td>
+                                <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>
+                                <td>{{ $recovery->waive_off_charges ?? '0' }}</td>
+                                <td>{{ ucfirst($recovery->total_amount) }}</td>
+                                <td>{{ ucfirst($recovery->payment_method) }}</td>
+                                <td>{{ ucfirst($recovery->status) }}</td>
+                                <td>
+                                    {{ $recovery->remarks }}
+                                    @if($recovery->is_early_settlement)
+                                        <br>
+                                        <b class="text-danger">
+                                            {{ ($recovery->percentage) }}%
+                                            of {{ ($recovery->remaining_amount) }}
+                                            is {{ ($recovery->erc_amount) }}
+                                        </b><br>
+                                    @endif
+                                </td>
+                                <td>{{ showDate($recovery->recovery_date) }}</td>
+
+                            </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="10" class="text-center fw-bold">No Record Found</td>
+                        </tr>
+                    @endif
+                    </tbody>
                 </table>
 
                 <!-- Summary -->
