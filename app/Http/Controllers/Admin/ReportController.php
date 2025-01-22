@@ -1288,6 +1288,7 @@ class ReportController extends Controller
             'user.province',
             'user.district',
             'installments.details',
+            'installments.recoveries',
         ])
             ->when($application_id, function ($query) use ($application_id) {
                 $query->where('id', $application_id);
@@ -1305,8 +1306,9 @@ class ReportController extends Controller
         $calculatedProduct = $loan->calculatedProduct;
 
         $installmentDetails = $loan->installments->flatMap->details;
+        $recoveryDetails = $loan->installments->flatMap->recoveries;
 
-        $invoiceData = [
+         $invoiceData = [
             'loan_id' => $loan->application_id,
             'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
             'cnic' => $userProfile->cnic_no,
@@ -1319,10 +1321,11 @@ class ReportController extends Controller
             'total_payable' => round($calculatedProduct->total_repayable_amount, 2),
             'monthly_installment' => round($calculatedProduct->monthly_installment_amount, 2),
             'installments' => $installmentDetails,
+            'recoveries' => $recoveryDetails,
         ];
 
 //        dd($invoiceData);
-        return view('admin.reports.invoice', compact('title', 'invoiceData', 'customers'));
+        return view('admin.reports.invoice', compact('title', 'invoiceData', 'customers' ,'loan'));
     }
 
     public function generatePDF(Request $request)
