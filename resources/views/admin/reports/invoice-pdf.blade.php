@@ -158,13 +158,13 @@
                     <tr>
                         <th>Installment</th>
                         <th>Installment Amount</th>
-                        <th>OverDue Days (PKR{{ env('LATE_FEE') }}/day)</th>
-                        <th>Late Fee</th>
-                        <th>Waive Off Charges</th>
+{{--                        <th>OverDue Days (PKR{{ env('LATE_FEE') }}/day)</th>--}}
+{{--                        <th>Late Fee</th>--}}
+{{--                        <th>Waive Off Charges</th>--}}
                         <th>Total Amount</th>
-                        <th>Payment Method</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
+{{--                        <th>Payment Method</th>--}}
+{{--                        <th>Status</th>--}}
+{{--                        <th>Remarks</th>--}}
                         <th>Date</th>
 
                     </tr>
@@ -175,23 +175,23 @@
                             <tr>
                                 <td>{{ $recovery->installmentDetail->installment_number }}</td>
                                 <td>{{ $recovery->amount }}</td>
-                                <td>{{ $recovery->overdue_days ?? 'N/A' }}</td>
-                                <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>
-                                <td>{{ $recovery->waive_off_charges ?? '0' }}</td>
+{{--                                <td>{{ $recovery->overdue_days ?? 'N/A' }}</td>--}}
+{{--                                <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>--}}
+{{--                                <td>{{ $recovery->waive_off_charges ?? '0' }}</td>--}}
                                 <td>{{ ucfirst($recovery->total_amount) }}</td>
-                                <td>{{ ucfirst($recovery->payment_method) }}</td>
-                                <td>{{ ucfirst($recovery->status) }}</td>
-                                <td>
-                                    {{ $recovery->remarks }}
-                                    @if($recovery->is_early_settlement)
-                                        <br>
-                                        <b class="text-danger">
-                                            {{ ($recovery->percentage) }}%
-                                            of {{ ($recovery->remaining_amount) }}
-                                            is {{ ($recovery->erc_amount) }}
-                                        </b><br>
-                                    @endif
-                                </td>
+{{--                                <td>{{ ucfirst($recovery->payment_method) }}</td>--}}
+{{--                                <td>{{ ucfirst($recovery->status) }}</td>--}}
+{{--                                <td>--}}
+{{--                                    {{ $recovery->remarks }}--}}
+{{--                                    @if($recovery->is_early_settlement)--}}
+{{--                                        <br>--}}
+{{--                                        <b class="text-danger">--}}
+{{--                                            {{ ($recovery->percentage) }}%--}}
+{{--                                            of {{ ($recovery->remaining_amount) }}--}}
+{{--                                            is {{ ($recovery->erc_amount) }}--}}
+{{--                                        </b><br>--}}
+{{--                                    @endif--}}
+{{--                                </td>--}}
                                 <td>{{ showDate($recovery->recovery_date) }}</td>
 
                             </tr>
