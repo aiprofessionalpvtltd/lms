@@ -80,7 +80,7 @@
                                                     name="gender_id" id="gender_id"
                                                     class="form-control select2"
                                                     data-fouc>
-                                                <option></option>
+                                                <option value="all">All</option>
                                                 @foreach($genders as $key => $row)
                                                     <option
                                                         {{ request('gender_id') == $row->id ? 'selected' : '' }} value="{{ $row->id }}">{{ $row->name }}</option>
@@ -101,7 +101,7 @@
                                                     data-type="product"
                                                     class="form-control select2 province"
                                                     data-fouc>
-                                                <option></option>
+                                                <option value="all">All</option>
                                                 @foreach($provinces as $key => $row)
                                                     <option
                                                         {{ request('province_id') == $row->id ? 'selected' : '' }} value="{{ $row->id }}">{{ $row->name }}</option>
@@ -192,13 +192,13 @@
                         </thead>
                         <tbody>
                         @foreach($outstandingData as $row)
-                             <tr>
+                            <tr>
                                 <td>{{ $row['application_id'] ?? 'N/A' }}</td>
                                 <td>{{ $row['customer_name'] ?? 'N/A' }}</td>
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
-                                <td>{{  number_format($row['original_loan_amount']) }}</td>
-                                <td>{{  number_format($row['outstanding_amount']) }}</td>
-                                <td>{{  number_format($row['interest_accrued'])  }}</td>
+                                <td>{{  number_format($row['original_loan_amount'] ?? 0) }}</td>
+                                <td>{{  number_format($row['outstanding_amount']  ?? 0) }}</td>
+                                <td>{{  number_format($row['interest_accrued'] ?? 0)  }}</td>
                                 <td>{{   ($row['last_payment'])  }}</td>
                                 <td>{{   ($row['next_due'])  }}</td>
                                 <td>{{   ($row['status'])  }}</td>
@@ -215,10 +215,10 @@
                             <td>{{ number_format($totalAmount) }}</td>
                             <td>{{ number_format($totalOutstanding) }}</td>
                             <td>{{ number_format($totalInterestAccrued) }}</td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
 
                         </tr>
                         </tfoot>

@@ -13,6 +13,7 @@ use App\Models\Province;
 use App\Models\Recovery;
 use App\Models\Transaction;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -67,7 +68,11 @@ class ReportController extends Controller
                     $q->where('district_id', $district_id);
                 });
             })
+            ->whereHas('loanApplication.user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
+
 
         $totalAmount = $result->sum(function ($transaction) {
             return $transaction->loanApplication->transaction->amount ?? 0;
@@ -152,6 +157,9 @@ class ReportController extends Controller
                     $q->where('district_id', $district_id);
                 });
             })
+            ->whereHas('installment.loanApplication.user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
 
         // Calculate totals for amount, male, and female
@@ -215,7 +223,11 @@ class ReportController extends Controller
                     $q->where('district_id', $district_id);
                 });
             })
+            ->whereHas('installment.loanApplication.user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
+
 
         // Calculate totals for amount, male, and female
         $totalAmount = $result->sum(function ($transaction) {
@@ -282,6 +294,9 @@ class ReportController extends Controller
                     $q->where('district_id', $district_id);
                 });
             })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
 
 
@@ -328,8 +343,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRange = $request->date_range;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
 
@@ -343,6 +358,7 @@ class ReportController extends Controller
             'user.profile',
             'user.province',
             'user.district',
+            'transaction',
             'getLatestInstallment' => function ($query) {
                 $query->with('details'); // Load installment details for outstanding calculation
             }
@@ -366,6 +382,9 @@ class ReportController extends Controller
                     $q->where('district_id', $district_id);
                 });
             })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
 
         // Process each loan application to retrieve required details
@@ -373,30 +392,55 @@ class ReportController extends Controller
             $userProfile = $loan->user->profile;
             $loanApplicationID = $loan->application_id;
             $latestInstallment = $loan->getLatestInstallment;
+            $transaction = $loan->transaction;
 
-            // Calculate outstanding amount based on unpaid installments
-            $outstandingAmount = $latestInstallment->details
-                ->where('is_paid', false)
-                ->sum('amount_due');
+            // Initialize default values
+            $outstandingAmount = 0;
+            $lastPayment = null;
+            $nextDue = null;
+            $status = 'Unknown';
+            $interestAccrued = 0;
 
-            // Retrieve last payment and next due
-            $lastPayment = $latestInstallment->details
-                ->where('is_paid', true)
-                ->sortByDesc('paid_at')
-                ->first();
+            // Check if the latest installment and its details exist
+            if ($latestInstallment && $latestInstallment->details) {
+                // Calculate outstanding amount based on unpaid installments
+                $outstandingAmount = $latestInstallment->details
+                    ->where('is_paid', false)
+                    ->sum('amount_due');
 
-            $nextDue = $latestInstallment->details
-                ->where('is_paid', false)
-                ->sortBy('due_date')
-                ->first();
+                // Retrieve last payment and next due
+                $lastPayment = $latestInstallment->details
+                    ->where('is_paid', true)
+                    ->sortByDesc('paid_at')
+                    ->first();
 
-            // Determine status (Current if due date is not passed)
-            $status = optional($nextDue)->due_date >= now() ? 'Current' : 'Overdue';
+                $nextDue = $latestInstallment->details
+                    ->where('is_paid', false)
+                    ->sortBy('due_date')
+                    ->first();
 
-            $interestAccrued = $outstandingAmount * 0.35 * 30 / 365;
+                // Determine status (Current if due date is not passed)
+                $status = optional($nextDue)->due_date >= now() ? 'Current' : 'Overdue';
+
+                // Check if $transaction is not null and has a valid dateTime property
+                if ($transaction && $transaction->dateTime) {
+                    // Convert the dateTime to a Carbon instance
+                    $transactionDate = Carbon::parse($transaction->dateTime);
+
+                    // Calculate the difference in days
+                    $noOfDays = number_format($transactionDate->diffInDays(Carbon::now(), false));
+                } else {
+                    // Handle the case where $transaction is null or doesn't have a valid dateTime
+                    $noOfDays = 0; // Or set to a default value or handle the error as needed
+                }
+
+                $loanInterestRate = ($loan->product_id != null) ? '0.30' : '0.35';
+
+                $interestAccrued = $outstandingAmount * $loanInterestRate * $noOfDays / 365;
+            }
             return [
                 'application_id' => $loanApplicationID,
-                'installment_id' => $latestInstallment->id,
+                'installment_id' => $latestInstallment->id ?? 0,
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
                 'cnic' => $userProfile->cnic_no,
                 'original_loan_amount' => $loan->loan_amount,

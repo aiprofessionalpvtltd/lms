@@ -157,6 +157,7 @@
                     <table id="datatables-buttons" class="table table-bordered">
                         <thead>
                         <tr>
+                            <th> ID</th>
                             <th>Loan ID</th>
                             <th>Name</th>
                             <th>CNIC</th>
@@ -174,6 +175,7 @@
                         <tbody>
                         @foreach($result as $transaction)
                             <tr>
+                                <td>{{ $transaction->id ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->application_id ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->profile->cnic_no ?? 'N/A' }}</td>
@@ -181,8 +183,8 @@
                                 <td>{{ $transaction->loanApplication->user->province->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->user->district->name ?? 'N/A' }}</td>
                                 <td>{{ $transaction->loanApplication->product->name ?? 'N/A' }}</td>
-                                <td>{{ number_format($transaction->loanApplication->loan_amount, 2) }}</td>
-                                <td>{{ number_format($transaction->loanApplication->transaction->amount, 2) }}</td>
+                                <td>{{ number_format($transaction->loanApplication->loan_amount ?? 0, 2) }}</td>
+                                <td>{{ number_format($transaction->loanApplication->transaction->amount ?? 0, 2) }}</td>
                                 <td>{{ showDate($transaction->dateTime) }}</td>
                                 <td>{{ $transaction->loanApplication->transaction->user->name ?? 'N/A' }}</td>
                                 <td>Disbursement</td>

@@ -204,11 +204,11 @@
                                 <td>{{ $row->user->province->name ?? 'N/A' }}</td>
                                 <td>{{ $row->user->district->name ?? 'N/A' }}</td>
                                 <td>{{ $row->product->name ?? 'N/A' }}</td>
-                                <td>{{  number_format($row->loan_amount) }}</td>
-                                <td>{{  number_format($row->getLatestInstallment->total_amount) }}</td>
-                                <td>{{  number_format($row->getLatestInstallment->processing_fee)  }}</td>
-                                <td>{{  number_format($row->getLatestInstallment->total_markup)  }}</td>
-                                <td>{{  number_format($row->getLatestInstallment->monthly_installment) }}</td>
+                                <td>{{  number_format($row->loan_amount ?? 0) }}</td>
+                                <td>{{  number_format($row->getLatestInstallment->total_amount ?? 0) }}</td>
+                                <td>{{  number_format($row->getLatestInstallment->processing_fee ?? 0)  }}</td>
+                                <td>{{  number_format($row->getLatestInstallment->total_markup ?? 0)  }}</td>
+                                <td>{{  number_format($row->getLatestInstallment->monthly_installment ?? 0) }}</td>
 
                             </tr>
                         @endforeach
