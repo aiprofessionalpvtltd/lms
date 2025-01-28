@@ -79,24 +79,20 @@ class ReportController extends Controller
 
         if ($gender_id === null) { // "all" is selected or gender filter is not applied
             $totalMale = $result->filter(function ($transaction) {
-                return $transaction->loanApplication->user->profile->gender->name === 'Male';
+                return optional($transaction->loanApplication?->user?->profile?->gender)->name === 'Male';
             })->count();
 
             $totalFemale = $result->filter(function ($transaction) {
-                return $transaction->loanApplication->user->profile->gender->name === 'Female';
+                return optional($transaction->loanApplication?->user?->profile?->gender)->name === 'Female';
             })->count();
         } else {
             if ($gender_id == 1) { // Assuming 1 represents 'Male'
                 $totalMale = $result->filter(function ($transaction) {
-                    return $transaction->loanApplication->user->profile->gender->name === 'Male';
+                    return optional($transaction->loanApplication?->user?->profile?->gender)->name === 'Male';
                 })->count();
             } elseif ($gender_id == 2) { // Assuming 2 represents 'Female'
                 $totalFemale = $result->filter(function ($transaction) {
-                    return $transaction->loanApplication->user->profile->gender->name === 'Female';
-                })->count();
-            } elseif ($gender_id == 3) { // Assuming 2 represents 'Female'
-                $totalFemale = $result->filter(function ($transaction) {
-                    return $transaction->loanApplication->user->profile->gender->name === 'Other';
+                    return optional($transaction->loanApplication?->user?->profile?->gender)->name === 'Female';
                 })->count();
             }
         }
