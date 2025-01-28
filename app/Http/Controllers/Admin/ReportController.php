@@ -668,7 +668,7 @@ class ReportController extends Controller
             $outstandingAmount = 0;
             $nextDue = null;
             $status = 'Unknown';
-            $percentage = 0;
+            $percentage = '0%';
             $daysPastDue = 0;
 
             // Check if the latest installment and its details exist
@@ -716,7 +716,7 @@ class ReportController extends Controller
                 'application_id' => $loan->application_id,
                 'original_loan_amount' => $loan->loan_amount,
                 'outstanding_amount' => $outstandingAmount,
-                'due_date' => optional($nextDue)->due_date ?? 'no installment found',
+                'due_date' => optional($nextDue)->due_date ? optional($nextDue)->due_date : '', // Fix applied here
                 'provision_amount' => optional($nextDue)->amount_due,
                 'days_past_due' => $daysPastDue, // Days past due with sign
                 'status' => $status,
@@ -724,6 +724,7 @@ class ReportController extends Controller
                 'npl_status' => $nplStatus,
                 'npl_entry_date' => $nplEntryDate,
             ];
+
         });
 
 
@@ -1170,8 +1171,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRange = $request->date_range;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
 
@@ -1211,8 +1212,11 @@ class ReportController extends Controller
             })
             ->when($product_id, function ($query) use ($product_id) {
                 return $query->where('product_id', $product_id);
+            })->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
             })
             ->get();
+
 
         // Process each loan application
         $interestIncomeData = $result->map(function ($loan) {
@@ -1274,8 +1278,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRange = $request->date_range;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
 
@@ -1315,6 +1319,9 @@ class ReportController extends Controller
             })
             ->when($product_id, function ($query) use ($product_id) {
                 return $query->where('product_id', $product_id);
+            })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
             })
             ->get();
 
@@ -1527,8 +1534,8 @@ class ReportController extends Controller
 
 
         $dateRangeSelector = $request->dateRangeSelector;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $dateRange = $request->date_range;
 
@@ -1565,6 +1572,9 @@ class ReportController extends Controller
                 return $query->whereHas('user', function ($q) use ($district_id) {
                     $q->where('district_id', $district_id);
                 });
+            })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
             })
             ->get();
 

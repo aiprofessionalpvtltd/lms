@@ -200,7 +200,7 @@
                                 <td>{{ $row['cnic'] ?? 'N/A' }}</td>
                                 <td>{{ number_format($row['original_loan_amount'], 2) }}</td>
                                 <td>{{ number_format($row['outstanding_amount'], 2) }}</td>
-                                <td>{{ showDate($row['due_date']) }}</td>
+                                <td>{{ ($row['due_date']) }}</td>
                                 <td>{{ $row['days_past_due'] }}</td>
                                 <td>{{ $row['status'] }}</td>
                                 <td>{{ $row['percentage'] }}</td>
