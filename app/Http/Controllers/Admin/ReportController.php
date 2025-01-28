@@ -28,20 +28,22 @@ class ReportController extends Controller
 
     public function getDisbursementReport(Request $request)
     {
+        // Debugging request data
+        // dd($request->all());
+
         $title = 'Disbursement Report';
         $provinces = Province::all();
         $districts = District::all();
         $genders = Gender::all();
 
-
         $dateRangeSelector = $request->dateRangeSelector;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
-        $district_id = $request->district_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
+        $district_id = $request->district_id !== 'all' ? $request->district_id : null; // Handle 'all' as null
         $dateRange = $request->date_range;
 
         // Split the date range
-        $splitDate = str_replace(' ', '', explode('to', $dateRange));
+        $splitDate = $dateRange ? str_replace(' ', '', explode('to', $dateRange)) : [null, null];
         $startDate = $splitDate[0] ?? null; // Default to null if not set
         $endDate = $splitDate[1] ?? null; // Default to null if not set
 
@@ -71,13 +73,33 @@ class ReportController extends Controller
             return $transaction->loanApplication->transaction->amount ?? 0;
         });
 
-        $totalMale = $result->filter(function ($transaction) {
-            return $transaction->loanApplication->user->profile->gender->name === 'Male';
-        })->count();
 
-        $totalFemale = $result->filter(function ($transaction) {
-            return $transaction->loanApplication->user->profile->gender->name === 'Female';
-        })->count();
+        $totalMale = 0;
+        $totalFemale = 0;
+
+        if ($gender_id === null) { // "all" is selected or gender filter is not applied
+            $totalMale = $result->filter(function ($transaction) {
+                return $transaction->loanApplication->user->profile->gender->name === 'Male';
+            })->count();
+
+            $totalFemale = $result->filter(function ($transaction) {
+                return $transaction->loanApplication->user->profile->gender->name === 'Female';
+            })->count();
+        } else {
+            if ($gender_id == 1) { // Assuming 1 represents 'Male'
+                $totalMale = $result->filter(function ($transaction) {
+                    return $transaction->loanApplication->user->profile->gender->name === 'Male';
+                })->count();
+            } elseif ($gender_id == 2) { // Assuming 2 represents 'Female'
+                $totalFemale = $result->filter(function ($transaction) {
+                    return $transaction->loanApplication->user->profile->gender->name === 'Female';
+                })->count();
+            } elseif ($gender_id == 3) { // Assuming 2 represents 'Female'
+                $totalFemale = $result->filter(function ($transaction) {
+                    return $transaction->loanApplication->user->profile->gender->name === 'Other';
+                })->count();
+            }
+        }
 
         LogActivity::addToLog('Disbursement report generated');
 
@@ -101,8 +123,9 @@ class ReportController extends Controller
         $genders = Gender::all();
 
         $dateRangeSelector = $request->dateRangeSelector;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
+
         $district_id = $request->district_id;
         $dateRange = $request->date_range;
 
@@ -140,13 +163,9 @@ class ReportController extends Controller
             return $transaction->amount_due ?? 0;
         });
 
-        $totalMale = $result->filter(function ($transaction) {
-            return $transaction->installment->loanApplication->user->profile->gender->name === 'Male';
-        })->count();
 
-        $totalFemale = $result->filter(function ($transaction) {
-            return $transaction->installment->loanApplication->user->profile->gender->name === 'Female';
-        })->count();
+        $totalMale = 0;
+        $totalFemale = 0;
 
         LogActivity::addToLog('overdue report generated');
 
@@ -170,8 +189,8 @@ class ReportController extends Controller
         $genders = Gender::all();
 
         $dateRangeSelector = $request->dateRangeSelector;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $dateRange = $request->date_range;
 
@@ -207,13 +226,8 @@ class ReportController extends Controller
             return $transaction->total_amount ?? 0;
         });
 
-        $totalMale = $result->filter(function ($transaction) {
-            return $transaction->installment->loanApplication->user->profile->gender->name === 'Male';
-        })->count();
-
-        $totalFemale = $result->filter(function ($transaction) {
-            return $transaction->installment->loanApplication->user->profile->gender->name === 'Female';
-        })->count();
+        $totalMale = 0;
+        $totalFemale = 0;
 
         LogActivity::addToLog('collection report generated');
 
@@ -238,8 +252,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRangeSelector = $request->dateRangeSelector;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
         $dateRange = $request->date_range;
@@ -383,7 +397,7 @@ class ReportController extends Controller
             // Determine status (Current if due date is not passed)
             $status = optional($nextDue)->due_date >= now() ? 'Current' : 'Overdue';
 
-            $interestAccrued = $outstandingAmount * 0.30 * 30 / 365;
+            $interestAccrued = $outstandingAmount * 0.35 * 30 / 365;
             return [
                 'application_id' => $loanApplicationID,
                 'installment_id' => $latestInstallment->id,
@@ -1132,7 +1146,7 @@ class ReportController extends Controller
                 'loan_amount' => round($loanAmount, 2),
                 'interest_rate' => round($calculatedProduct->interest_rate_percentage ?? 0, 2) . '%',
                 'interest_income' => round($interestIncome, 2),
-                'disbursement_date' => showDate($loan->transaction->dateTime),
+                'disbursement_date' => optional($loan->transaction)->dateTime ? showDate($loan->transaction->dateTime) : '',
                 'installment_start_date' => $startDate,
                 'installment_end_date' => $endDate,
             ];
@@ -1308,7 +1322,7 @@ class ReportController extends Controller
         $installmentDetails = $loan->installments->flatMap->details;
         $recoveryDetails = $loan->installments->flatMap->recoveries;
 
-         $invoiceData = [
+        $invoiceData = [
             'loan_id' => $loan->application_id,
             'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
             'cnic' => $userProfile->cnic_no,
@@ -1325,7 +1339,7 @@ class ReportController extends Controller
         ];
 
 //        dd($invoiceData);
-        return view('admin.reports.invoice', compact('title', 'invoiceData', 'customers' ,'loan'));
+        return view('admin.reports.invoice', compact('title', 'invoiceData', 'customers', 'loan'));
     }
 
     public function generatePDF(Request $request)
@@ -1388,12 +1402,12 @@ class ReportController extends Controller
         }
 
 
-         // Generate PDF
-        $pdf = Pdf::loadView('admin.reports.invoice-pdf', compact('title', 'invoiceData' ,'imageSrc'))->setPaper('a4', 'portrait');;
+        // Generate PDF
+        $pdf = Pdf::loadView('admin.reports.invoice-pdf', compact('title', 'invoiceData', 'imageSrc'))->setPaper('a4', 'portrait');;
 
 
         // Return the PDF for download
-        return $pdf->download($invoiceData['borrower_name'].'_Invoice.pdf');
+        return $pdf->download($invoiceData['borrower_name'] . '_Invoice.pdf');
     }
 
 
