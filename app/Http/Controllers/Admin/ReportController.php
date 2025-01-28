@@ -485,8 +485,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRange = $request->date_range;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
 
@@ -523,6 +523,9 @@ class ReportController extends Controller
                     $q->where('district_id', $district_id);
                 });
             })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
 
         // Process each loan application to retrieve required details
@@ -530,31 +533,41 @@ class ReportController extends Controller
             $userProfile = $loan->user->profile;
             $latestInstallment = $loan->getLatestInstallment;
 
-            // Calculate outstanding amount based on unpaid installments
-            $outstandingAmount = $latestInstallment->details
-                ->where('is_paid', false)
-                ->sum('amount_due');
+            // Initialize default values
+            $outstandingAmount = 0;
+            $nextDue = null;
+            $status = 'Unknown';
+            $percentage = 0;
+            $daysPastDue = 0;
 
-            // Retrieve next due date for aging calculation
-            $nextDue = $latestInstallment->details
-                ->where('is_paid', false)
-                ->sortBy('due_date')
-                ->first();
+            // Check if the latest installment and its details exist
+            if ($latestInstallment && $latestInstallment->details) {
+                // Calculate outstanding amount based on unpaid installments
+                $outstandingAmount = $latestInstallment->details
+                    ->where('is_paid', false)
+                    ->sum('amount_due');
 
-            // Calculate days past due: positive for upcoming due dates, negative for overdue
-            $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null;
+                // Retrieve next due date for aging calculation
+                $nextDue = $latestInstallment->details
+                    ->where('is_paid', false)
+                    ->sortBy('due_date')
+                    ->first();
+                // Calculate days past due: positive for upcoming due dates, negative for overdue
+                $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null;
 
-            // Skip if daysPastDue is positive (future due date)
-            if ($daysPastDue > 0) {
-                return null;
+                // Skip if daysPastDue is positive (future due date)
+                if ($daysPastDue > 0) {
+                    return null;
+                }
+
+                // Round and format days past due with a sign
+                $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
+
+                $statusData = $this->getStatusFromDaysPastDue(abs((int)$daysPastDue));
+                $status = $statusData['status'];
+                $percentage = $statusData['percentage'];
+
             }
-
-            // Round and format days past due with a sign
-            $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
-
-            $statusData = $this->getStatusFromDaysPastDue(abs((int)$daysPastDue));
-            $status = $statusData['status'];
-            $percentage = $statusData['percentage'];
 
             return [
                 'customer_name' => "{$userProfile->first_name} {$userProfile->last_name}",
@@ -603,8 +616,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRange = $request->date_range;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
 
@@ -640,33 +653,47 @@ class ReportController extends Controller
                     $q->where('district_id', $district_id);
                 });
             })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
+
 
         // Process each loan application to retrieve required details
         $agingData = $result->map(function ($loan) {
             $userProfile = $loan->user->profile;
             $latestInstallment = $loan->getLatestInstallment;
 
-            // Calculate outstanding amount based on unpaid installments
-            $outstandingAmount = $latestInstallment->details
-                ->where('is_paid', false)
-                ->sum('amount_due');
+            // Initialize default values
+            $outstandingAmount = 0;
+            $nextDue = null;
+            $status = 'Unknown';
+            $percentage = 0;
+            $daysPastDue = 0;
 
-            // Retrieve next due date for aging calculation
-            $nextDue = $latestInstallment->details
-                ->where('is_paid', false)
-                ->sortBy('due_date')
-                ->first();
+            // Check if the latest installment and its details exist
+            if ($latestInstallment && $latestInstallment->details) {
+                // Calculate outstanding amount based on unpaid installments
+                $outstandingAmount = $latestInstallment->details
+                    ->where('is_paid', false)
+                    ->sum('amount_due');
 
-            // Calculate days past due: positive for upcoming due dates, negative for overdue
-            $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null;
+                // Retrieve next due date for aging calculation
+                $nextDue = $latestInstallment->details
+                    ->where('is_paid', false)
+                    ->sortBy('due_date')
+                    ->first();
 
-            // Round and format days past due with a sign
-            $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
+                // Calculate days past due: positive for upcoming due dates, negative for overdue
+                $daysPastDue = $nextDue ? now()->diffInDays($nextDue->due_date, false) : null;
 
-            $statusData = $this->getStatusFromDaysPastDue(abs((int)$daysPastDue));
-            $status = $statusData['status'];
-            $percentage = $statusData['percentage'];
+                // Round and format days past due with a sign
+                $daysPastDue = $daysPastDue ? sprintf('%+d', round($daysPastDue)) : null;
+
+                $statusData = $this->getStatusFromDaysPastDue(abs((int)$daysPastDue));
+                $status = $statusData['status'];
+                $percentage = $statusData['percentage'];
+            }
 
             // Determine if the loan is NPL or Not NPL
             $isNPL = in_array($status, ['OAEM', 'Substandard', 'Doubtful', 'Loss']);
@@ -760,8 +787,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRange = $request->date_range;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
 
@@ -801,6 +828,9 @@ class ReportController extends Controller
             ->when($product_id, function ($query) use ($product_id) {
                 return $query->where('product_id', $product_id);
             })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
 
         // Process each loan application
@@ -810,21 +840,33 @@ class ReportController extends Controller
             $installments = $latestInstallment->details;
             $loanProducts = $loan->calculatedProduct;
 
-            // Calculate outstanding amount
-            $outstandingAmount = $installments->where('is_paid', false)->sum('amount_due');
+            // Initialize default values
+            $outstandingAmount = 0;
+            $nextDue = null;
 
-            // Retrieve next due date and installment details
-            $nextDue = $installments->where('is_paid', false)->sortBy('due_date')->first();
+            $remainingInstallments = 0;
+            $paidInstallments = 0;
+            $installmentAmount = 0;
+            $firstInstallmentStarted = 0;
 
-            // Calculate remaining installments
-            $remainingInstallments = $installments->where('is_paid', false)->count();
-            $paidInstallments = $installments->where('is_paid', true)->count();
+            // Check if the latest installment and its details exist
+            if ($latestInstallment && $latestInstallment->details) {
+                // Calculate outstanding amount
+                $outstandingAmount = $installments->where('is_paid', false)->sum('amount_due');
 
-            // Calculate installment amount
-            $installmentAmount = $installments->first()->amount_due ?? 0;
+                // Retrieve next due date and installment details
+                $nextDue = $installments->where('is_paid', false)->sortBy('due_date')->first();
 
-            $firstInstallmentStarted = $installments->sortBy('due_date')->first();
+                // Calculate remaining installments
+                $remainingInstallments = $installments->where('is_paid', false)->count();
+                $paidInstallments = $installments->where('is_paid', true)->count();
 
+                // Calculate installment amount
+                $installmentAmount = $installments->first()->amount_due ?? 0;
+
+                $firstInstallmentStarted = $installments->sortBy('due_date')->first();
+
+            }
 
             return [
                 'application_id' => $loan->application_id,
@@ -876,8 +918,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRange = $request->date_range;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
 
@@ -916,6 +958,9 @@ class ReportController extends Controller
             ->when($product_id, function ($query) use ($product_id) {
                 return $query->where('product_id', $product_id);
             })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
 
         // Define penalty per day
@@ -923,36 +968,44 @@ class ReportController extends Controller
 
         // Process each loan application
         $penaltyData = $result->map(function ($loan) use ($penaltyPerDay) {
-            $userProfile = $loan->user->profile;
-            $installments = $loan->getLatestInstallment->details;
             $penaltyEntries = [];
+            $daysLate = 0;
+            $totalPenalty = 0;
 
-            foreach ($installments as $installment) {
-                if (!$installment->is_paid && $installment->due_date < now()) {
-                    // Generate installment numbers based on due_date order
-                    $installments->each(function ($installment, $index) {
-                        $installment->installment_number = $this->formatOrdinal($index + 1);
-                    });
+            // Ensure getLatestInstallment is not null
+            $latestInstallment = $loan->getLatestInstallment;
 
-                    // Calculate the absolute value of days late
-                    $daysLate = abs(now()->diffInDays($installment->due_date));
-                    $totalPenalty = $daysLate * $penaltyPerDay;
+            if ($latestInstallment && $latestInstallment->details) {
+                $installments = $latestInstallment->details;
 
-                    $penaltyEntries[] = [
-                        'application_id' => $loan->application_id,
-                        'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
-                        'cnic' => $userProfile->cnic_no,
-                        'installment_number' => ($installment->installment_number),
-                        'installment_amount' => round($installment->amount_due),
-                        'installment_due_date' => $installment->due_date,
-                        'days_late' => round($daysLate, 0),
-                        'penalty_per_day' => round($penaltyPerDay),
-                        'total_penalty' => round($totalPenalty),
-                        'total_payment' => round($installment->amount_due + $totalPenalty),
-                    ];
+                foreach ($installments as $installment) {
+                    // Check if the installment is unpaid and overdue
+                    if (!$installment->is_paid && $installment->due_date < now()) {
+                        // Add installment number (ordinal formatting)
+                        $installments->each(function ($installment, $index) {
+                            $installment->installment_number = $this->formatOrdinal($index + 1);
+                        });
+
+                        // Calculate days late and penalty
+                        $daysLate = abs(now()->diffInDays($installment->due_date));
+                        $totalPenalty = $daysLate * $penaltyPerDay;
+
+                        // Add penalty entry
+                        $penaltyEntries[] = [
+                            'application_id' => $loan->application_id,
+                            'borrower_name' => "{$loan->user->profile->first_name} {$loan->user->profile->last_name}",
+                            'cnic' => $loan->user->profile->cnic_no,
+                            'installment_number' => $installment->installment_number,
+                            'installment_amount' => round($installment->amount_due),
+                            'installment_due_date' => $installment->due_date,
+                            'days_late' => round($daysLate, 0),
+                            'penalty_per_day' => round($penaltyPerDay),
+                            'total_penalty' => round($totalPenalty),
+                            'total_payment' => round($installment->amount_due + $totalPenalty),
+                        ];
+                    }
                 }
             }
-
 
             return $penaltyEntries;
         })->flatten(1);
@@ -992,8 +1045,8 @@ class ReportController extends Controller
         $products = Product::all();
 
         $dateRange = $request->date_range;
-        $gender_id = $request->gender_id;
-        $province_id = $request->province_id;
+        $gender_id = $request->gender_id !== 'all' ? $request->gender_id : null; // Handle 'all' as null
+        $province_id = $request->province_id !== 'all' ? $request->province_id : null; // Handle 'all' as null
         $district_id = $request->district_id;
         $product_id = $request->product_id;
 
@@ -1033,57 +1086,60 @@ class ReportController extends Controller
             ->when($product_id, function ($query) use ($product_id) {
                 return $query->where('product_id', $product_id);
             })
+            ->whereHas('user.roles', function ($query) {
+                $query->where('name', 'Customer'); // Assuming the role name is 'Customer'
+            })
             ->get();
 
         // Process each loan application
         $principalData = $result->map(function ($loan) {
-            $userProfile = $loan->user->profile;
+            $principalEntries = [];
+            $userProfile = optional($loan->user->profile);
             $installment = $loan->getLatestInstallment;
             $installmentDetail = $loan->calculatedProduct;
 
-            $totalPrincipalReceived = 0;
-            $principalEntries = [];
+            // Ensure $installment and $installmentDetail are not null
+            if ($installment && $installmentDetail) {
+                // Interest received calculation
+                $interestReceived = $installment->monthly_installment / 12;
 
-// Interest received calculation
-            $interestReceived = $installment->monthly_installment / 12;
+                // Principal received calculation
+                $principalReceived = $installment->monthly_installment - $interestReceived;
 
-            // Principal received calculation
-            $principalReceived = $installment->monthly_installment - $interestReceived;
+                // Remaining principal calculation
+                $remainingPrincipal = $loan->loan_amount - $principalReceived;
 
-            // Remaining principal calculation
-            $remainingPrincipal = $loan->loan_amount - $principalReceived;
+                // Remaining interest calculation
+                $remainingInterest = $installment->total_markup - $interestReceived;
 
-            // Remaining interest calculation
-            $remainingInterest = $installment->total_markup - $interestReceived;
+                // Number of installments calculation
+                $totalInstallments = $loan->installments->count(); // Total installments
+                $paidInstallments = round($principalReceived / $installmentDetail->monthly_installment_amount); // Approximating
+                $remainingInstallments = $totalInstallments - $paidInstallments;
 
-            // Number of installments calculation
-            $totalInstallments = $loan->installments->count(); // Total installments
-            $paidInstallments = round($principalReceived / $installmentDetail->monthly_installment_amount); // Approximating
-            $remainingInstallments = $totalInstallments - $paidInstallments;
-
-
-            // Add to report data
-            $principalEntries[] = [
-                'application_id' => $loan->application_id,
-                'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
-                'cnic' => $userProfile->cnic_no,
-                'loan_amount' => round($loan->loan_amount, 2),
-                'principal' => round($loan->loan_amount, 2),
-                'interest_amount' => round($installment->total_markup, 2) . ' (' . $installmentDetail->interest_rate_percentage . '%)',
-                'principal_plus_interest' => round($loan->loan_amount + $installment->total_markup, 2),
-                'installment_amount' => round($installmentDetail->monthly_installment_amount, 2),
-                'interest_received' => round($interestReceived, 2),
-                'principal_received' => round($principalReceived, 2),
-                'remaining_principal' => round($remainingPrincipal, 2),
-                'remaining_interest' => round($remainingInterest, 2), // Added
-                'total_installments' => $totalInstallments, // Added
-                'paid_installments' => $paidInstallments, // Added
-                'remaining_installments' => $remainingInstallments, // Added
-            ];
-
+                // Add to report data
+                $principalEntries[] = [
+                    'application_id' => $loan->application_id,
+                    'borrower_name' => "{$userProfile->first_name} {$userProfile->last_name}",
+                    'cnic' => $userProfile->cnic_no,
+                    'loan_amount' => round($loan->loan_amount, 2),
+                    'principal' => round($loan->loan_amount, 2),
+                    'interest_amount' => round($installment->total_markup, 2) . ' (' . $installmentDetail->interest_rate_percentage . '%)',
+                    'principal_plus_interest' => round($loan->loan_amount + $installment->total_markup, 2),
+                    'installment_amount' => round($installmentDetail->monthly_installment_amount, 2),
+                    'interest_received' => round($interestReceived, 2),
+                    'principal_received' => round($principalReceived, 2),
+                    'remaining_principal' => round($remainingPrincipal, 2),
+                    'remaining_interest' => round($remainingInterest, 2), // Added
+                    'total_installments' => $totalInstallments, // Added
+                    'paid_installments' => $paidInstallments, // Added
+                    'remaining_installments' => $remainingInstallments, // Added
+                ];
+            }
 
             return $principalEntries;
         })->flatten(1);
+
 
 //        dd($principalData);
 
