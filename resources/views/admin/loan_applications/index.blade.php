@@ -48,7 +48,7 @@
                         <th>Duration</th>
                         {{--                    <th>Service</th>--}}
                         {{--                    <th>Purpose</th>--}}
-                        {{--                    <th>Address</th>--}}
+                        <th>Status</th>
                         <th>Completed</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -64,15 +64,13 @@
                             <td>{{$loanApplication->loanDuration->name}}</td>
                             {{--                        <td>{{$loanApplication->productService->name}}</td>--}}
                             {{--                        <td>{{$loanApplication->loanPurpose->name}}</td>--}}
-                            {{--                        <td>{{$loanApplication->address}}</td>--}}
+                            <td>{{ ucfirst($loanApplication->status) }}</td>
                             <td>{{showBoolean($loanApplication->is_completed)}}</td>
                             <td>
                                 <div class="d-flex">
                                     <a title="Generate Agreement"
                                        href="{{route('view-loan-agreement', $loanApplication->id) }}"
                                        class=" btn btn-info me-3">Agreement</a>
-
-
 
 
                                     @can('view-loan-management')
