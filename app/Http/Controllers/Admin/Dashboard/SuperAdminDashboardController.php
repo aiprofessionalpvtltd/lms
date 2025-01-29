@@ -31,6 +31,7 @@ class SuperAdminDashboardController extends Controller
 
         $upcomingInstalments = $this->upcomingInstallments();
 //        dd($upcomingInstalment);
+
         return view('home',compact('upcomingInstalments'));
     }
 
