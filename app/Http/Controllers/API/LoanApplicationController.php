@@ -1567,7 +1567,7 @@ class LoanApplicationController extends BaseController
     public function destroy(Request $request)
     {
         $loanApplication = LoanApplication::find($request->id);
-        $loanApplication->update(['application_id' => 0]);
+        $loanApplication->update(['application_id' => null]);
         $loanApplication->delete();
 
         return response()->json(['success' => 'Loan Application Deleted Successfully']);
