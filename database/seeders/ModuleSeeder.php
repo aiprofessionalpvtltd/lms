@@ -24,6 +24,7 @@ class ModuleSeeder extends Seeder
             'Recoveries',
             'Products',
             'Reports',
+            'Expenses',
         );
 
         foreach ($modules as $row) {

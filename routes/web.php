@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\AjaxController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\Dashboard\SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ExpenseCategoryController;
+use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\InstallmentController;
 use App\Http\Controllers\Admin\NactaListController;
 use App\Http\Controllers\Admin\ProductController;
@@ -14,7 +16,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\API\LoanApplicationController;
- use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -163,6 +165,23 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('show-complete-report', [ReportController::class, 'showCompleteReport'])->name('show-complete-report');
     Route::get('get-complete-report', [ReportController::class, 'getCompleteReport'])->name('get-complete-report');
+
+
+    Route::get('show-expense-categories', [ExpenseCategoryController::class, 'index'])->name('show-expense-categories');
+    Route::get('add-expense-category', [ExpenseCategoryController::class, 'create'])->name('add-expense-category');
+    Route::post('store-expense-category', [ExpenseCategoryController::class, 'store'])->name('store-expense-category');
+    Route::get('expense-category/{id}/edit', [ExpenseCategoryController::class, 'edit'])->name('edit-expense-category');
+    Route::put('update-expense-category/{id}', [ExpenseCategoryController::class, 'update'])->name('update-expense-category');
+    Route::post('destroy-expense-category', [ExpenseCategoryController::class, 'destroy'])->name('destroy-expense-category');
+
+    Route::get('show-expense', [ExpenseController::class, 'index'])->name('show-expense');
+    Route::get('add-expense', [ExpenseController::class, 'create'])->name('add-expense');
+    Route::post('store-expense', [ExpenseController::class, 'store'])->name('store-expense');
+    Route::get('expense/{id}/edit', [ExpenseController::class, 'edit'])->name('edit-expense');
+    Route::put('update-expense/{id}', [ExpenseController::class, 'update'])->name('update-expense');
+    Route::post('destroy-expense', [ExpenseController::class, 'destroy'])->name('destroy-expense');
+
+
 
 
 });

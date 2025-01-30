@@ -136,6 +136,23 @@
 
             @endcan
 
+            @can('view-expenses')
+
+                <li class="sidebar-item">
+                    <a data-bs-target="#reports" data-bs-toggle="collapse" class="sidebar-link collapsed"
+                       aria-expanded="false">
+                        <span class="align-middle">Accounts</span>
+                    </a>
+                    <ul id="reports" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar" style="">
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense-categories')}}">Expense Category
+                            </a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense')}}">Expenses</a></li>
+
+                    </ul>
+                </li>
+
+            @endcan
+
             @can('view-reports')
 
                 <li class="sidebar-item">
