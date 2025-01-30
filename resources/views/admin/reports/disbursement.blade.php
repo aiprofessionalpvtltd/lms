@@ -170,6 +170,7 @@
                             <th>Date</th>
                             <th>Disbursement By</th>
                             <th>Mode of Payment</th>
+                            <th>Remarks</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -188,6 +189,7 @@
                                 <td>{{ showDate($transaction->dateTime) }}</td>
                                 <td>{{ $transaction->loanApplication->transaction->user->name ?? 'N/A' }}</td>
                                 <td>Disbursement</td>
+                                <td>{{ $transaction->loanApplication->transaction->remarks ?? 'N/A' }}</td>
                             </tr>
                         @endforeach
                         </tbody>
