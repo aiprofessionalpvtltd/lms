@@ -206,8 +206,8 @@
                                 <td>{{ number_format($row['installment_amount'], 2) }}</td>
                                 <td>{{ number_format($row['interest_received'], 2) }}</td>
                                 <td>{{ number_format($row['remaining_interest'], 2) }}</td>
-                                <td>{{ number_format($row['principal_received'], 2) }}</td>
                                 <td>{{ number_format($row['remaining_principal'], 2) }}</td>
+                                <td>{{ number_format($row['principal_received'], 2) }}</td>
                             </tr>
                         @endforeach
                         </tbody>
