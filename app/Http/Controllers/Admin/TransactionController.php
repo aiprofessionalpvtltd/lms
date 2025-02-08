@@ -21,10 +21,14 @@ use const Symfony\Component\Routing\Requirement\UUID;
 class TransactionController extends Controller
 {
 
-    // Define the encryption key and IV
-    private $key = 'mYjC!nc3dibleY3k'; // Must be 16 bytes
-    private $iv = 'Myin!tv3ctorjCM@';  // Must be 16 bytes
+    private $key;
+    private $iv;
 
+    public function __construct()
+    {
+        $this->key = env('JAZZ_CASH_PRODUCTION_KEY', null); // Must be 16 bytes
+        $this->iv = env('JAZZ_CASH_PRODUCTION_IV', null);   // Must be 16 bytes
+    }
 
     // Encrypt function with IV parameter
     public function encrypt($plaintext, $iv)
@@ -100,9 +104,9 @@ class TransactionController extends Controller
                 return $this->jazzCashMWAPI($request);
             }
 
-            if ($request->service_api == 'jazz_cash_ibft') {
-                return $this->jazzCashIBFTAPI($request);
-            }
+//            if ($request->service_api == 'jazz_cash_ibft') {
+//                return $this->jazzCashIBFTAPI($request);
+//            }
 
             if ($request->service_api == 'js_bank') {
                 return $this->jazzBankIBFTAPI($request);
@@ -117,75 +121,76 @@ class TransactionController extends Controller
     }
 
 
-    public function getTokenWithCurl(): JsonResponse
-    {
-        // Define the endpoint and credentials
-        $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
-        $stagingToken = 'MjlwT1BmSVBTRXRkZGY2THRVQjRtX2F5YjdvYTpGSnF1eTlIRjNySkVlYUNDZWs1RXZFa2xFRjBh';
+//    public function getTokenWithCurl()
+//    {
+//        // Define the endpoint and credentials
+//        $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
+//        $stagingToken = 'MjlwT1BmSVBTRXRkZGY2THRVQjRtX2F5YjdvYTpGSnF1eTlIRjNySkVlYUNDZWs1RXZFa2xFRjBh';
+//
+//        // Initialize cURL
+//        $curl = curl_init();
+//
+//        // Set cURL options
+//        curl_setopt_array($curl, [
+//            CURLOPT_URL => $url,
+//            CURLOPT_POST => true,
+//            CURLOPT_POSTFIELDS => http_build_query(['grant_type' => 'client_credentials']),
+//            CURLOPT_RETURNTRANSFER => true,
+//            CURLOPT_HTTPHEADER => [
+//                'Authorization: Basic ' . $stagingToken,
+//                'Content-Type: application/x-www-form-urlencoded',
+//            ],
+//        ]);
+//
+//        // Execute the cURL request
+//        $response = curl_exec($curl);
+//
+//        // Check for cURL errors
+//        if (curl_errno($curl)) {
+//            $error = curl_error($curl);
+//            curl_close($curl);
+//
+//            return response()->json([
+//                'success' => false,
+//                'message' => 'An error occurred while retrieving the token.',
+//                'error' => $error,
+//            ], 500);
+//        }
+//
+//        // Get HTTP status code
+//        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+//
+//        // Close the cURL session
+//        curl_close($curl);
+//
+//        // Decode the JSON response
+//        $decodedResponse = json_decode($response, true);
+//
+//        // Handle the response
+//        if ($httpStatus >= 200 && $httpStatus < 300) {
+//            return response()->json([
+//                'success' => true,
+//                'message' => 'Token retrieved successfully.',
+//                'data' => $decodedResponse,
+//            ]);
+//        }
+//
+//        // Handle unsuccessful responses
+//        return response()->json([
+//            'success' => false,
+//            'message' => $decodedResponse['error_description'] ?? 'Failed to retrieve token.',
+//            'error' => $decodedResponse,
+//        ], $httpStatus);
+//    }
 
-        // Initialize cURL
-        $curl = curl_init();
-
-        // Set cURL options
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => http_build_query(['grant_type' => 'client_credentials']),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER => [
-                'Authorization: Basic ' . $stagingToken,
-                'Content-Type: application/x-www-form-urlencoded',
-            ],
-        ]);
-
-        // Execute the cURL request
-        $response = curl_exec($curl);
-
-        // Check for cURL errors
-        if (curl_errno($curl)) {
-            $error = curl_error($curl);
-            curl_close($curl);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while retrieving the token.',
-                'error' => $error,
-            ], 500);
-        }
-
-        // Get HTTP status code
-        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        // Close the cURL session
-        curl_close($curl);
-
-        // Decode the JSON response
-        $decodedResponse = json_decode($response, true);
-
-        // Handle the response
-        if ($httpStatus >= 200 && $httpStatus < 300) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Token retrieved successfully.',
-                'data' => $decodedResponse,
-            ]);
-        }
-
-        // Handle unsuccessful responses
-        return response()->json([
-            'success' => false,
-            'message' => $decodedResponse['error_description'] ?? 'Failed to retrieve token.',
-            'error' => $decodedResponse,
-        ], $httpStatus);
-    }
-
-    public function getToken(): JsonResponse
+    public function getToken()
     {
         // Define the endpoint and headers
         $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
-        $stagingToken = 'MjlwT1BmSVBTRXRkZGY2THRVQjRtX2F5YjdvYTpGSnF1eTlIRjNySkVlYUNDZWs1RXZFa2xFRjBh';
+        $token = env('JAZZ_CASH_PRODUCTION_TOKEN');
+
         $headers = [
-            'Authorization' => 'Basic ' . $stagingToken, // Replace with actual client credentials
+            'Authorization' => 'Basic ' . $token, // Replace with actual client credentials
             'Content-Type' => 'application/x-www-form-urlencoded',
         ];
 
@@ -229,7 +234,7 @@ class TransactionController extends Controller
     }
 
 
-    public function makePaymentMW(string $accessToken, array $paymentData): JsonResponse
+    public function makePaymentMW(string $accessToken, array $paymentData)
     {
         // Define the endpoint and headers
         $url = 'https://gateway-sandbox.jazzcash.com.pk/jazzcash/third-party-integration/srv6/api/wso2/mw/payment';
@@ -280,7 +285,7 @@ class TransactionController extends Controller
             if ($decryptedData['responseCode'] === 'G2P-T-0') {
                 return response()->json([
                     'success' => true,
-                    'message' => $decryptedData['responseDescription'] ?? 'Payment processed successfully.',
+                    'message' => isset($decryptedData['responseDescription']) ? $decryptedData['responseDescription'] : 'Payment processed successfully.',
                     'data' => $decryptedData,
                 ]);
             }
@@ -288,7 +293,7 @@ class TransactionController extends Controller
             // Handle failure response
             return response()->json([
                 'success' => false,
-                'message' => $decryptedData['responseDescription'] ?? 'Payment failed.',
+                'message' => isset($decryptedData['responseDescription']) ? $decryptedData['responseDescription'] : 'Payment failed.',
                 'data' => $decryptedData,
             ]);
         } catch (RequestException $exception) {
@@ -302,7 +307,7 @@ class TransactionController extends Controller
     }
 
 
-    public function getStatusDescription(string $responseCode): string
+    public function getStatusDescription(string $responseCode)
     {
         $statuses = [
             'G2P-T-400' => 'Bad Request',
@@ -335,7 +340,7 @@ class TransactionController extends Controller
             'G2P-T-99' => 'There is an issue with your transaction. Kindly contact Jazzcash before reprocessing the transaction.',
         ];
 
-        return $statuses[$responseCode] ?? 'Unknown response code.';
+        return isset($statuses[$responseCode]) ? $statuses[$responseCode] : 'Unknown response code.';
     }
 
     public function jazzCashMWAPI($request)
@@ -393,7 +398,7 @@ class TransactionController extends Controller
             // Send payment request to the JazzCash API
             $paymentResponse = $this->makePaymentMW($accessToken, $paymentData)->getData(true);
 
-            dd($paymentData , $paymentResponse);
+            dd($paymentData, $paymentResponse);
             // Handle unsuccessful payment
             if (!$paymentResponse['success']) {
                 throw new \Exception('Payment failed: ' . $paymentResponse['message']);
@@ -478,14 +483,14 @@ class TransactionController extends Controller
                 'bankCode' => $userBankDetail->swift_code,
                 'amount' => $disburseAmount,
                 'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
-                'referenceId' => 'moneyIBFT_' . uniqid(),
+                'referenceId' => 'moneyIBFT_' . uniqid('', true),
             ];
 
 
             $paymentResponse = $this->makePaymentIBFT($accessToken, $paymentData)->getData(true);
 
             if (!$paymentResponse['success']) {
-                throw new \Exception($this->getStatusDescription($paymentResponse['error']['code'] ?? 'Unknown error'));
+                throw new \Exception($this->getStatusDescription(isset($paymentResponse['error']['code']) ? $paymentResponse['error']['code'] : 'Unknown error'));
             }
 
             $transaction = Transaction::create([
@@ -536,7 +541,7 @@ class TransactionController extends Controller
         }
     }
 
-    public function makePaymentIBFT(string $accessToken, array $paymentData): JsonResponse
+    public function makePaymentIBFT(string $accessToken, array $paymentData)
     {
         // Define the endpoint and headers
         $url = 'https://gateway-sandbox.jazzcash.com.pk /jazzcash/third-party-integration/srv2/api/wso2/ibft/inquiry';
@@ -607,14 +612,14 @@ class TransactionController extends Controller
                 'bankCode' => $userBankDetail->swift_code,
                 'amount' => $disburseAmount,
                 'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
-                'referenceId' => 'moneyIBFT_' . uniqid(),
+                'referenceId' => 'moneyIBFT_' . uniqid('', true),
             ];
 
 
             $paymentResponse = $this->makePaymentIBFT($accessToken, $paymentData)->getData(true);
 
             if (!$paymentResponse['success']) {
-                throw new \Exception($this->getStatusDescription($paymentResponse['error']['code'] ?? 'Unknown error'));
+                throw new \Exception($this->getStatusDescription(isset($paymentResponse['error']['code']) ? $paymentResponse['error']['code'] : 'Unknown error'));
             }
 
             $transaction = Transaction::create([
@@ -665,7 +670,7 @@ class TransactionController extends Controller
         }
     }
 
-    public function getTokenJSBank(): JsonResponse
+    public function getTokenJSBank()
     {
         // Define the endpoint and credentials
         $url = 'https://connect.jsbl.com/JSQuickPayAPI/gettoken';
@@ -691,17 +696,23 @@ class TransactionController extends Controller
                     return response()->json([
                         'success' => true,
                         'message' => 'Token retrieved successfully.',
-                        'data' => $responseData['data'] ?? null,
+                        'data' => $responseData['data'],
                     ]);
                 } else {
                     return response()->json([
                         'success' => false,
-                        'message' => $response->json()['ResponseMessage'] ?? 'Failed to retrieve token.',
-                        'error_code' => $response->json()['ResponseCode'] ?? null,
-                        'transaction_data' => $response->json()['TransactionData'] ?? null,
+                        'message' => isset($responseData['ResponseMessage']) ? $responseData['ResponseMessage'] : 'Failed to retrieve token.',
+                        'error_code' => isset($responseData['ResponseCode']) ? $responseData['ResponseCode'] : null,
+                        'transaction_data' => isset($responseData['TransactionData']) ? $responseData['TransactionData'] : null,
                     ], $response->status());
                 }
-
+            } else {
+                // Handle non-successful responses
+                return response()->json([
+                    'success' => false,
+                    'message' => 'API request failed.',
+                    'error_code' => $response->status(),
+                ], $response->status());
             }
 
 
@@ -744,7 +755,7 @@ class TransactionController extends Controller
                 'loan_application_id' => $loanApplication->id,
                 'receiverCNIC' => inputMaskDash($loanApplication->user->profile->cnic_no),
                 'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
-                'referenceId' => 'money_' . uniqid(),
+                'referenceId' => 'money_' . uniqid('', true),
             ];
 
 
@@ -757,7 +768,7 @@ class TransactionController extends Controller
                 'transaction_reference' => $paymentData['referenceId'],
                 'remarks' => $request->remarks,
                 'responseCode' => 500,
-                'transactionID' => uniqid(),
+                'transactionID' => uniqid('', true),
                 'referenceID' => $paymentData['referenceId'],
                 'dateTime' => dateInsert($request->disbursement_date),
             ]);
