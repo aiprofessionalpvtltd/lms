@@ -199,7 +199,6 @@ class TransactionController extends Controller
             'grant_type' => 'client_credentials',
         ];
 
-        dd($headers,$url,$data);
         try {
             // Make the HTTP POST request
             $response = Http::withHeaders($headers)
@@ -366,6 +365,7 @@ class TransactionController extends Controller
             // Fetch the access token
             $tokenResponse = $this->getToken()->getData(true);
 
+            dd($tokenResponse);
             if (!$tokenResponse['success']) {
                 throw new \Exception($tokenResponse['message']);
             }
@@ -453,93 +453,93 @@ class TransactionController extends Controller
         }
     }
 
-    public function jazzCashIBFTAPI($request)
-    {
-        $request->validate([
-            'loan_application_id' => 'required|exists:loan_applications,id',
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            $request->merge(['payment_method' => 'Bank']);
-
-            $loanApplication = LoanApplication::with('getLatestInstallment.details', 'user.bank_account')
-                ->findOrFail($request->loan_application_id);
-
-            $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
-
-            $userBankDetail = $loanApplication->user->bank_account;
-            $tokenResponse = $this->getToken()->getData(true);
-
-            if (!$tokenResponse['success']) {
-                throw new \Exception($tokenResponse['message']);
-            }
-
-            $accessToken = $tokenResponse['data']['access_token'];
-
-            $paymentData = [
-                'bankAccountNumber' => $userBankDetail->account_number,
-                'bankCode' => $userBankDetail->swift_code,
-                'amount' => $disburseAmount,
-                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
-                'referenceId' => 'moneyIBFT_' . uniqid('', true),
-            ];
-
-
-            $paymentResponse = $this->makePaymentIBFT($accessToken, $paymentData)->getData(true);
-
-            if (!$paymentResponse['success']) {
-                throw new \Exception($this->getStatusDescription(isset($paymentResponse['error']['code']) ? $paymentResponse['error']['code'] : 'Unknown error'));
-            }
-
-            $transaction = Transaction::create([
-                'loan_application_id' => $loanApplication->id,
-                'user_id' => Auth::id(),
-                'amount' => $paymentResponse['data']['amount'],
-                'payment_method' => $request->payment_method,
-                'status' => 'completed',
-                'transaction_reference' => $paymentData['referenceId'],
-                'remarks' => $paymentResponse['data']['responseDescription'] .
-                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
-                    ' receiverMSISDN: ' . $paymentResponse['data']['receiverMSISDN'] .
-                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
-                    ' bankName: ' . $paymentResponse['data']['bankName'] .
-                    ' balance: ' . $paymentResponse['data']['balance']
-                ,
-                'responseCode' => $paymentResponse['data']['responseCode'],
-                'transactionID' => $paymentResponse['data']['transactionID'],
-                'referenceID' => $paymentResponse['data']['referenceID'],
-                'dateTime' => $paymentResponse['data']['dateTime'],
-            ]);
-
-            $installments = $loanApplication->getLatestInstallment->details;
-
-            if ($installments->isEmpty()) {
-                throw new \Exception('No installments found for this loan application.');
-            }
-
-            $startDate = Carbon::now();
-
-            foreach ($installments as $installment) {
-                $dueDate = $startDate->copy()->addMonths(1);
-
-                $installment->update([
-                    'issue_date' => $startDate,
-                    'due_date' => $dueDate,
-                ]);
-
-                $startDate = $dueDate->copy()->addDay();
-            }
-
-            DB::commit();
-
-            return redirect()->route('show-installment')->with('success', 'Transaction and installments updated successfully.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
-        }
-    }
+//    public function jazzCashIBFTAPI($request)
+//    {
+//        $request->validate([
+//            'loan_application_id' => 'required|exists:loan_applications,id',
+//        ]);
+//
+//        DB::beginTransaction();
+//
+//        try {
+//            $request->merge(['payment_method' => 'Bank']);
+//
+//            $loanApplication = LoanApplication::with('getLatestInstallment.details', 'user.bank_account')
+//                ->findOrFail($request->loan_application_id);
+//
+//            $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
+//
+//            $userBankDetail = $loanApplication->user->bank_account;
+//            $tokenResponse = $this->getToken()->getData(true);
+//
+//            if (!$tokenResponse['success']) {
+//                throw new \Exception($tokenResponse['message']);
+//            }
+//
+//            $accessToken = $tokenResponse['data']['access_token'];
+//
+//            $paymentData = [
+//                'bankAccountNumber' => $userBankDetail->account_number,
+//                'bankCode' => $userBankDetail->swift_code,
+//                'amount' => $disburseAmount,
+//                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
+//                'referenceId' => 'moneyIBFT_' . uniqid('', true),
+//            ];
+//
+//
+//            $paymentResponse = $this->makePaymentIBFT($accessToken, $paymentData)->getData(true);
+//
+//            if (!$paymentResponse['success']) {
+//                throw new \Exception($this->getStatusDescription(isset($paymentResponse['error']['code']) ? $paymentResponse['error']['code'] : 'Unknown error'));
+//            }
+//
+//            $transaction = Transaction::create([
+//                'loan_application_id' => $loanApplication->id,
+//                'user_id' => Auth::id(),
+//                'amount' => $paymentResponse['data']['amount'],
+//                'payment_method' => $request->payment_method,
+//                'status' => 'completed',
+//                'transaction_reference' => $paymentData['referenceId'],
+//                'remarks' => $paymentResponse['data']['responseDescription'] .
+//                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
+//                    ' receiverMSISDN: ' . $paymentResponse['data']['receiverMSISDN'] .
+//                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
+//                    ' bankName: ' . $paymentResponse['data']['bankName'] .
+//                    ' balance: ' . $paymentResponse['data']['balance']
+//                ,
+//                'responseCode' => $paymentResponse['data']['responseCode'],
+//                'transactionID' => $paymentResponse['data']['transactionID'],
+//                'referenceID' => $paymentResponse['data']['referenceID'],
+//                'dateTime' => $paymentResponse['data']['dateTime'],
+//            ]);
+//
+//            $installments = $loanApplication->getLatestInstallment->details;
+//
+//            if ($installments->isEmpty()) {
+//                throw new \Exception('No installments found for this loan application.');
+//            }
+//
+//            $startDate = Carbon::now();
+//
+//            foreach ($installments as $installment) {
+//                $dueDate = $startDate->copy()->addMonths(1);
+//
+//                $installment->update([
+//                    'issue_date' => $startDate,
+//                    'due_date' => $dueDate,
+//                ]);
+//
+//                $startDate = $dueDate->copy()->addDay();
+//            }
+//
+//            DB::commit();
+//
+//            return redirect()->route('show-installment')->with('success', 'Transaction and installments updated successfully.');
+//        } catch (\Exception $e) {
+//            DB::rollBack();
+//            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+//        }
+//    }
 
     public function makePaymentIBFT(string $accessToken, array $paymentData)
     {
