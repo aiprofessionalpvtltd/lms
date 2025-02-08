@@ -988,8 +988,9 @@ class ReportController extends Controller
                         });
 
                         // Calculate days late and penalty
-                        $daysLate = abs(now()->diffInDays($installment->due_date));
-                        $totalPenalty = $daysLate * $penaltyPerDay;
+                        $daysLate = now()->startOfDay()->diffInDays($installment->due_date);
+                        $daysLate = abs($daysLate);
+                         $totalPenalty = $daysLate * $penaltyPerDay;
 
                         // Add penalty entry
                         $penaltyEntries[] = [
