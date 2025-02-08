@@ -136,17 +136,25 @@
 
             @endcan
 
-            @can('view-expenses')
+            @can('view-accounts')
 
                 <li class="sidebar-item">
                     <a data-bs-target="#account" data-bs-toggle="collapse" class="sidebar-link collapsed"
                        aria-expanded="false">
-                        <span class="align-middle">Accounts</span>
+                        <span class="align-middle">Accounting</span>
                     </a>
                     <ul id="account" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar" style="">
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense-categories')}}">Expense Category
+{{--                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense-categories')}}">Expense Category--}}
+{{--                            </a></li>--}}
+{{--                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense')}}">Expenses</a></li>--}}
+
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-type')}}">Account Type
                             </a></li>
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense')}}">Expenses</a></li>
+
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-name')}}">Account Name
+                            </a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account')}}">Account
+                            </a></li>
 
                     </ul>
                 </li>

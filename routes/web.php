@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AccountController;
+use App\Http\Controllers\Admin\AccountNameController;
+use App\Http\Controllers\Admin\AccountTypeController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AjaxController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -182,6 +185,28 @@ Route::middleware(['auth'])->group(function () {
     Route::post('destroy-expense', [ExpenseController::class, 'destroy'])->name('destroy-expense');
 
 
+
+    Route::get('show-account-type', [AccountTypeController::class, 'index'])->name('show-account-type');
+    Route::get('add-account-type', [AccountTypeController::class, 'create'])->name('add-account-type');
+    Route::post('store-account-type', [AccountTypeController::class, 'store'])->name('store-account-type');
+    Route::get('account-type/{id}/edit', [AccountTypeController::class, 'edit'])->name('edit-account-type');
+    Route::put('update-account-type/{id}', [AccountTypeController::class, 'update'])->name('update-account-type');
+    Route::post('destroy-account-type', [AccountTypeController::class, 'destroy'])->name('destroy-account-type');
+
+
+    Route::get('show-account-name', [AccountNameController::class, 'index'])->name('show-account-name');
+    Route::get('add-account-name', [AccountNameController::class, 'create'])->name('add-account-name');
+    Route::post('store-account-name', [AccountNameController::class, 'store'])->name('store-account-name');
+    Route::get('account-name/{id}/edit', [AccountNameController::class, 'edit'])->name('edit-account-name');
+    Route::put('update-account-name/{id}', [AccountNameController::class, 'update'])->name('update-account-name');
+    Route::post('destroy-account-name', [AccountNameController::class, 'destroy'])->name('destroy-account-name');
+
+    Route::get('show-account', [AccountController::class, 'index'])->name('show-account');
+    Route::get('add-account', [AccountController::class, 'create'])->name('add-account');
+    Route::post('store-account', [AccountController::class, 'store'])->name('store-account');
+    Route::get('account/{id}/edit', [AccountController::class, 'edit'])->name('edit-account');
+    Route::put('update-account/{id}', [AccountController::class, 'update'])->name('update-account');
+    Route::post('destroy-account', [AccountController::class, 'destroy'])->name('destroy-account');
 
 
 });
