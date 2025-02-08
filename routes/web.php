@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AccountController;
 use App\Http\Controllers\Admin\AccountNameController;
+use App\Http\Controllers\Admin\AccountTransactionController;
 use App\Http\Controllers\Admin\AccountTypeController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AjaxController;
@@ -207,6 +208,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('account/{id}/edit', [AccountController::class, 'edit'])->name('edit-account');
     Route::put('update-account/{id}', [AccountController::class, 'update'])->name('update-account');
     Route::post('destroy-account', [AccountController::class, 'destroy'])->name('destroy-account');
+
+    Route::get('show-account-transaction', [AccountTransactionController::class, 'index'])->name('show-account-transaction');
+    Route::get('add-account-transaction', [AccountTransactionController::class, 'create'])->name('add-account-transaction');
+    Route::post('store-account-transaction', [AccountTransactionController::class, 'store'])->name('store-account-transaction');
+    Route::get('account-transaction/{id}/edit', [AccountTransactionController::class, 'edit'])->name('edit-account-transaction');
+    Route::put('update-account-transaction/{id}', [AccountTransactionController::class, 'update'])->name('update-account-transaction');
+    Route::post('destroy-account-transaction', [AccountTransactionController::class, 'destroy'])->name('destroy-account-transaction');
+
 
 
 });

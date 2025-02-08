@@ -156,6 +156,9 @@
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account')}}">Account
                             </a></li>
 
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-transaction')}}">Transactions
+                            </a></li>
+
                     </ul>
                 </li>
 
