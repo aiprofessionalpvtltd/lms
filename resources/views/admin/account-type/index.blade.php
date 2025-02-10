@@ -37,6 +37,8 @@
                     <thead>
                     <tr>
                         <th> Name</th>
+                        <th> Debit</th>
+                        <th> Credit</th>
                         <th class="text-center">Actions</th>
                     </tr>
                     </thead>
@@ -44,6 +46,8 @@
                     @foreach($types as $row)
                         <tr>
                             <td>{{$row->name}}</td>
+                            <td>{{$row->is_debit}}</td>
+                            <td>{{$row->is_credit}}</td>
                             <td>
                                 <div class="d-flex">
 

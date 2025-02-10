@@ -125,7 +125,13 @@ class AccountTransactionController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|unique:account_transactions,name,' . $id,
+            'account_id' => 'required|exists:accounts,id',
+            'date' => 'required|date',
+            'amount' => 'required|numeric|min:0.01',
+            'credit_debit' => 'required|in:credit,debit',
+            'reference' => 'nullable|string|max:255',
+            'transaction_type' => 'required|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -135,14 +141,27 @@ class AccountTransactionController extends Controller
         }
 
         $transaction = AccountTransaction::find($id);
-        $transaction->name = $request->input('name');
-        $transaction->save();
 
-        if ($transaction) {
-            return redirect()->route('show-account-transaction')->with('success', 'Account Transaction updated successfully.');
-        } else {
-            return redirect()->route('show-account-transaction')->with('error', 'Something went wrong.');
+        if (!$transaction) {
+            return redirect()->route('show-account-transaction')->with('error', 'Transaction not found.');
         }
+
+        // Determine Credit or Debit
+        $credit = $request->input('credit_debit') === 'credit' ? $request->input('amount') : 0;
+        $debit = $request->input('credit_debit') === 'debit' ? $request->input('amount') : 0;
+
+        // Update transaction details
+        $transaction->update([
+            'account_id' => $request->input('account_id'),
+            'date' => $request->input('date'),
+            'debit' => $debit,
+            'credit' => $credit,
+            'reference' => $request->input('reference'),
+            'transaction_type' => $request->input('transaction_type'),
+            'description' => $request->input('description'),
+        ]);
+
+        return redirect()->route('show-account-transaction')->with('success', 'Transaction updated successfully.');
     }
 
     /**

@@ -28,7 +28,7 @@ class AccountController extends Controller
      */
     public function index()
     {
-        $title = 'Accounts';
+        $title = 'Chart Of Accounts';
         $accounts = Account::with('accountName', 'accountType', 'parent.accountName')->get(); //
 //        dd($accounts);
         return view('admin.account.index', compact('title', 'accounts'));
@@ -41,7 +41,7 @@ class AccountController extends Controller
      */
     public function create()
     {
-        $title = 'Create Account';
+        $title = 'Create Chart Of  Account';
         $accounts = Account::all();
         $types = AccountType::all();
         $names = AccountName::all();
@@ -105,7 +105,7 @@ class AccountController extends Controller
      */
     public function show($id)
     {
-        $title = 'Account Details';
+        $title = 'Chart Of Account Details';
         $account = Account::with('category')->find($id); // Load the related category
         return view('admin.account.show', compact('title', 'account'));
     }
@@ -118,7 +118,7 @@ class AccountController extends Controller
      */
     public function edit($id)
     {
-        $title = 'Edit Account';
+        $title = 'Edit Chart Of  Account';
         $account = Account::find($id);
         $accounts = Account::all();
         $types = AccountType::all();

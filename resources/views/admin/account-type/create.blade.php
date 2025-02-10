@@ -59,6 +59,22 @@
                                             @endif
                                         </div>
                                     </div>
+                                    <div class="col-md-4">
+                                        <label class="col-form-label">Transaction Type <span class="text-danger">*</span></label>
+                                        <div class="form-group d-flex align-items-center">
+                                            <label class="me-3">
+                                                <input type="radio" class="form-check-input" name="credit_debit" value="debit" required> Debit
+                                            </label>
+                                            <label class="me-3">
+                                                <input type="radio" class="form-check-input" name="credit_debit" value="credit" required> Credit
+                                            </label>
+                                        </div>
+
+                                        @if ($errors->has('credit_debit'))
+                                            <span class="text-danger">{{ $errors->first('credit_debit') }}</span>
+                                        @endif
+                                    </div>
+
                                 </div>
                                 <div class="row">
 

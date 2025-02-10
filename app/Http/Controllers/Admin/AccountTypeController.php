@@ -50,6 +50,7 @@ class AccountTypeController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:account_types,name',
+            'credit_debit' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -60,7 +61,10 @@ class AccountTypeController extends Controller
 
         $type = AccountType::create([
             'name' => $request->input('name'),
+            'is_debit' => $request->input('credit_debit') === 'debit',
+            'is_credit' => $request->input('credit_debit') === 'credit',
         ]);
+
 
         if ($type) {
             return redirect()->route('show-account-type')->with('success', 'Account Type created successfully.');
@@ -106,6 +110,8 @@ class AccountTypeController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:account_types,name,' . $id,
+            'credit_debit' => 'required',
+
         ]);
 
         if ($validator->fails()) {
@@ -116,6 +122,8 @@ class AccountTypeController extends Controller
 
         $type = AccountType::find($id);
         $type->name = $request->input('name');
+        $type->is_debit = $request->input('credit_debit') === 'debit';
+        $type->is_credit = $request->input('credit_debit') === 'credit';
         $type->save();
 
         if ($type) {

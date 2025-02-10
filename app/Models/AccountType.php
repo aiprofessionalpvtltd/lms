@@ -10,7 +10,7 @@ class AccountType extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['name', 'description'];
+    protected $fillable = ['name', 'description' ,'is_credit','is_debit'];
 
     public function accounts()
     {
