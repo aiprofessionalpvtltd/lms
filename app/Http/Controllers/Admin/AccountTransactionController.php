@@ -25,7 +25,7 @@ class AccountTransactionController extends Controller
      */
     public function index()
     {
-        $title = 'Account Transactions';
+        $title = 'Account Journal Entry';
         $transactions = AccountTransaction::all();
         return view('admin.account-transaction.index', compact('title', 'transactions'));
     }
@@ -37,9 +37,9 @@ class AccountTransactionController extends Controller
      */
     public function create()
     {
-        $title = 'Create Account Transaction';
+        $title = 'Create Account Journal Entry';
         $accounts = Account::all();
-        return view('admin.account-transaction.create', compact('title','accounts'));
+        return view('admin.account-transaction.create', compact('title', 'accounts'));
     }
 
     /**
@@ -82,7 +82,7 @@ class AccountTransactionController extends Controller
         ]);
 
         if ($transaction) {
-            return redirect()->route('show-account-transaction')->with('success', 'Transaction recorded successfully.');
+            return redirect()->route('show-account-transaction')->with('success', 'Journal Entry recorded successfully.');
         } else {
             return redirect()->route('show-account-transaction')->with('error', 'Something went wrong.');
         }
@@ -97,7 +97,7 @@ class AccountTransactionController extends Controller
      */
     public function show($id)
     {
-        $title = 'Account Transaction Details';
+        $title = 'Account Journal Entry Details';
         $transaction = AccountTransaction::find($id);
         return view('admin.account-transaction.show', compact('title', 'transaction'));
     }
@@ -110,7 +110,7 @@ class AccountTransactionController extends Controller
      */
     public function edit($id)
     {
-        $title = 'Edit Account Transaction';
+        $title = 'Edit Account Journal Entry';
         $transaction = AccountTransaction::find($id);
         return view('admin.account-transaction.edit', compact('title', 'transaction'));
     }
@@ -161,7 +161,7 @@ class AccountTransactionController extends Controller
             'description' => $request->input('description'),
         ]);
 
-        return redirect()->route('show-account-transaction')->with('success', 'Transaction updated successfully.');
+        return redirect()->route('show-account-transaction')->with('success', 'Journal Entry updated successfully.');
     }
 
     /**
@@ -175,6 +175,6 @@ class AccountTransactionController extends Controller
         $transaction = AccountTransaction::find($request->id);
         $transaction->delete();
 
-        return response()->json(['success' => 'Account Transaction deleted successfully.']);
+        return response()->json(['success' => 'Account Journal Entry deleted successfully.']);
     }
 }

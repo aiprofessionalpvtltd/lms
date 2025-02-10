@@ -37,20 +37,24 @@
                     <thead>
                     <tr>
                         <th> Code</th>
+                        <th> Name</th>
                         <th> Account Name</th>
                         <th> Account Type</th>
                         <th> Parent Account</th>
-                         <th class="text-center">Actions</th>
+                        <th> Balance</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     @foreach($accounts as $row)
                         <tr>
                             <td>{{$row->code}}</td>
+                            <td>{{$row->name}}</td>
                             <td>{{$row->accountName->name}}</td>
                             <td>{{$row->accountType->name}}</td>
                             <td>{{$row->parent->accountName->name ?? ''}}</td>
-                             <td>
+                            <td>{{$row->balance > 0 ?  $row->balance  : '0'}}</td>
+                            <td>
                                 <div class="d-flex">
 
                                     <a title="Edit" href="{{ route('edit-account', $row->id) }}"

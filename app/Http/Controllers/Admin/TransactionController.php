@@ -186,7 +186,8 @@ class TransactionController extends Controller
     public function getToken()
     {
         // Define the endpoint and headers
-        $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
+//        $url = 'https://gateway-sandbox.jazzcash.com.pk/token';
+        $url = 'https://gateway.jazzcash.com.pk/token';
         $token = env('JAZZ_CASH_PRODUCTION_TOKEN');
 
         $headers = [

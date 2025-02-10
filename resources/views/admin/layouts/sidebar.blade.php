@@ -54,12 +54,12 @@
                 </a>
             </li>
             @can('view-roles')
-            <li class="sidebar-item {{ request()->routeIs('failed-attempt-logs') ? 'active' : '' }}">
-                <a class="sidebar-link" href="{{ route('failed-attempt-logs') }}">
-                    <i class="align-middle" data-feather="user"></i>
-                    <span class="align-middle">Failed Attempt Logs</span>
-                </a>
-            </li>
+                <li class="sidebar-item {{ request()->routeIs('failed-attempt-logs') ? 'active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('failed-attempt-logs') }}">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">Failed Attempt Logs</span>
+                    </a>
+                </li>
                 <li class="sidebar-item {{ request()->routeIs('activity-logs') ? 'active' : '' }}">
                     <a class="sidebar-link" href="{{ route('activity-logs') }}">
                         <i class="align-middle" data-feather="user"></i>
@@ -144,19 +144,23 @@
                         <span class="align-middle">Accounting</span>
                     </a>
                     <ul id="account" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar" style="">
-{{--                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense-categories')}}">Expense Category--}}
-{{--                            </a></li>--}}
-{{--                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense')}}">Expenses</a></li>--}}
+                        {{--                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense-categories')}}">Expense Category--}}
+                        {{--                            </a></li>--}}
+                        {{--                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense')}}">Expenses</a></li>--}}
 
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-type')}}">Account Type
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-type')}}">Account
+                                Type
                             </a></li>
 
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-name')}}">Account Name
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-name')}}">Account
+                                Name
                             </a></li>
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account')}}">Chart Of Account
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account')}}">Chart Of
+                                Account
                             </a></li>
 
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-transaction')}}">Transactions
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-transaction')}}">
+                                Journal Entry
                             </a></li>
 
                     </ul>
@@ -172,8 +176,9 @@
                         <span class="align-middle">Reports</span>
                     </a>
                     <ul id="reports" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar" style="">
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-invoice-report')}}">Customer Invoice
-                                </a></li>
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-invoice-report')}}">Customer
+                                Invoice
+                            </a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-disbursement-report')}}">Disbursement
                                 Report</a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-overdue-report')}}">Overdue
@@ -185,7 +190,8 @@
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-outstanding-report')}}">Outstanding
                                 Report</a></li>
 
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-aging-receivable-report')}}">Aging Receivable
+                        <li class="sidebar-item"><a class="sidebar-link"
+                                                    href="{{route('show-aging-receivable-report')}}">Aging Receivable
                                 Report</a></li>
 
 
@@ -193,30 +199,33 @@
                                 Report</a></li>
 
 
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-financing-report')}}">Product Financing
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-financing-report')}}">Product
+                                Financing
                                 Report</a></li>
 
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-penalty-report')}}">Penalty
                                 Report</a></li>
 
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-principal-report')}}">Principal Payment
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-principal-report')}}">Principal
+                                Payment
                                 Report</a></li>
 
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-interest-income-report')}}">Interest Income
+                        <li class="sidebar-item"><a class="sidebar-link"
+                                                    href="{{route('show-interest-income-report')}}">Interest Income
                                 Report</a></li>
 
-                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-early-settlement-report')}}">Early Settlement
+                        <li class="sidebar-item"><a class="sidebar-link"
+                                                    href="{{route('show-early-settlement-report')}}">Early Settlement
                                 Report</a></li>
 
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-complete-report')}}">
-                               Completed Application
+                                Completed Application
                                 Report</a></li>
 
                     </ul>
                 </li>
 
             @endcan
-
 
 
         </ul>

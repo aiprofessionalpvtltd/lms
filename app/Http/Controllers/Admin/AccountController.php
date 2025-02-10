@@ -63,6 +63,8 @@ class AccountController extends Controller
         // Validation
         $validator = Validator::make($request->all(), [
             'code' => 'nullable|string|unique:accounts,code',
+            'name' => 'required',
+            'balance' => 'required',
             'account_name_id' => 'required|exists:account_names,id',
             'account_type_id' => 'required|exists:account_types,id',
             'parent_id' => 'nullable|exists:accounts,id',
@@ -76,7 +78,7 @@ class AccountController extends Controller
 
         // Generate Code if not provided
         if (!$request->filled('code')) {
-            $lastAccount = Account::latest('code')->first();
+            $lastAccount = Account::where('account_type_id', $request->input('account_type_id'))->latest('code')->first();
             $newCode = $lastAccount ? ((int)$lastAccount->code + 1) : 100;
         } else {
             $newCode = $request->input('code');
@@ -85,6 +87,8 @@ class AccountController extends Controller
         // Create Account
         $account = Account::create([
             'code' => $newCode,
+            'name' => $request->input('name'),
+            'balance' => $request->input('balance'),
             'account_name_id' => $request->input('account_name_id'),
             'account_type_id' => $request->input('account_type_id'),
             'parent_id' => $request->input('parent_id'),
@@ -153,9 +157,9 @@ class AccountController extends Controller
         // Find Account
         $account = Account::findOrFail($id);
 
-        // Generate Code if not provided
+         // Generate Code if not provided
         if (!$request->filled('code')) {
-            $lastAccount = Account::latest('code')->first();
+            $lastAccount = Account::where('account_type_id', $request->input('account_type_id'))->latest('code')->first();
             $newCode = $lastAccount ? ((int)$lastAccount->code + 1) : 100;
         } else {
             $newCode = $request->input('code');
@@ -164,6 +168,8 @@ class AccountController extends Controller
         // Update Account
         $account->update([
             'code' => $newCode,
+            'name' => $request->input('name'),
+            'balance' => $request->input('balance'),
             'account_name_id' => $request->input('account_name_id'),
             'account_type_id' => $request->input('account_type_id'),
             'parent_id' => $request->input('parent_id'),

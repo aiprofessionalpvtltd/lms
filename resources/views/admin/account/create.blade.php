@@ -58,6 +58,22 @@
                                         </div>
                                     </div>
                                     <div class="col-md-4">
+                                        <label class="col-form-label  ">Name <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group form-group-feedback form-group-feedback-right">
+                                            <input type="text"   class="form-control"
+                                                   name="name"
+                                                   value="{{old('name')}}"
+                                                   placeholder="Name">
+
+                                            @if ($errors->has('name'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('name') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
                                         <label class="col-form-label">Account Name</label>
                                         <div class="form-group">
                                             <select name="account_name_id" class="form-control select2"
@@ -92,6 +108,24 @@
                                             @endif
                                         </div>
                                     </div>
+
+                                    <div class="col-md-4">
+                                        <label class="col-form-label  ">Balance <span
+                                                class="text-danger">*</span> </label>
+                                        <div
+                                            class="form-group form-group-feedback form-group-feedback-right">
+                                            <input type="number"   class="form-control"
+                                                   name="balance"
+                                                   value="{{old('balance')}}"
+                                                   placeholder="Balance">
+
+                                            @if ($errors->has('balance'))
+                                                <span
+                                                    class="text-danger">{{ $errors->first('balance') }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+
 
                                     <div class="col-md-4">
                                         <label class="col-form-label">Parent ID</label>

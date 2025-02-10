@@ -31,35 +31,15 @@
         <div class="card">
 
             <!-- Registration form -->
-            <form action="{{route('store-account-transaction')}}" method="post"
-                  name="allotee_registration" class="flex-fill form-validate-jquery">
+            <form action="{{route('store-account-transaction')}}" method="post" id="transaction-form"
+                   class="flex-fill form-validate-jquery">
                 @csrf
 
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card mb-0">
                             <div class="card-body">
-
                                 <div class="row">
-
-                                    <div class="col-md-6">
-                                        <label class="col-form-label">Account Head</label>
-                                        <div class="form-group">
-                                            <select name="account_id" class="form-control select2"
-                                                    data-placeholder="Select Account">
-                                                <option></option>
-                                                @foreach($accounts as $row)
-                                                    <option
-                                                        value="{{ $row->id }}" {{ old('account_id') == $row->id ? 'selected' : '' }}>{{ $row->code . ' ' . $row->accountName->name . ' ('. $row->accountType->name.')' }}</option>
-                                                @endforeach
-                                            </select>
-                                            @if ($errors->has('account_id'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('account_id') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
                                     <div class="col-md-6">
                                         <label class="col-form-label">Date <span
                                                 class="text-danger">*</span></label>
@@ -73,190 +53,82 @@
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="col-md-3">
-                                        <label class="col-form-label  ">Amount <span
-                                                class="text-danger">*</span> </label>
-                                        <div
-                                            class="form-group form-group-feedback form-group-feedback-right">
-                                            <input type="number" required class="form-control"
-                                                   name="amount"
-                                                   value="{{old('amount')}}"
-                                                   placeholder=" amount">
-
-                                            @if ($errors->has('amount'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('name') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-3">
-                                        <label class="col-form-label">Debit/Credit</label>
-                                        <div class="form-group">
-                                            <select name="credit_debit" class="form-control select2"
-                                                    data-placeholder="Select Debit/Credit">
-                                                <option></option>
-                                                <option  {{ old('credit_debit') == 'credit' ? 'selected' : '' }} value="credit">Credit</option>
-                                                <option  {{ old('credit_debit') == 'debit' ? 'selected' : '' }} value="debit">Debit</option>
-                                            </select>
-                                            @if ($errors->has('credit_debit'))
-                                                <span class="text-danger">{{ $errors->first('credit_debit') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-md-3">
-                                        <label class="col-form-label">Reference <span
-                                                class="text-danger">*</span></label>
-                                        <div class="form-group form-group-feedback form-group-feedback-right">
-
-                                            <input type="text" name="reference" class="form-control"
-                                                   placeholder="Enter Reference "
-                                                   value="{{old('reference')}}"/>
-                                            @if ($errors->has('reference'))
-                                                <span class="text-danger">{{ $errors->first('reference') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-md-3">
-                                        <label class="col-form-label">Transaction Type</label>
-                                        <div class="form-group">
-                                            <select name="transaction_type" class="form-control select2"
-                                                    data-placeholder="Select Transaction Type">
-                                                <option></option>
-
-                                                <!-- Income Transactions -->
-                                                <optgroup label="Income Transactions">
-                                                    <option value="Loan Disbursement">Loan Disbursement</option>
-                                                    <option value="Loan Repayment Received">Loan Repayment Received
-                                                    </option>
-                                                    <option value="Interest Income">Interest Income</option>
-                                                    <option value="Service Charges">Service Charges</option>
-                                                    <option value="Rental Income">Rental Income</option>
-                                                    <option value="Other Income">Other Income</option>
-                                                </optgroup>
-
-                                                <!-- Expense Transactions -->
-                                                <optgroup label="Expense Transactions">
-                                                    <option value="Supplier Payment">Supplier Payment</option>
-                                                    <option value="Salaries & Wages">Salaries & Wages</option>
-                                                    <option value="Utility Bills">Utility Bills</option>
-                                                    <option value="Office Supplies">Office Supplies</option>
-                                                    <option value="Loan Repayment">Loan Repayment</option>
-                                                    <option value="Tax Payment">Tax Payment</option>
-                                                    <option value="Depreciation Expense">Depreciation Expense</option>
-                                                    <option value="Marketing & Advertising">Marketing & Advertising
-                                                    </option>
-                                                    <option value="Other Expenses">Other Expenses</option>
-                                                </optgroup>
-
-                                                <!-- Asset Transactions -->
-                                                <optgroup label="Asset Transactions">
-                                                    <option value="Fixed Asset Purchase">Fixed Asset Purchase</option>
-                                                    <option value="Investment Purchase">Investment Purchase</option>
-                                                    <option value="Cash Withdrawal">Cash Withdrawal</option>
-                                                    <option value="Bank Deposit">Bank Deposit</option>
-                                                    <option value="Other Assets">Other Assets</option>
-                                                </optgroup>
-
-                                                <!-- Liability Transactions -->
-                                                <optgroup label="Liability Transactions">
-                                                    <option value="Accounts Payable Settlement">Accounts Payable
-                                                        Settlement
-                                                    </option>
-                                                    <option value="Loan Payable">Loan Payable</option>
-                                                    <option value="Other Liabilities">Other Liabilities</option>
-                                                </optgroup>
-
-                                                <!-- Equity Transactions -->
-                                                <optgroup label="Equity Transactions">
-                                                    <option value="Owner’s Capital Contribution">Owner’s Capital
-                                                        Contribution
-                                                    </option>
-                                                    <option value="Equity Withdrawal">Equity Withdrawal</option>
-                                                    <option value="Dividend Payment">Dividend Payment</option>
-                                                    <option value="Other Equity">Other Equity</option>
-                                                </optgroup>
-
-                                                <optgroup label="Office & Equipment Purchases">
-                                                    <option value="Office Rent Payment">Office Rent Payment</option>
-                                                    <option value="Office Supplies Purchase">Office Supplies Purchase
-                                                    </option>
-                                                    <option value="Office Furniture Purchase">Office Furniture
-                                                        Purchase
-                                                    </option>
-                                                    <option value="Office Equipment Purchase">Office Equipment
-                                                        Purchase
-                                                    </option>
-                                                    <option value="Computer & Laptop Purchase">Computer & Laptop
-                                                        Purchase
-                                                    </option>
-                                                    <option value="Software Purchase & Licensing">Software Purchase &
-                                                        Licensing
-                                                    </option>
-                                                    <option value="IT Hardware Purchase">IT Hardware Purchase</option>
-                                                    <option value="Website Development & Hosting">Website Development &
-                                                        Hosting
-                                                    </option>
-                                                    <option value="Office Renovation & Repairs">Office Renovation &
-                                                        Repairs
-                                                    </option>
-                                                    <option value="Furniture Repairs & Maintenance">Furniture Repairs &
-                                                        Maintenance
-                                                    </option>
-                                                    <option value="IT Equipment Repairs">IT Equipment Repairs</option>
-                                                    <option value="Vehicle Purchase">Vehicle Purchase</option>
-                                                    <option value="Fuel & Transportation Expense">Fuel & Transportation
-                                                        Expense
-                                                    </option>
-                                                    <option value="Vehicle Maintenance & Repairs">Vehicle Maintenance &
-                                                        Repairs
-                                                    </option>
-                                                    <option value="Security Equipment Purchase">Security Equipment
-                                                        Purchase
-                                                    </option>
-                                                    <option value="Cleaning Supplies Purchase">Cleaning Supplies
-                                                        Purchase
-                                                    </option>
-                                                    <option value="Canteen & Refreshments">Canteen & Refreshments
-                                                    </option>
-                                                </optgroup>
-
-
-                                                <!-- Other -->
-                                                <optgroup label="Other">
-                                                    <option value="Other">Other</option>
-                                                </optgroup>
-                                            </select>
-
-                                            @if ($errors->has('transaction_type'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('transaction_type') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
-
-                                    <div class="col-md-12">
-                                        <label class="col-form-label">Description</label>
-                                        <div class="form-group">
-                                            <textarea name="description"
-                                                      class="form-control">{{old('description')}}</textarea>
-
-                                            @if ($errors->has('description'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('description') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-
                                 </div>
+                                <h3 class="mt-3"> {{$title}}</h3>
+
+                                <div class="container">
+                                    <div id="transaction-rows">
+                                        <!-- Default 5 rows -->
+                                        @for($i = 0; $i < 5; $i++)
+                                            <div class="row transaction-row">
+                                                <div class="col-md-3">
+                                                    <label class="col-form-label">Account Head</label>
+                                                    <div class="form-group">
+                                                        <select name="account_id[{{ $i }}]" class="form-control select2"
+                                                                data-placeholder="Select Account">
+                                                            <option></option>
+                                                            @foreach($accounts as $row)
+                                                                <option value="{{ $row->id }}">
+                                                                    {{ $row->name . ' ('. $row->accountType->name.')' }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label class="col-form-label">Debit</label>
+                                                    <div class="form-group">
+                                                        <input type="number" class="form-control debit-input" name="debit_amount[{{ $i }}]" value="0">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label class="col-form-label">Credit</label>
+                                                    <div class="form-group">
+                                                        <input type="number" class="form-control credit-input" name="credit_amount[{{ $i }}]" value="0">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label class="col-form-label">Journal Entry No</label>
+                                                    <div class="form-group">
+                                                        <input type="text" name="reference[{{ $i }}]" class="form-control" placeholder="Reference">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label class="col-form-label">Description</label>
+                                                    <div class="form-group">
+                                                        <input type="text" name="description[{{ $i }}]" class="form-control" placeholder="Description">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-1">
+                                                    <label class="col-form-label">&nbsp;</label>
+                                                    <div class="form-group">
+                                                        <button type="button" class="btn btn-danger remove-row">Remove</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endfor
+                                    </div>
+
+                                    <button type="button" class="btn btn-primary mt-3" id="add-row">Add More</button>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-3">
+                                        <strong>Total</strong>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <strong>Debit: PKR <span id="total-debit">0.00</span></strong>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <strong>Credit: PKR <span id="total-credit">0.00</span></strong>
+                                    </div>
+                                </div>
+
                                 <div class="row">
-
-
                                     <div class=" col-md-12 mt-5 ">
                                         <button type="submit"
                                                 class="btn btn-outline-primary float-end">
@@ -285,12 +157,124 @@
 @push('script')
     <script>
         $(document).ready(function () {
+            let rowIndex = 5; // Start with 5 default rows
 
-            // Initialize Select2
+            // Initialize Select2 and Flatpickr on page load
             $('.select2').select2();
-            // Flatpickr
             flatpickr(".flatpickr-minimum");
+
+            // Function to add a new row
+            $("#add-row").click(function () {
+                let newRow = `
+            <div class="row transaction-row">
+                <div class="col-md-3">
+                    <label class="col-form-label">Account Head</label>
+                    <div class="form-group">
+                        <select name="account_id[${rowIndex}]" class="form-control select2" data-placeholder="Select Account">
+                            <option></option>
+                            @foreach($accounts as $row)
+                <option value="{{ $row->id }}">
+                                    {{ $row->name . ' ('. $row->accountType->name.')' }}
+                </option>
+@endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <label class="col-form-label">Debit</label>
+            <div class="form-group">
+                <input type="number" class="form-control debit-input" name="debit_amount[${rowIndex}]" value="0">
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="col-form-label">Credit</label>
+                    <div class="form-group">
+                        <input type="number" class="form-control credit-input" name="credit_amount[${rowIndex}]" value="0">
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="col-form-label">Journal Entry No</label>
+                    <div class="form-group">
+                        <input type="text" name="reference[${rowIndex}]" class="form-control" placeholder="Reference">
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="col-form-label">Description</label>
+                    <div class="form-group">
+                        <input type="text" name="description[${rowIndex}]" class="form-control" placeholder="Description">
+                    </div>
+                </div>
+
+                <div class="col-md-1">
+                    <label class="col-form-label">&nbsp;</label>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-danger remove-row">Remove</button>
+                    </div>
+                </div>
+            </div>`;
+
+                $("#transaction-rows").append(newRow);
+                rowIndex++; // Increase row index for next row
+
+                // Reinitialize Select2 for newly added dropdowns
+                $(".select2").select2();
+
+                // Attach event listener to new inputs
+                attachSumCalculation();
+            });
+
+            // Function to remove a row
+            $(document).on("click", ".remove-row", function () {
+                $(this).closest(".transaction-row").remove();
+                calculateSum(); // Recalculate totals when a row is removed
+            });
+
+            // Attach event listeners for sum calculation
+            function attachSumCalculation() {
+                $(".debit-input, .credit-input").off("input").on("input", function () {
+                    calculateSum();
+                });
+            }
+
+            // Function to calculate the sum of debit and credit fields
+            function calculateSum() {
+                let totalDebit = 0;
+                let totalCredit = 0;
+
+                $(".debit-input").each(function () {
+                    let debitValue = parseFloat($(this).val()) || 0;
+                    totalDebit += debitValue;
+                });
+
+                $(".credit-input").each(function () {
+                    let creditValue = parseFloat($(this).val()) || 0;
+                    totalCredit += creditValue;
+                });
+
+                $("#total-debit").text(totalDebit.toFixed(2));
+                $("#total-credit").text(totalCredit.toFixed(2));
+            }
+
+            // Prevent form submission if debit ≠ credit
+            $("#transaction-form").submit(function (event) {
+                let totalDebit = parseFloat($("#total-debit").text()) || 0;
+                let totalCredit = parseFloat($("#total-credit").text()) || 0;
+
+                if (totalDebit !== totalCredit) {
+                    event.preventDefault();
+                    alert("Error: Total Debit and Total Credit must be equal!");
+                }
+            });
+
+
+            // Initial binding for existing rows
+            attachSumCalculation();
         });
     </script>
+
 
 @endpush
