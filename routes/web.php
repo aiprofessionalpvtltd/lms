@@ -210,6 +210,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('destroy-account', [AccountController::class, 'destroy'])->name('destroy-account');
 
     Route::get('show-account-transaction', [AccountTransactionController::class, 'index'])->name('show-account-transaction');
+    Route::get('show-account-transaction-history/{id}', [AccountTransactionController::class, 'getHistoryByAccountID'])->name('show-account-transaction-history');
     Route::get('add-account-transaction', [AccountTransactionController::class, 'create'])->name('add-account-transaction');
     Route::post('store-account-transaction', [AccountTransactionController::class, 'store'])->name('store-account-transaction');
     Route::get('account-transaction/{id}/edit', [AccountTransactionController::class, 'edit'])->name('edit-account-transaction');

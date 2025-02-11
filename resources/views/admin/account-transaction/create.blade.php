@@ -59,7 +59,7 @@
                                 <div class="container">
                                     <div id="transaction-rows">
                                         <!-- Default 5 rows -->
-                                        @for($i = 0; $i < 5; $i++)
+                                        @for($i = 0; $i < 2; $i++)
                                             <div class="row transaction-row">
                                                 <div class="col-md-3">
                                                     <label class="col-form-label">Account Head</label>

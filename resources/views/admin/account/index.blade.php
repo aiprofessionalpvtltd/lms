@@ -57,14 +57,18 @@
                             <td>
                                 <div class="d-flex">
 
+                                    <a title="View History" target="_blank" href="{{ route('show-account-transaction-history', $row->id) }}"
+                                       class="text-primary me-2"><i
+                                            class="fas fa-history"></i></a>
+
                                     <a title="Edit" href="{{ route('edit-account', $row->id) }}"
-                                       class="text-primary mr-1"><i
+                                       class="text-primary me-2"><i
                                             class="fas fa-edit"></i></a>
 
                                     <a href="javascript:void(0)" data-url="{{route('destroy-account')}}"
                                        data-status='0' data-label="delete"
                                        data-id="{{$row->id}}"
-                                       class=" text-danger mr-1 change-status-record "
+                                       class=" text-danger me-2 change-status-record "
                                        title="Suspend Record"><i class="fas fa-trash"></i></a>
 
                                 </div>

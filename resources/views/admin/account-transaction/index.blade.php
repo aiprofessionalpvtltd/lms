@@ -37,9 +37,9 @@
                     <thead>
                     <tr>
                         <th> Code</th>
+                        <th> Name</th>
                         <th> Account Name</th>
-                        <th> Account Type</th>
-                        <th> Date</th>
+                         <th> Date</th>
                         <th> Credit</th>
                         <th> Debit</th>
                         <th> Reference</th>
@@ -52,9 +52,9 @@
                     @foreach($transactions as $row)
                         <tr>
                             <td>{{$row->account->code}}</td>
+                            <td>{{$row->account->name}}</td>
                             <td>{{$row->account->accountName->name}}</td>
-                            <td>{{$row->account->accountType->name}}</td>
-                            <td>{{showDate($row->date)}}</td>
+                             <td>{{showDate($row->date)}}</td>
                             <td class="text-danger">{{$row->credit > 0 ? $row->credit : ''}}</td>
                             <td class="text-success">{{$row->debit > 0 ? $row->debit : ''}}</td>
                              <td>{{$row->reference}}</td>

@@ -7,6 +7,8 @@ use App\Models\Account;
 use App\Models\AccountTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AccountTransactionController extends Controller
 {
@@ -29,6 +31,13 @@ class AccountTransactionController extends Controller
         $transactions = AccountTransaction::all();
         return view('admin.account-transaction.index', compact('title', 'transactions'));
     }
+    public function getHistoryByAccountID($id)
+    {
+        $title = 'General Ledger';
+        $transactions = AccountTransaction::where('account_id',$id)->get();
+        return view('admin.account-transaction.history_by_account_id', compact('title', 'transactions'));
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -48,43 +57,76 @@ class AccountTransactionController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
+
+
     public function store(Request $request)
     {
+        // Validate request
         $validator = Validator::make($request->all(), [
-            'account_id' => 'required|exists:accounts,id',
+            'account_id' => 'required|array',
+            'account_id.*' => 'exists:accounts,id',
             'date' => 'required|date',
-            'amount' => 'required|numeric|min:0.01',
-            'credit_debit' => 'required|in:credit,debit',
-            'reference' => 'nullable|string|max:255',
-            'transaction_type' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'debit_amount' => 'required|array',
+            'debit_amount.*' => 'numeric|min:0',
+            'credit_amount' => 'required|array',
+            'credit_amount.*' => 'numeric|min:0',
+            'reference' => 'required|array',
+            'reference.*' => 'nullable|string|max:255',
+            'description' => 'required|array',
+            'description.*' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        // Determine Credit or Debit
-        $credit = $request->input('credit_debit') === 'credit' ? $request->input('amount') : 0;
-        $debit = $request->input('credit_debit') === 'debit' ? $request->input('amount') : 0;
+        DB::beginTransaction(); // Start DB transaction
 
-        // Store the transaction
-        $transaction = AccountTransaction::create([
-            'account_id' => $request->input('account_id'),
-            'date' => $request->input('date'),
-            'debit' => $debit,
-            'credit' => $credit,
-            'reference' => $request->input('reference'),
-            'transaction_type' => $request->input('transaction_type'),
-            'description' => $request->input('description'),
-        ]);
+        try {
+            // Loop through each account and process the journal entry
+            foreach ($request->account_id as $index => $accountId) {
+                $account = Account::findOrFail($accountId); // Get account details
+                $debitAmount = $request->debit_amount[$index] ?? 0;
+                $creditAmount = $request->credit_amount[$index] ?? 0;
+                $reference = $request->reference[$index] ?? null;
+                $description = $request->description[$index] ?? null;
 
-        if ($transaction) {
-            return redirect()->route('show-account-transaction')->with('success', 'Journal Entry recorded successfully.');
-        } else {
-            return redirect()->route('show-account-transaction')->with('error', 'Something went wrong.');
+                // Determine if account is credit or debit based on its account type
+                $accountType = $account->accountType;
+//                dd($accountType);
+                if ($accountType->is_credit) {
+                    // If account is credit, subtract debit amount, add credit amount
+                    $account->balance -= $debitAmount;
+                    $account->balance += $creditAmount;
+                } elseif ($accountType->is_debit) {
+                    // If account is debit, add debit amount, subtract credit amount
+                    $account->balance += $debitAmount;
+                    $account->balance -= $creditAmount;
+                }
+
+                 // Save updated balance
+                $account->save();
+
+                // Store transaction entry
+                AccountTransaction::create([
+                    'account_id' => $account->id,
+                    'date' => $request->date,
+                    'debit' => $debitAmount,
+                    'credit' => $creditAmount,
+                    'reference' => $reference,
+                    'transaction_type' => 'Journal Entry',
+                    'description' => $description,
+                ]);
+            }
+
+            DB::commit(); // Commit transaction if all operations succeed
+
+            return redirect()->route('show-account-transaction')->with('success', 'Journal Entries recorded successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack(); // Rollback transaction on error
+            Log::error('Journal Entry Error: ' . $e->getMessage()); // Log the error
+
+            return redirect()->back()->with('error', 'Something went wrong. Please try again.');
         }
     }
 
