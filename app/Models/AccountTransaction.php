@@ -19,6 +19,7 @@ class AccountTransaction extends Model
         'reference',
         'transaction_type',
         'related_transaction_id',
+        'vendor_account_id',
     ];
 
     public function account()
@@ -29,5 +30,9 @@ class AccountTransaction extends Model
     public function relatedTransaction()
     {
         return $this->belongsTo(Transaction::class, 'related_transaction_id');
+    }
+    public function vendorAccount()
+    {
+        return $this->belongsTo(AccountVendor::class);
     }
 }

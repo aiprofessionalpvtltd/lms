@@ -15,6 +15,9 @@ class Province extends Model
         return $this->belongsTo(Country::class);
     }
 
-
+    public function vendors()
+    {
+        return $this->hasMany(Vendor::class);
+    }
 
 }

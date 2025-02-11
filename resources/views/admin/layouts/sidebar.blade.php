@@ -148,6 +148,9 @@
                         {{--                            </a></li>--}}
                         {{--                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-expense')}}">Expenses</a></li>--}}
 
+                        <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-vendor-account')}}">Vendors Accounts
+
+                            </a></li>
                         <li class="sidebar-item"><a class="sidebar-link" href="{{route('show-account-type')}}">Account
                                 Type
                             </a></li>

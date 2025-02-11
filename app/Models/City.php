@@ -12,4 +12,8 @@ class City extends Model
     protected $fillable = [
         'name', 'province'
     ];
+    public function vendors()
+    {
+        return $this->hasMany(Vendor::class);
+    }
 }

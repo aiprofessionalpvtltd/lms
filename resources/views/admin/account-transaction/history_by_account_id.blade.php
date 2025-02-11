@@ -40,6 +40,7 @@
                         <th> Debit</th>
                         <th> Reference</th>
                         <th> Transaction Type</th>
+                        <th> Vendor Name</th>
                         <th> Description</th>
                      </tr>
                     </thead>
@@ -53,6 +54,7 @@
                             <td class="text-success">{{$row->debit > 0 ? $row->debit : ''}}</td>
                              <td>{{$row->reference}}</td>
                             <td>{{$row->transaction_type}}</td>
+                            <td>{{ $row->vendorAccount ? $row->vendorAccount->name : 'N/A' }}</td>
                             <td>{{$row->description}}</td>
 
                         </tr>

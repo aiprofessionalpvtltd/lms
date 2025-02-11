@@ -61,7 +61,7 @@
                                         <!-- Default 5 rows -->
                                         @for($i = 0; $i < 2; $i++)
                                             <div class="row transaction-row">
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
                                                     <label class="col-form-label">Account Head</label>
                                                     <div class="form-group">
                                                         <select name="account_id[{{ $i }}]" class="form-control select2"
@@ -103,7 +103,20 @@
                                                         <input type="text" name="description[{{ $i }}]" class="form-control" placeholder="Description">
                                                     </div>
                                                 </div>
-
+                                                <div class="col-md-2">
+                                                    <label class="col-form-label">Vendor Name</label>
+                                                    <div class="form-group">
+                                                        <select name="vendor_account_id[{{ $i }}]" class="form-control select2"
+                                                                data-placeholder="Select Vendor">
+                                                            <option></option>
+                                                            @foreach($vendorAccounts as $row)
+                                                                <option value="{{ $row->id }}">
+                                                                    {{ $row->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
                                                 <div class="col-md-1">
                                                     <label class="col-form-label">&nbsp;</label>
                                                     <div class="form-group">
@@ -167,7 +180,7 @@
             $("#add-row").click(function () {
                 let newRow = `
             <div class="row transaction-row">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="col-form-label">Account Head</label>
                     <div class="form-group">
                         <select name="account_id[${rowIndex}]" class="form-control select2" data-placeholder="Select Account">
@@ -208,14 +221,27 @@
                         <input type="text" name="description[${rowIndex}]" class="form-control" placeholder="Description">
                     </div>
                 </div>
+                 <div class="col-md-2">
+                  <label class="col-form-label">Vendor Name</label>
+                   <div class="form-group">
+                     <select name="vendor_account_id[{{ $i }}]" class="form-control select2"  data-placeholder="Select Vendor">
+                     <option></option>
+                    @foreach($vendorAccounts as $row)
+                <option value="{{ $row->id }}">
+                 {{ $row->name }}
+                </option>
+@endforeach
+                </select>
+            </div>
+        </div>
 
-                <div class="col-md-1">
-                    <label class="col-form-label">&nbsp;</label>
-                    <div class="form-group">
-                        <button type="button" class="btn btn-danger remove-row">Remove</button>
-                    </div>
-                </div>
-            </div>`;
+<div class="col-md-1">
+<label class="col-form-label">&nbsp;</label>
+<div class="form-group">
+<button type="button" class="btn btn-danger remove-row">Remove</button>
+</div>
+</div>
+</div>`;
 
                 $("#transaction-rows").append(newRow);
                 rowIndex++; // Increase row index for next row

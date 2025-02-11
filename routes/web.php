@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\VendorAccountController;
 use App\Http\Controllers\API\LoanApplicationController;
 use Illuminate\Support\Facades\Route;
 
@@ -208,6 +209,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('account/{id}/edit', [AccountController::class, 'edit'])->name('edit-account');
     Route::put('update-account/{id}', [AccountController::class, 'update'])->name('update-account');
     Route::post('destroy-account', [AccountController::class, 'destroy'])->name('destroy-account');
+
+    Route::get('show-vendor-account', [VendorAccountController::class, 'index'])->name('show-vendor-account');
+    Route::get('add-vendor-account', [VendorAccountController::class, 'create'])->name('add-vendor-account');
+    Route::post('store-vendor-account', [VendorAccountController::class, 'store'])->name('store-vendor-account');
+    Route::get('vendor-account/{id}/edit', [VendorAccountController::class, 'edit'])->name('edit-vendor-account');
+    Route::put('update-vendor-account/{id}', [VendorAccountController::class, 'update'])->name('update-vendor-account');
+    Route::post('destroy-vendor-account', [VendorAccountController::class, 'destroy'])->name('destroy-vendor-account');
 
     Route::get('show-account-transaction', [AccountTransactionController::class, 'index'])->name('show-account-transaction');
     Route::get('show-account-transaction-history/{id}', [AccountTransactionController::class, 'getHistoryByAccountID'])->name('show-account-transaction-history');

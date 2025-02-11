@@ -25,7 +25,7 @@
         <div class="card">
             <div class="card-header">
                 <div class="col-md-12 mt-5">
-                    <a href="{{route('add-account-transaction')}}"
+                    <a href="{{route('add-vendor-account')}}"
                        class="btn btn-outline-primary float-end"><b><i
                                 class="fas fa-plus"></i></b> Add {{$title}} </a>
                 </div>
@@ -36,40 +36,36 @@
                 <table id="" class="table table-striped datatables-reponsive">
                     <thead>
                     <tr>
-                        <th> Code</th>
-                        <th> Name</th>
-                        <th> Account Name</th>
-                         <th> Date</th>
-                        <th> Credit</th>
-                        <th> Debit</th>
-                        <th> Reference</th>
-                        <th> Transaction Type</th>
-                        <th> Description</th>
-                        <th> Vendor Name</th>
-                         <th class="text-center">Actions</th>
+                        <th>Name</th>
+                        <th> Email</th>
+                        <th>Phone No</th>
+                        <th> Business Name</th>
+                        <th> Bank Name</th>
+                        <th> Account IBAN</th>
+                        <th> Cnic No</th>
+                        <th>Address</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($transactions as $row)
+                    @foreach($vendorAccounts as $row)
                         <tr>
-                            <td>{{$row->account->code}}</td>
-                            <td>{{$row->account->name}}</td>
-                            <td>{{$row->account->accountName->name}}</td>
-                             <td>{{showDate($row->date)}}</td>
-                            <td class="text-danger">{{$row->credit > 0 ? $row->credit : ''}}</td>
-                            <td class="text-success">{{$row->debit > 0 ? $row->debit : ''}}</td>
-                             <td>{{$row->reference}}</td>
-                            <td>{{$row->transaction_type}}</td>
-                            <td>{{$row->description}}</td>
-                            <td>{{ $row->vendorAccount ? $row->vendorAccount->name : 'N/A' }}</td>
-                             <td>
+                            <td>{{$row->name}}</td>
+                            <td>{{$row->email}}</td>
+                            <td>{{$row->phone}}</td>
+                            <td>{{$row->business_name}}</td>
+                            <td>{{$row->bank_name}}</td>
+                            <td>{{$row->iban_no}}</td>
+                            <td>{{$row->cnic_no}}</td>
+                            <td>{{$row->province->name}},{{$row->district->name}},{{$row->city->name}},{{$row->address}}</td>
+                            <td>
                                 <div class="d-flex">
 
-                                    <a title="Edit" href="{{ route('edit-account-transaction', $row->id) }}"
+                                    <a title="Edit" href="{{ route('edit-vendor-account', $row->id) }}"
                                        class="text-primary mr-1"><i
                                             class="fas fa-edit"></i></a>
 
-                                    <a href="javascript:void(0)" data-url="{{route('destroy-account-transaction')}}"
+                                    <a href="javascript:void(0)" data-url="{{route('destroy-vendor-account')}}"
                                        data-status='0' data-label="delete"
                                        data-id="{{$row->id}}"
                                        class=" text-danger mr-1 change-status-record "

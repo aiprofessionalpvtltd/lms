@@ -57,6 +57,7 @@ class AccountSeeder extends Seeder
                 'account_name_id' => $accountName->id,
                 'account_type_id' => $typeIds[$account['type']],
                 'parent_id' => null,
+                'balance' => 0,
             ]);
         }
     }

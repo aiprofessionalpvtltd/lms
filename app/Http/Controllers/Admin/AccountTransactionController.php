@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use App\Models\AccountTransaction;
+use App\Models\AccountVendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ class AccountTransactionController extends Controller
     public function index()
     {
         $title = 'Account Journal Entry';
-        $transactions = AccountTransaction::all();
+        $transactions = AccountTransaction::with('vendorAccount')->get();
         return view('admin.account-transaction.index', compact('title', 'transactions'));
     }
     public function getHistoryByAccountID($id)
@@ -48,7 +49,8 @@ class AccountTransactionController extends Controller
     {
         $title = 'Create Account Journal Entry';
         $accounts = Account::all();
-        return view('admin.account-transaction.create', compact('title', 'accounts'));
+        $vendorAccounts = AccountVendor::all();
+        return view('admin.account-transaction.create', compact('title', 'accounts','vendorAccounts'));
     }
 
     /**
@@ -65,6 +67,8 @@ class AccountTransactionController extends Controller
         $validator = Validator::make($request->all(), [
             'account_id' => 'required|array',
             'account_id.*' => 'exists:accounts,id',
+            'vendor_account_id' => 'required|array',
+            'vendor_account_id.*' => 'nullable|exists:account_vendors,id',
             'date' => 'required|date',
             'debit_amount' => 'required|array',
             'debit_amount.*' => 'numeric|min:0',
@@ -75,7 +79,7 @@ class AccountTransactionController extends Controller
             'description' => 'required|array',
             'description.*' => 'nullable|string',
         ]);
-
+//        dd($validator->errors());
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -90,6 +94,7 @@ class AccountTransactionController extends Controller
                 $creditAmount = $request->credit_amount[$index] ?? 0;
                 $reference = $request->reference[$index] ?? null;
                 $description = $request->description[$index] ?? null;
+                $vendorAccountId = $request->vendor_account_id[$index] ?? null;
 
                 // Determine if account is credit or debit based on its account type
                 $accountType = $account->accountType;
@@ -110,6 +115,7 @@ class AccountTransactionController extends Controller
                 // Store transaction entry
                 AccountTransaction::create([
                     'account_id' => $account->id,
+                    'vendor_account_id' => $vendorAccountId,
                     'date' => $request->date,
                     'debit' => $debitAmount,
                     'credit' => $creditAmount,
@@ -141,7 +147,7 @@ class AccountTransactionController extends Controller
     {
         $title = 'Account Journal Entry Details';
         $transaction = AccountTransaction::find($id);
-        return view('admin.account-transaction.show', compact('title', 'transaction'));
+        return view('admin.account-transaction.show', compact('title', 'transaction '));
     }
 
     /**

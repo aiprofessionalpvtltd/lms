@@ -15,6 +15,9 @@ class District extends Model
         return $this->belongsTo(Province::class)->withDefault();
     }
 
-
+    public function vendors()
+    {
+        return $this->hasMany(Vendor::class);
+    }
 
 }

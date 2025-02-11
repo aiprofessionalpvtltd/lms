@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->date('date');
             $table->foreignId('account_id')->constrained('accounts')->onDelete('cascade');
+            $table->foreignId('vendor_account_id')->nullable()->constrained('account_vendors')->onDelete('cascade');
             $table->decimal('debit', 15, 2)->default(0);
             $table->decimal('credit', 15, 2)->default(0);
             $table->text('description')->nullable();
