@@ -683,6 +683,7 @@ class TransactionController extends Controller
         $encodedUserID = base64_encode($userID);
         $encodedPassword = base64_encode($userPassword);
 
+        dd($encodedUserID,$encodedPassword);
         try {
             // Make the GET request with query parameters
             $response = Http::get($url, [
