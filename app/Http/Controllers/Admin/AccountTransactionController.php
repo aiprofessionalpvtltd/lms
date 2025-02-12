@@ -132,6 +132,7 @@ class AccountTransactionController extends Controller
             DB::rollBack(); // Rollback transaction on error
             Log::error('Journal Entry Error: ' . $e->getMessage()); // Log the error
 
+            dd($e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong. Please try again.');
         }
     }

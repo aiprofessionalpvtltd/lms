@@ -61,7 +61,7 @@
                                         <!-- Default 5 rows -->
                                         @for($i = 0; $i < 2; $i++)
                                             <div class="row transaction-row">
-                                                <div class="col-md-2">
+                                                <div class="col-md-3">
                                                     <label class="col-form-label">Account Head</label>
                                                     <div class="form-group">
                                                         <select name="account_id[{{ $i }}]" class="form-control select2"
@@ -76,14 +76,14 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-2">
+                                                <div class="col-md-1">
                                                     <label class="col-form-label">Debit</label>
                                                     <div class="form-group">
                                                         <input type="number" class="form-control debit-input" name="debit_amount[{{ $i }}]" value="0">
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-2">
+                                                <div class="col-md-1">
                                                     <label class="col-form-label">Credit</label>
                                                     <div class="form-group">
                                                         <input type="number" class="form-control credit-input" name="credit_amount[{{ $i }}]" value="0">
@@ -194,21 +194,21 @@
             </div>
         </div>
 
-        <div class="col-md-2">
+        <div class="col-md-3">
             <label class="col-form-label">Debit</label>
             <div class="form-group">
                 <input type="number" class="form-control debit-input" name="debit_amount[${rowIndex}]" value="0">
                     </div>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label class="col-form-label">Credit</label>
                     <div class="form-group">
                         <input type="number" class="form-control credit-input" name="credit_amount[${rowIndex}]" value="0">
                     </div>
                 </div>
 
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label class="col-form-label">Journal Entry No</label>
                     <div class="form-group">
                         <input type="text" name="reference[${rowIndex}]" class="form-control" placeholder="Reference">
