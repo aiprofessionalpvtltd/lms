@@ -65,9 +65,9 @@
                              <td>
                                 <div class="d-flex">
 
-                                    <a title="Edit" href="{{ route('edit-account-transaction', $row->id) }}"
-                                       class="text-primary mr-1"><i
-                                            class="fas fa-edit"></i></a>
+{{--                                    <a title="Edit" href="{{ route('edit-account-transaction', $row->id) }}"--}}
+{{--                                       class="text-primary mr-1"><i--}}
+{{--                                            class="fas fa-edit"></i></a>--}}
 
                                     <a href="javascript:void(0)" data-url="{{route('destroy-account-transaction')}}"
                                        data-status='0' data-label="delete"
