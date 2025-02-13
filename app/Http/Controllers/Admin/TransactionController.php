@@ -109,7 +109,7 @@ class TransactionController extends Controller
 //            }
 
             if ($request->service_api == 'js_bank') {
-                return $this->jazzBankIBFTAPI($request);
+                return $this->JSBankIBFTAPI($request);
             }
 
             // Handle unsupported service APIs
@@ -206,7 +206,7 @@ class TransactionController extends Controller
                 ->asForm()
                 ->post($url, $data);
 
-            dd($headers ,$response->status(),$response->json());
+            dd($headers, $response->status(), $response->json());
             // Check if the request was successful
             if ($response->successful()) {
                 return response()->json([
@@ -543,10 +543,10 @@ class TransactionController extends Controller
 //        }
 //    }
 
-    public function makePaymentIBFT(string $accessToken, array $paymentData)
+    public function JSBankPaymentIBFT(string $accessToken, array $paymentData)
     {
         // Define the endpoint and headers
-        $url = 'https://gateway-sandbox.jazzcash.com.pk /jazzcash/third-party-integration/srv2/api/wso2/ibft/inquiry';
+        $url = 'https://connect.jsbl.com/JSQuickPayAPI/PaymentTrans';
         $headers = [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
@@ -583,7 +583,7 @@ class TransactionController extends Controller
         }
     }
 
-    public function jazzBankIBFTAPI($request)
+    public function JSBankIBFTAPI($request)
     {
         $request->validate([
             'loan_application_id' => 'required|exists:loan_applications,id',
@@ -592,7 +592,7 @@ class TransactionController extends Controller
         DB::beginTransaction();
 
         try {
-            $request->merge(['payment_method' => 'Bank']);
+            $request->merge(['payment_method' => 'JS Bank']);
 
             $loanApplication = LoanApplication::with('getLatestInstallment.details', 'user.bank_account')
                 ->findOrFail($request->loan_application_id);
@@ -602,23 +602,29 @@ class TransactionController extends Controller
             $userBankDetail = $loanApplication->user->bank_account;
             $tokenResponse = $this->getTokenJSBank()->getData(true);
 
-            dd($tokenResponse);
+//            dd($tokenResponse);
             if (!$tokenResponse['success']) {
                 throw new \Exception($tokenResponse['message']);
             }
 
-            $accessToken = $tokenResponse['data']['access_token'];
+            $accessToken = $tokenResponse['data'];
 
-            $paymentData = [
-                'bankAccountNumber' => $userBankDetail->account_number,
-                'bankCode' => $userBankDetail->swift_code,
-                'amount' => $disburseAmount,
-                'receiverMSISDN' => inputMaskDash($loanApplication->user->profile->mobile_no),
-                'referenceId' => 'moneyIBFT_' . uniqid('', true),
+            $paymentData['TransactionRequest'] = [
+                "MethodName" => "TRANS",
+                "CompanyCode" => "SMPL",
+                "ProductCode" => "IBFT",
+                "CustomerRefNo" => $loanApplication->application_id. 'JS', // Ensures max 17 characters
+                "DebitAccount" => "0000486585",
+                "BeneAccountNo" => "123456789",
+                "Amount" => 10.0,
+                "BeneName" => "Muhammadyousuf",
+                "CustomerName" => "saleem",
+                "BankCode" => "MCB"
             ];
 
+            dd(json_encode($paymentData));
 
-            $paymentResponse = $this->makePaymentIBFT($accessToken, $paymentData)->getData(true);
+            $paymentResponse = $this->JSBankPaymentIBFT($accessToken, $paymentData)->getData(true);
 
             if (!$paymentResponse['success']) {
                 throw new \Exception($this->getStatusDescription(isset($paymentResponse['error']['code']) ? $paymentResponse['error']['code'] : 'Unknown error'));
@@ -683,20 +689,19 @@ class TransactionController extends Controller
         $encodedUserID = base64_encode($userID);
         $encodedPassword = base64_encode($userPassword);
 
-//        dd($encodedUserID,$encodedPassword);
         try {
-            // Make the GET request with query parameters
-            $response = Http::get($url, [
+            // Make the GET request with headers
+            $response = Http::withHeaders([
                 'UserID' => $encodedUserID,
                 'Password' => $encodedPassword,
-            ]);
+            ])->get($url);
 
+            // Debug response if needed
 
-            dd($response->successful());
             // Check if the request was successful
             if ($response->successful()) {
                 $responseData = $response->json();
-                dd($responseData);
+
                 if (isset($responseData['data'])) {
                     return response()->json([
                         'success' => true,
@@ -706,9 +711,9 @@ class TransactionController extends Controller
                 } else {
                     return response()->json([
                         'success' => false,
-                        'message' => isset($responseData['ResponseMessage']) ? $responseData['ResponseMessage'] : 'Failed to retrieve token.',
-                        'error_code' => isset($responseData['ResponseCode']) ? $responseData['ResponseCode'] : null,
-                        'transaction_data' => isset($responseData['TransactionData']) ? $responseData['TransactionData'] : null,
+                        'message' => $responseData['ResponseMessage'] ?? 'Failed to retrieve token.',
+                        'error_code' => $responseData['ResponseCode'] ?? null,
+                        'transaction_data' => $responseData['TransactionData'] ?? null,
                     ], $response->status());
                 }
             } else {
@@ -719,8 +724,6 @@ class TransactionController extends Controller
                     'error_code' => $response->status(),
                 ], $response->status());
             }
-
-
         } catch (RequestException $exception) {
             // Handle exceptions during the HTTP request
             return response()->json([
