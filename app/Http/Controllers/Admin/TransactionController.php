@@ -691,11 +691,11 @@ class TransactionController extends Controller
                 'Password' => $encodedPassword,
             ]);
 
-            dd($response);
+
             // Check if the request was successful
             if ($response->successful()) {
                 $responseData = $response->json();
-
+                dd($responseData);
                 if (isset($responseData['data'])) {
                     return response()->json([
                         'success' => true,
