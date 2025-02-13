@@ -692,7 +692,7 @@ class TransactionController extends Controller
             ]);
 
 
-            dd($response->json());
+            dd($response->successful());
             // Check if the request was successful
             if ($response->successful()) {
                 $responseData = $response->json();
