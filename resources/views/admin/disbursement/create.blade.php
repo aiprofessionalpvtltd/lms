@@ -90,7 +90,9 @@
                                                 <option value="">Select Service/API</option>
                                                 <option value="jazz_cash_mw">Jazz Cash MW (Disburse)</option>
 {{--                                                <option value="jazz_cash_ibft">Jazz Cash IBFT (Disburse)</option>--}}
-                                                <option value="js_bank">JS Bank (Disburse/Collection)</option>
+                                                <option value="js_bank_ibft">JS Bank (IBFT)</option>
+                                                <option value="js_bank_ift">JS Bank (IFT)</option>
+                                                <option value="js_bank_coc">JS Bank (COC)</option>
                                                 <option value="tasdeeq_credit_check">Tasdeeq Credit Check</option>
                                                 <option value="datacheck">DataCheck</option>
                                                 <option value="nacta_aml">NACTA Data (AML)</option>
