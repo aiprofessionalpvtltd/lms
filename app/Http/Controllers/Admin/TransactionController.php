@@ -676,7 +676,7 @@ class TransactionController extends Controller
     {
         // Define the endpoint and credentials
         $url = 'https://connect.jsbl.com/JSQuickPayAPI/gettoken';
-        $userID = 'AKHTRSMPL';
+        $userID = 'AKHTARSMPL';
         $userPassword = 'Sarmaya@2025';
 
         // Encode credentials in base64
