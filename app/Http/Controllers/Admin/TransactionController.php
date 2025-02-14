@@ -556,9 +556,10 @@ class TransactionController extends Controller
             $response = Http::withHeaders($headers)
                 ->post($url, $paymentData);
 
-            dd($response->json());
+            $responseData = $response->json();
+
             // Check if the request was successful
-            if ($response->successful()) {
+            if ($responseData['ResponseCode'] === '000') {
                 return response()->json([
                     'success' => true,
                     'message' => 'Payment processed successfully.',
@@ -570,7 +571,7 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to process payment.',
-                'error' => $response->json(),
+                'error' => $responseData,
             ], $response->status());
         } catch (RequestException $exception) {
             // Handle exceptions during the HTTP request
@@ -750,48 +751,33 @@ class TransactionController extends Controller
 
             $paymentResponse = $this->JSBankPaymentIBFT($accessToken, $paymentData)->getData(true);
 
+
             if (!$paymentResponse['success']) {
-                throw new \Exception($this->getStatusDescription(isset($paymentResponse['error']['code']) ? $paymentResponse['error']['code'] : 'Unknown error'));
+                $errorMessage = $this->getJSBankStatusDescription(isset($paymentResponse['error']['ResponseCode']) ? $paymentResponse['error']['ResponseCode'] : 'Unknown error');
+
+                return redirect()->back()->withErrors(['error' => $errorMessage]);
+
             }
 
             $transaction = Transaction::create([
                 'loan_application_id' => $loanApplication->id,
                 'user_id' => Auth::id(),
-                'amount' => $paymentResponse['data']['amount'],
-                'payment_method' => $request->payment_method,
+                'amount' => $paymentData['Amount'],
+                'payment_method' => 'JS Bank',
                 'status' => 'completed',
-                'transaction_reference' => $paymentData['referenceId'],
-                'remarks' => $paymentResponse['data']['responseDescription'] .
-                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
-                    ' receiverMSISDN: ' . $paymentResponse['data']['receiverMSISDN'] .
-                    ' bankAccountNumber: ' . $paymentResponse['data']['bankAccountNumber'] .
-                    ' bankName: ' . $paymentResponse['data']['bankName'] .
-                    ' balance: ' . $paymentResponse['data']['balance']
+                'transaction_reference' => $paymentData['CustomerRefNo'],
+                'remarks' => $paymentResponse['ResponseMessage'] . ' ' . $paymentResponse['TransactionData']['ResponseDescription'] .
+                    ' bankAccountNumber: ' . $paymentData['BeneAccountNo'] .
+                    ' receiverMSISDN: ' . $paymentData['BankCode'] .
+                    ' bankName: ' . $paymentData['BankCode'] .
+                    ' balance: ' . $paymentData['Amount']
                 ,
-                'responseCode' => $paymentResponse['data']['responseCode'],
-                'transactionID' => $paymentResponse['data']['transactionID'],
-                'referenceID' => $paymentResponse['data']['referenceID'],
-                'dateTime' => $paymentResponse['data']['dateTime'],
+                'responseCode' => $paymentResponse['responseCode'],
+                'transactionID' => '',
+                'referenceID' => isset($paymentData['CustomerRefNo']) ? $paymentData['CustomerRefNo'] : '',
+                'dateTime' => currentDateTimeInsert(),
             ]);
 
-            $installments = $loanApplication->getLatestInstallment->details;
-
-            if ($installments->isEmpty()) {
-                throw new \Exception('No installments found for this loan application.');
-            }
-
-            $startDate = Carbon::now();
-
-            foreach ($installments as $installment) {
-                $dueDate = $startDate->copy()->addMonths(1);
-
-                $installment->update([
-                    'issue_date' => $startDate,
-                    'due_date' => $dueDate,
-                ]);
-
-                $startDate = $dueDate->copy()->addDay();
-            }
 
             DB::commit();
 
@@ -835,9 +821,9 @@ class TransactionController extends Controller
                 } else {
                     return response()->json([
                         'success' => false,
-                        'message' => $responseData['ResponseMessage'] ?? 'Failed to retrieve token.',
-                        'error_code' => $responseData['ResponseCode'] ?? null,
-                        'transaction_data' => $responseData['TransactionData'] ?? null,
+                        'message' => isset($responseData['ResponseMessage']) ? $responseData['ResponseMessage'] : 'Failed to retrieve token.',
+                        'error_code' => isset($responseData['ResponseCode']) ? $responseData['ResponseCode'] : null,
+                        'transaction_data' => isset($responseData['TransactionData']) ? $responseData['TransactionData'] : null,
                     ], $response->status());
                 }
             } else {
@@ -1001,6 +987,31 @@ class TransactionController extends Controller
             DB::rollBack();
             return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
+    }
+
+    public function getJSBankStatusDescription(string $responseCode)
+    {
+        $statuses = [
+            '000' => 'Success Response',
+            '001' => 'User Id and password should not be empty.',
+            '002' => 'Invalid user Id or password.',
+            '003' => 'Invalid User Id',
+            '004' => 'Invalid request packet',
+            '005' => 'Max Length error of Parameters',
+            '006' => 'Company not belongs to this User.',
+            '007' => 'Product code should not be empty',
+            '008' => 'Invalid Company/Product or arrangement not authorized',
+            '009' => 'This Product is not allowed to use this API',
+            '010' => 'Product is not authorized or not available',
+            '011' => 'Bene Contact No. should not be empty',
+            '012' => 'Bene Address should not be empty',
+            '013' => 'Bene CNIC should not be empty',
+            '014' => 'Bene CNIC No should be 13 digits',
+            '015' => 'IBAN/Account No. should not be empty',
+            '016' => 'Customer/Beneficiary Name should not be empty',
+        ];
+
+        return isset($statuses[$responseCode]) ? $statuses[$responseCode] : 'Unknown response code.';
     }
 
 
