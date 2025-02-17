@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
+use App\Models\Bank;
 use App\Models\Installment;
 use App\Models\LoanApplication;
 use App\Models\Transaction;
@@ -87,10 +88,11 @@ class TransactionController extends Controller
             'recoveries'
         ])->find($id);
         $loanApplication = LoanApplication::with('user.profile')->find($id);
+        $userBankDetail = $loanApplication->user->bank_account;
 
+        $customerBank = Bank::where('name', $userBankDetail->bank_name)->first();
 
-//        dd($id);
-        return view("admin.disbursement.create", compact('id', 'title', 'loanApplication'));
+        return view("admin.disbursement.create", compact('id', 'title', 'loanApplication', 'customerBank'));
     }
 
     public function storeDisbursement(Request $request)
@@ -542,19 +544,29 @@ class TransactionController extends Controller
 
     public function JSBankPaymentIBFT(string $accessToken, array $paymentData)
     {
-//        dd($accessToken , $paymentData);
+//        dd($accessToken ,   ($paymentData));
         // Define the endpoint and headers
         $url = 'https://connect.jsbl.com/JSQuickPayAPI/PaymentTrans';
+        $userID = 'AKHTARSMPL';
+        $userPassword = 'Sarmaya@2025';
+
+        // Encode credentials in base64
+        $encodedUserID = base64_encode($userID);
+        $encodedPassword = base64_encode($userPassword);
+
         $headers = [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,
+//            'UserID' => $encodedUserID,
+//            'Password' => $encodedPassword,
         ];
 
+//        dd($headers);
         try {
             // Make the HTTP POST request
             $response = Http::withHeaders($headers)
-                ->post($url, $paymentData);
+                ->post($url,  $paymentData);
 
             $responseData = $response->json();
 
@@ -695,59 +707,62 @@ class TransactionController extends Controller
             $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
 
             $userBankDetail = $loanApplication->user->bank_account;
+            $userDetail = $loanApplication->user;
+            $customerBank = Bank::where('name', $userBankDetail->bank_name)->first();
+
             $tokenResponse = $this->getTokenJSBank()->getData(true);
 
-//            dd($tokenResponse);
             if (!$tokenResponse['success']) {
                 throw new \Exception($tokenResponse['message']);
             }
 
             $accessToken = $tokenResponse['data'];
-            if ($request->service_api == 'js_bank_ibft') {
-                $paymentData['TransactionRequest'] = [
+            $transactionRequests = [
+                'js_bank_ibft' => [
                     "MethodName" => "TRANS",
                     "CompanyCode" => "SMPL",
                     "ProductCode" => "IBFT",
-                    "CustomerRefNo" => $loanApplication->application_id . '-JS', // Ensures max 17 characters
+                    "CustomerRefNo" => substr($loanApplication->application_id . '-JS', 0, 17), // Ensures max 17 characters
                     "DebitAccount" => "0002369168",
-                    "BeneAccountNo" => "PK30HABB0024467900498301",
-                    "Amount" => 500.0,
-                    "BeneName" => "Akhtarjamal",
-                    "CustomerName" => "akhtar",
-                    "BankCode" => "HBL"
-                ];
-            }
-            if ($request->service_api == 'js_bank_ift') {
-                $paymentData['TransactionRequest'] = [
+                    "BeneAccountNo" => $userBankDetail->iban,
+                    "Amount" => (int) $disburseAmount,
+                    "BeneName" => $userBankDetail->account_name,
+                    "CustomerName" => $userDetail->name,
+                    "BankCode" => $customerBank->code
+                ],
+                'js_bank_ift' => [
                     "MethodName" => "TRANS",
                     "CompanyCode" => "SMPL",
                     "ProductCode" => "IFT",
-                    "CustomerRefNo" => $loanApplication->application_id . '-JS', // Ensures max 17 characters
-                    "DebitAccount" => "0000486585",
-                    "BeneAccountNo" => "123456789",
-                    "Amount" => 10.0,
-                    "BeneName" => "Muhammadyousuf",
-                    "CustomerName" => "saleem"
-                ];
-            }
-            if ($request->service_api == 'js_bank_coc') {
-                $paymentData['TransactionRequest'] = [
+                    "CustomerRefNo" => substr($loanApplication->application_id . '-JS', 0, 17), // Ensures max 17 characters
+                    "DebitAccount" => "0002369168",
+                    "BeneAccountNo" => $userBankDetail->iban,
+                    "Amount" => (int) $disburseAmount,
+                    "BeneName" => $userBankDetail->account_name,
+                    "CustomerName" => $userDetail->name,
+                ],
+                'js_bank_coc' => [
                     "MethodName" => "TRANS",
-                    "BeneCNIC" => 4210133541652,
                     "CompanyCode" => "SMPL",
                     "ProductCode" => "COC",
-                    "CustomerRefNo" => $loanApplication->application_id . '-JS', // Ensures max 17 characters
-                    "DebitAccount" => "0000486585",
-                    "Amount" => 5001.5,
-                    "BeneName" => "Muhammadyousuf",
-                    "CustomerName" => "Saleem",
-                    "BeneMobileNo" => "03226904456"
+                    "CustomerRefNo" => substr($loanApplication->application_id . '-JS', 0, 17), // Ensures max 17 characters
+                    "DebitAccount" => "0002369168",
+                    "Amount" => (int) $disburseAmount,
 
-                ];
+                    "BeneName" => $userDetail->name,
+                    "CustomerName" => $userDetail->name,
+                    "BeneCNIC" => str_replace('-', '', $userDetail->profile->cnic_no),
+                    "BeneMobileNo" => $userDetail->profile->mobile_no,
+                ]
+            ];
+
+// Assign the correct transaction request based on `service_api`
+            if (isset($transactionRequests[$request->service_api])) {
+                $paymentData['TransactionRequest'] = $transactionRequests[$request->service_api];
             }
 
 
-//            dd(($paymentData));
+//            dd(( $paymentData['TransactionRequest']));
 
             $paymentResponse = $this->JSBankPaymentIBFT($accessToken, $paymentData)->getData(true);
 
@@ -755,7 +770,9 @@ class TransactionController extends Controller
             if (!$paymentResponse['success']) {
                 $errorMessage = $this->getJSBankStatusDescription(isset($paymentResponse['error']['ResponseCode']) ? $paymentResponse['error']['ResponseCode'] : 'Unknown error');
 
-                return redirect()->back()->withErrors(['error' => $errorMessage]);
+                dd($errorMessage);
+                return redirect()->route('disbursement.show', $loanApplication->id)->with('error', $errorMessage);
+
 
             }
 

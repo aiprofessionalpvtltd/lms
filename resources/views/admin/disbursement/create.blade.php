@@ -29,7 +29,6 @@
 
         <!-- Form validation -->
         <div class="card">
-
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
@@ -90,15 +89,18 @@
                                                 <option value="">Select Service/API</option>
                                                 <option value="jazz_cash_mw">Jazz Cash MW (Disburse)</option>
 {{--                                                <option value="jazz_cash_ibft">Jazz Cash IBFT (Disburse)</option>--}}
+                                              @if($customerBank->code != 1)
                                                 <option value="js_bank_ibft">JS Bank (IBFT)</option>
+                                                @else
                                                 <option value="js_bank_ift">JS Bank (IFT)</option>
+                                                @endif
                                                 <option value="js_bank_coc">JS Bank (COC)</option>
-                                                <option value="tasdeeq_credit_check">Tasdeeq Credit Check</option>
-                                                <option value="datacheck">DataCheck</option>
-                                                <option value="nacta_aml">NACTA Data (AML)</option>
-                                                <option value="js_zindagi_wallet">JS Zindagi API Wallet</option>
-                                                <option value="ubl_api">UBL API</option>
-                                                <option value="sms_api">SMS API</option>
+{{--                                                <option value="tasdeeq_credit_check">Tasdeeq Credit Check</option>--}}
+{{--                                                <option value="datacheck">DataCheck</option>--}}
+{{--                                                <option value="nacta_aml">NACTA Data (AML)</option>--}}
+{{--                                                <option value="js_zindagi_wallet">JS Zindagi API Wallet</option>--}}
+{{--                                                <option value="ubl_api">UBL API</option>--}}
+{{--                                                <option value="sms_api">SMS API</option>--}}
                                             </select>
                                             <div class="form-control-feedback">
                                                 <i class="icon-api text-muted"></i>
