@@ -114,6 +114,16 @@
                 </li>
             @endcan
 
+            @can('view-customer-noc')
+
+                <li class="sidebar-item  ">
+                    <a class="sidebar-link" href="{{ route('get-complete-loan-applications') }}">
+                        <i class="fas fa-clipboard-check"></i>
+                        <span class="align-middle">Customer NOC</span>
+                    </a>
+                </li>
+            @endcan
+
             @can('view-loan-management')
 
                 <li class="sidebar-item  ">

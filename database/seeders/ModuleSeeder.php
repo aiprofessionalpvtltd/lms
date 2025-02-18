@@ -27,6 +27,7 @@ class ModuleSeeder extends Seeder
             'Expenses',
             'Accounts',
             'Vendors Accounts',
+            'Customer NOC'
         );
 
         foreach ($modules as $row) {
