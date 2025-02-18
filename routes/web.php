@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AccountTypeController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AjaxController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CustomerNocController;
 use App\Http\Controllers\Admin\Dashboard\SuperAdminDashboardController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
@@ -68,6 +69,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('user/{id}/view', [CustomerController::class, 'view'])->name('view-customer');
     Route::get('user/{id}/profile', [CustomerController::class, 'profile'])->name('view-customer-profile');
     Route::get('user/{id}/agreement', [CustomerController::class, 'agreement'])->name('view-customer-agreement');
+
+//    noc routes
+    Route::get('get-complete-loan-applications', [CustomerNocController::class, 'getAllData'])->name('get-complete-loan-applications');
+    Route::get('loan-application/{id}/noc', [CustomerNocController::class, 'noc'])->name('view-loan-noc');
 
 
     Route::get('show-role', [RoleController::class, 'show'])->name('show-role');
