@@ -28,11 +28,7 @@
             <div class="card-header header-elements-inline">
                 <h5 class="card-title"></h5>
                 <div class="header-elements">
-                    <div class="col-md-12 mt-5">
-                        <a href="{{route('add-customer')}}"
-                           class="btn btn-outline-primary float-end"><b><i
-                                    class="fas fa-plus"></i></b> Add Customer </a>
-                    </div>
+
                 </div>
             </div>
 
@@ -47,12 +43,10 @@
                         <th>Province</th>
                         <th>District</th>
                         <th>City</th>
-                        <th>Score Level</th>
-                        <th>Risk Assessment</th>
-                        <th>Nacta</th>
-                        <th>Zindagi Verfied</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
+                         <th>Zindagi Verified</th>
+                         <th>Zindagi Account Open</th>
+                         <th>Account Opening Date</th>
+                     </tr>
                     </thead>
                 </table>
 
@@ -72,7 +66,7 @@
                 processing: true,
                 serverSide: true,
                 responsive:true,
-                ajax: '{{ route("show-customer") }}',
+                ajax: '{{ route("show-customer-zindagi") }}',
                 columns: [
                     {data: 'name', name: 'name'},
                     {data: 'phone_no', name: 'profile.mobile_no'},
@@ -81,12 +75,11 @@
                     {data: 'province', name: 'provinces.name',searchable: false},
                     {data: 'district', name: 'districts.name',searchable: false},
                     {data: 'city', name: 'cities.name',searchable: false},
-                    {data: 'score_level', name: 'tracking.score',searchable: false},
-                    {data: 'risk_assessment', name: 'risk_assessment', orderable: false, searchable: false},
-                    {data: 'is_nacta_clear', name: 'is_nacta_clear', orderable: false, searchable: false},
-                    {data: 'is_zindagi_verified', name: 'is_zindagi_verified', orderable: false, searchable: false},
-                    {data: 'actions', name: 'actions', orderable: false, searchable: false, class: 'text-center'}
-                ]
+
+                     {data: 'is_zindagi_verified', name: 'is_zindagi_verified', orderable: false, searchable: false},
+                     {data: 'is_account_opened', name: 'is_zindagi_verified', orderable: false, searchable: false},
+                     {data: 'account_opening_date', name: 'is_zindagi_verified', orderable: false, searchable: false},
+                 ]
             });
 
         });

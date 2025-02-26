@@ -112,6 +112,13 @@
                         <span class="align-middle">Customers</span>
                     </a>
                 </li>
+                <li class="sidebar-item {{ request()->routeIs('show-customer-zindagi') ? 'active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('show-customer-zindagi') }}">
+                        <i class="align-middle" data-feather="user"></i>
+                        <span class="align-middle">JS Zindagi Verfied Customers</span>
+                    </a>
+                </li>
+
             @endcan
 
             @can('view-customer-noc')

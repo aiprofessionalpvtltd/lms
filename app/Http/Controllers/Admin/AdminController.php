@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Helpers\LogActivity;
 use App\Http\Controllers\Controller;
 use App\Models\FailedLoginAttempt;
+use App\Models\LogActivityView;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -80,15 +81,15 @@ class AdminController extends Controller
         $title = 'Activity Logs';
 
         if ($request->ajax()) {
-            $logs = LogActivity::logActivityLists();
+            $logs = LogActivityView::query();
 
             return DataTables::of($logs)
                 ->addColumn('user', function ($log) {
-                    return $log->user->name;
+                    return $log->user_name ?? 'Guest';
                 })->addColumn('subject', function ($log) {
                     return $log->subject;
                 })->addColumn('url', function ($log) {
-                    return '<a href="'.$log->url.'" target="_blank">URL</a>';;
+                    return '<a href="' . $log->url . '" target="_blank">URL</a>';
                 })->addColumn('method', function ($log) {
                     return $log->method;
                 })->addColumn('ip', function ($log) {
@@ -100,7 +101,6 @@ class AdminController extends Controller
                     return showDateTime($log->created_at);
                 })
                 ->rawColumns(['url'])
-
                 ->make(true);
         }
 

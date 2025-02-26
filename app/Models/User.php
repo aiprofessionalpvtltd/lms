@@ -35,6 +35,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'district_id',
         'city_id',
         'is_nacta_clear',
+        'is_zindagi_verified',
+        'is_account_opened',
+        'account_opening_date',
+        'zindagi_trace_no',
     ];
 
     /**

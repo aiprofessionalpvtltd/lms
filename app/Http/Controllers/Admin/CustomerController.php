@@ -105,9 +105,18 @@ class CustomerController extends BaseController
                     $label = $status == 1 ? 'Clear' : 'Not Clear';
                     return '<span class="' . $class . '">' . $label . '</span>';
                 })
-
+                ->addColumn('is_zindagi_verified', function ($customer) {
+                    $status = $customer->is_zindagi_verified ?? 0;
+                    $class = $status == 1 ? 'text-success' : 'text-danger';
+                    $label = $status == 1 ? 'Verified' : 'Not Verified';
+                    return '<span class="' . $class . '">' . $label . '</span>';
+                })
                 ->addColumn('actions', function ($customer) {
                     $actions = '';
+                    if ($customer->is_zindagi_verified == false) {
+                        $actions .= '<a title="JS Zindagi Account Verification" href="' . route('jszindagi.verifyAccount', $customer->id) . '" class="text-dark me-3"><i class="fas fa-bank"></i></a><br>';
+                    }
+
                     $actions .= '<a title="View Profile" href="' . route('view-customer-profile', $customer->id) . '" class="text-primary me-3"><i class="fas fa-user-astronaut"></i></a><br>';
                     if (auth()->user()->can('view-customer')) {
                         $actions .= '<a title="View" href="' . route('view-customer', $customer->id) . '" class="text-primary me-3"><i class="fas fa-eye"></i></a>';
@@ -115,13 +124,73 @@ class CustomerController extends BaseController
                     }
                     return '<div class="d-flex">' . $actions . '</div>';
                 })
-                ->rawColumns(['risk_assessment', 'actions' ,'is_nacta_clear'])
+                ->rawColumns(['risk_assessment', 'actions', 'is_nacta_clear', 'is_zindagi_verified'])
                 ->make(true);
         }
 
         LogActivity::addToLog('Customer Listing View');
 
         return view('admin.customer.index', compact('title'));
+    }
+
+    public function showZindagi(Request $request)
+    {
+        $title = 'All Zindagi Customers';
+
+        if ($request->ajax()) {
+            $customers = User::with(['roles', 'profile', 'tracking'])
+                ->whereHas('roles', function ($query) {
+                    $query->where('name', 'Customer');
+                })->where('is_zindagi_verified', true)
+                ->orderBy('created_at', 'DESC');
+
+            return DataTables::of($customers)
+                ->addColumn('phone_no', function ($customer) {
+                    return $customer->profile->mobile_no ?? '';
+                })
+                ->addColumn('gender', function ($customer) {
+                    return $customer->profile->gender->name ?? '';
+                })
+                ->addColumn('cnic', function ($customer) {
+                    return $customer->profile->cnic_no ?? '';
+                })
+                ->addColumn('province', function ($customer) {
+                    return $customer->province->name ?? '';
+                })
+                ->addColumn('district', function ($customer) {
+                    return $customer->district->name ?? '';
+                })
+                ->addColumn('city', function ($customer) {
+                    return $customer->city->name ?? '';
+                })
+                ->addColumn('is_account_opened', function ($customer) {
+                    $status = $customer->is_account_opened ?? 0;
+                    $class = $status == 1 ? 'text-success' : 'text-success';
+                    $label = $status == 1 ? 'New Account' : 'Already Account Exist';
+                    return '<span class="' . $class . '">' . $label . '</span>';
+                })
+                ->addColumn('account_opening_date', function ($customer) {
+                    $date = $customer->account_opening_date ?? 0;
+
+                    if ($date) {
+                        return showDate($date);
+                    } else {
+                        return '-';
+                    }
+                })
+                ->addColumn('is_zindagi_verified', function ($customer) {
+                    $status = $customer->is_zindagi_verified ?? 0;
+                    $class = $status == 1 ? 'text-success' : 'text-danger';
+                    $label = $status == 1 ? 'Verified' : 'Not Verified';
+                    return '<span class="' . $class . '">' . $label . '</span>';
+                })
+                ->rawColumns(['is_zindagi_verified' ,'is_account_opened'])
+                ->make(true);
+        }
+
+        LogActivity::addToLog('Zindagi Customer Listing View');
+
+        return view('admin.customer.index-zindagi', compact('title'));
     }
 
     public function view($id)
@@ -134,7 +203,7 @@ class CustomerController extends BaseController
 
 
         $this->calculateUserScore($customer);
-        LogActivity::addToLog('Customer ID : '.$id.' View');
+        LogActivity::addToLog('Customer ID : ' . $id . ' View');
 
         return view('admin.customer.view', compact('title', 'customer'));
     }
@@ -150,8 +219,8 @@ class CustomerController extends BaseController
 
         try {
             // Fetch loan applications based on the status
-            $loanApplications = LoanApplication::where('user_id',$id)->get();
-            $installments = Installment::with('details')->where('user_id',$id)->get();
+            $loanApplications = LoanApplication::where('user_id', $id)->get();
+            $installments = Installment::with('details')->where('user_id', $id)->get();
             $score = $customer->tracking->score ?? 0;
             $riskAssessment = $this->determineRiskLevel($score);
 
@@ -163,8 +232,8 @@ class CustomerController extends BaseController
             // Return a generic error response
             return $this->sendError($e->getMessage());
         }
-        return view('admin.customer.profile', compact('title', 'customer' ,'loanApplications',
-            'installments','riskAssessment'));
+        return view('admin.customer.profile', compact('title', 'customer', 'loanApplications',
+            'installments', 'riskAssessment'));
     }
 
 
@@ -266,7 +335,6 @@ class CustomerController extends BaseController
         try {
 
 
-
             // Step 1: Create User
             $userInput = $request->only(['email', 'province_id', 'district_id', 'city_id']);
             $userInput['name'] = $request->first_name . ' ' . $request->last_name;
@@ -324,7 +392,7 @@ class CustomerController extends BaseController
             // Create a new Bank Information
             $bankAccount = UserBankAccount::create($request->all());
 
-             if(isset($request->relationship_id )){
+            if (isset($request->relationship_id)) {
                 foreach ($request->relationship_id as $key => $relationshipId) {
                     $userGuarantor = [
                         'user_id' => $user->id,
@@ -337,9 +405,6 @@ class CustomerController extends BaseController
                     UserGuarantor::create($userGuarantor);
                 }
             }
-
-
-
 
 
             //Last Step: Create User Profile Tracking
@@ -358,7 +423,7 @@ class CustomerController extends BaseController
 
             $this->calculateUserScore($user);
 
-            LogActivity::addToLog('Customer  : '.$userInput['name'].' Created');
+            LogActivity::addToLog('Customer  : ' . $userInput['name'] . ' Created');
 
             DB::commit();
 
@@ -412,7 +477,7 @@ class CustomerController extends BaseController
         $validator = Validator::make($request->all(), [
             // Add the same validation rules as in the store method, but handle `unique` constraints correctly
             'email' => 'required|email|unique:users,email,' . $customer->id,
-             'province_id' => 'required|exists:provinces,id',
+            'province_id' => 'required|exists:provinces,id',
             'city_id' => 'required|exists:cities,id',
             'district_id' => 'required|exists:districts,id',
             'is_nacta_clear' => 'required',
@@ -480,7 +545,7 @@ class CustomerController extends BaseController
             $request->merge(['name' => $request->first_name . ' ' . $request->last_name]);
 
             // Step 1: Update User Basic Data
-            $customer->update($request->only(['name','email', 'province_id', 'district_id', 'city_id' ,'is_nacta_clear']));
+            $customer->update($request->only(['name', 'email', 'province_id', 'district_id', 'city_id', 'is_nacta_clear']));
 
             // Step 2: Update User Profile
             $profileData = $request->only([
@@ -540,7 +605,7 @@ class CustomerController extends BaseController
                 'education_id', 'university_name'
             ]));
 
-            if(isset($request->relationship_id )) {
+            if (isset($request->relationship_id)) {
                 // Step 4: Update Guarantors
                 $customer->references()->delete(); // Remove old guarantors
                 foreach ($request->relationship_id as $key => $relationshipId) {
@@ -555,7 +620,7 @@ class CustomerController extends BaseController
                 }
             }
 
-             LogActivity::addToLog('Customer  '.$request->name.' Updated');
+            LogActivity::addToLog('Customer  ' . $request->name . ' Updated');
 
 
             // Finalize and Commit
@@ -567,8 +632,6 @@ class CustomerController extends BaseController
             return redirect()->route('show-customer')->with('error', $e->getMessage());
         }
     }
-
-
 
 
 }

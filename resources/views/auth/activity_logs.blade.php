@@ -77,7 +77,7 @@
                 responsive: true,
                 scrollX: false, // Enable horizontal scrolling
                 lengthChange: false,
-                pageLength: 100,
+                pageLength: 50,
                 buttons: [
 
                     {

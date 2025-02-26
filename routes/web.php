@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\InstallmentController;
+use App\Http\Controllers\Admin\JSBankController;
 use App\Http\Controllers\Admin\NactaListController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RecoveryController;
@@ -62,6 +63,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('nacta/upload', [NactaListController::class, 'upload'])->name('upload-nacta');
 
     Route::get('show-customer', [CustomerController::class, 'show'])->name('show-customer');
+    Route::get('show-customer-zindagi', [CustomerController::class, 'showZindagi'])->name('show-customer-zindagi');
     Route::get('add-customer', [CustomerController::class, 'index'])->name('add-customer');
     Route::post('store-customer', [CustomerController::class, 'store'])->name('store-customer');
     Route::get('customer/{id}/edit', [CustomerController::class, 'edit'])->name('edit-customer');
@@ -111,6 +113,20 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
     Route::post('/transactions/storeManual', [TransactionController::class, 'storeManual'])->name('transactions.storeManual');
     Route::post('/transactions/updateManual', [TransactionController::class, 'updateManual'])->name('transactions.updateManual');
+
+
+    Route::prefix('jszindagi')->name('jszindagi.')->group(function () {
+        Route::get('/authorize', [JSBankController::class, 'getJSBankAuthorization'])->name('authorize');
+        Route::get('/verifyAccount/{id}', [JSBankController::class, 'verifyAccount'])->name('verifyAccount');
+        Route::post('/handle-wallet-transaction', [JSBankController::class, 'handleWalletTransaction'])->name('handleWalletTransaction');
+
+    });
+    Route::prefix('jsbank')->name('jsbank.')->group(function () {
+        Route::post('/ibft-api', [JSBankController::class, 'JSBankIBFTAPI'])->name('ibftAPI');
+        Route::post('/payment-ibft', [JSBankController::class, 'JSBankPaymentIBFT'])->name('paymentIBFT');
+        Route::get('/get-token', [JSBankController::class, 'getTokenJSBank'])->name('getToken');
+    });
+
 
     Route::prefix('recovery')->group(function () {
         Route::get('/create/{installmentDetailId}', [RecoveryController::class, 'create'])->name('recovery.create');
@@ -192,7 +208,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('destroy-expense', [ExpenseController::class, 'destroy'])->name('destroy-expense');
 
 
-
     Route::get('show-account-type', [AccountTypeController::class, 'index'])->name('show-account-type');
     Route::get('add-account-type', [AccountTypeController::class, 'create'])->name('add-account-type');
     Route::post('store-account-type', [AccountTypeController::class, 'store'])->name('store-account-type');
@@ -229,7 +244,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('account-transaction/{id}/edit', [AccountTransactionController::class, 'edit'])->name('edit-account-transaction');
     Route::put('update-account-transaction/{id}', [AccountTransactionController::class, 'update'])->name('update-account-transaction');
     Route::post('destroy-account-transaction', [AccountTransactionController::class, 'destroy'])->name('destroy-account-transaction');
-
 
 
 });

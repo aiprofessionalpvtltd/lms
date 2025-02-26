@@ -21,6 +21,6 @@ class LogActivity
 
     public static function logActivityLists()
     {
-        return LogActivityModel::latest()->limit(500)->get();
+        return LogActivityModel::latest()->get();
     }
 }
