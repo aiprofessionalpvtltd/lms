@@ -122,7 +122,7 @@ class JSBankController extends Controller
     // Verify if Account Exists
     public function verifyAccount($id)
     {
-         $customer = User::with('roles', 'profile', 'bank_account')->find($id);
+        $customer = User::with('roles', 'profile', 'bank_account')->find($id);
 
         $bodyRequest = [
             "VerifyAccLinkAccRequest" => [
@@ -380,18 +380,24 @@ class JSBankController extends Controller
         $networks = [
             '0300' => 'Jazz', '0301' => 'Jazz', '0302' => 'Jazz',
             '0303' => 'Jazz', '0304' => 'Jazz', '0305' => 'Jazz',
-            '0306' => 'Jazz', '0307' => 'Jazz',
+            '0306' => 'Jazz', '0307' => 'Jazz', '0308' => 'Jazz',
+            '0309' => 'Jazz', '0310' => 'Jazz',
 
-            '0320' => 'Zong', '0321' => 'Zong', '0322' => 'Zong',
-            '0323' => 'Zong', '0324' => 'Zong', '0325' => 'Zong',
+            '0320' => 'Warid', '0321' => 'Warid', '0322' => 'Warid',
+            '0323' => 'Warid', '0324' => 'Warid', '0325' => 'Warid',
+            '0326' => 'Warid', '0327' => 'Warid', '0328' => 'Warid', '0329' => 'Warid',
+
+            '0311' => 'Zong', '0312' => 'Zong', '0313' => 'Zong',
+            '0314' => 'Zong', '0315' => 'Zong', '0316' => 'Zong',
+            '0317' => 'Zong', '0318' => 'Zong', '0319' => 'Zong',
 
             '0330' => 'Ufone', '0331' => 'Ufone', '0332' => 'Ufone',
             '0333' => 'Ufone', '0334' => 'Ufone', '0335' => 'Ufone',
-            '0336' => 'Ufone', '0337' => 'Ufone',
+            '0336' => 'Ufone', '0337' => 'Ufone', '0338' => 'Ufone', '0339' => 'Ufone',
 
             '0340' => 'Telenor', '0341' => 'Telenor', '0342' => 'Telenor',
             '0343' => 'Telenor', '0344' => 'Telenor', '0345' => 'Telenor',
-            '0346' => 'Telenor', '0347' => 'Telenor',
+            '0346' => 'Telenor', '0347' => 'Telenor', '0348' => 'Telenor', '0349' => 'Telenor',
 
             '0355' => 'Sco' // Special case for SCOM (Gilgit-Baltistan & AJK)
         ];
