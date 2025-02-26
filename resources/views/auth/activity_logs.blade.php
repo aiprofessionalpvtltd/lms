@@ -128,7 +128,7 @@
                     if (info.recordsTotal > info.length && info.end < info.recordsTotal) {
                         setTimeout(function() {
                             api.page('next').draw('page');
-                        }, 2000); // Adjust delay if needed
+                        }, 1000); // Adjust delay if needed
                     }
                 }
             });
