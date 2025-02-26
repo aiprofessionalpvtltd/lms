@@ -248,7 +248,7 @@ class JSBankController extends Controller
                 return redirect()->back()->with('success', 'Customer Account Opened Successfully');
 
             } else {
-                $responseDetail = $responseData['VerifyAccLinkAccResponse']['ResponseDetails'];
+                $responseDetail = $responseData['AccountOpeningResponse']['ResponseDetails'];
                 return redirect()->back()->with('error', $responseDetail);
             }
         } else {
