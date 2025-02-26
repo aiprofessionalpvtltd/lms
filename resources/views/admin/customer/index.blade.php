@@ -89,6 +89,68 @@
                 ]
             });
 
+
+
         });
     </script>
+    <script>
+        $(document).ready(function () {
+            $('body').on('click', '.zindagi-btn', function (e) {
+                e.preventDefault(); // Prevent default link action
+
+                var url = $(this).data('href'); // Get the href attribute (route URL)
+
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "Do you want to verify the JS Zindagi account?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "Yes, verify!",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Store flag in sessionStorage before redirecting
+                        sessionStorage.setItem("loading", "true");
+
+                        // Show loading alert
+                        Swal.fire({
+                            title: "Processing...",
+                            text: "Please wait while we verify your account.",
+                            icon: "info",
+                            allowOutsideClick: false,
+                            showConfirmButton: false,
+                            didOpen: () => {
+                                Swal.showLoading(); // Show loading spinner
+                            }
+                        });
+
+                        // Redirect immediately
+                        window.location.href = url;
+                    }
+                });
+            });
+
+            // Check if loading flag is set when the page loads
+            if (sessionStorage.getItem("loading") === "true") {
+                Swal.fire({
+                    title: "Processing...",
+                    text: "Please wait while we verify your account.",
+                    icon: "info",
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Remove the flag after the page fully loads
+                $(window).on("load", function () {
+                    Swal.close(); // Close the alert after the page has loaded
+                    sessionStorage.removeItem("loading");
+                });
+            }
+        });
+    </script>
+
+
 @endpush

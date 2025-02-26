@@ -122,7 +122,7 @@ class JSBankController extends Controller
     // Verify if Account Exists
     public function verifyAccount($id)
     {
-        $customer = User::with('roles', 'profile', 'bank_account')->find($id);
+         $customer = User::with('roles', 'profile', 'bank_account')->find($id);
 
         $bodyRequest = [
             "VerifyAccLinkAccRequest" => [
@@ -177,18 +177,14 @@ class JSBankController extends Controller
                 $customer->is_zindagi_verified = true;
                 $customer->save();
 
-                return redirect()->back()->with('success', 'Customer Created Successfully');
+                return redirect()->back()->with('success', 'Customer Verified Successfully');
             } else {
 
                 return $this->openAccount($id); // Call openAccount if ResponseCode is not 00
             }
         }
+        return redirect()->back()->with('error', 'Verification failed or invalid response received');
 
-        return [
-            'success' => false,
-            'message' => 'Verification failed or invalid response received',
-            'data' => $responseData
-        ];
     }
 
     public function openAccount($id)
@@ -249,7 +245,7 @@ class JSBankController extends Controller
                 $customer->account_opening_date = currentDateInsert();
                 $customer->zindagi_trace_no = $responseData['AccountOpeningResponse']['TraceNo'];
                 $customer->save();
-                return redirect()->back()->with('success', 'Customer Created Successfully');
+                return redirect()->back()->with('success', 'Customer Account Opened Successfully');
 
             } else {
                 $responseDetail = $responseData['VerifyAccLinkAccResponse']['ResponseDetails'];
