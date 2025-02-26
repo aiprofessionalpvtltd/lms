@@ -81,7 +81,7 @@ class AdminController extends Controller
         $title = 'Activity Logs';
 
         if ($request->ajax()) {
-            $logs = LogActivityView::query();
+            $logs = LogActivityView::latest(); // Get latest records & paginate
 
             return DataTables::of($logs)
                 ->addColumn('user', function ($log) {
@@ -96,8 +96,7 @@ class AdminController extends Controller
                     return $log->ip;
                 })->addColumn('agent', function ($log) {
                     return $log->agent;
-                })
-                ->addColumn('created_at', function ($log) {
+                })->addColumn('created_at', function ($log) {
                     return showDateTime($log->created_at);
                 })
                 ->rawColumns(['url'])
@@ -106,6 +105,7 @@ class AdminController extends Controller
 
         return view('auth.activity_logs', compact('title'));
     }
+
 }
 
 

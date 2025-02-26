@@ -73,34 +73,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
     <script>
         $(document).ready(function () {
-            $('#logs-table').DataTable({
+            let table = $('#logs-table').DataTable({
+                processing: true, // Show loading indicator
+                serverSide: true, // Enable server-side processing
                 responsive: true,
-                scrollX: false, // Enable horizontal scrolling
+                scrollX: false, // Disable horizontal scrolling
                 lengthChange: false,
-                pageLength: 50,
+                pageLength: 50, // Load 50 records first
+                ajax: {
+                    url: '{{ route("activity-logs") }}',
+                    type: 'GET'
+                },
+                columns: [
+                    {data: 'user', name: 'user'},
+                    {data: 'subject', name: 'subject'},
+                    {data: 'url', name: 'url'},
+                    {data: 'method', name: 'method'},
+                    {data: 'ip', name: 'ip'},
+                    {data: 'agent', name: 'agent'},
+                    {data: 'created_at', name: 'created_at'}
+                ],
+                dom: 'Bfrtip',
                 buttons: [
-
                     {
                         extend: 'print',
                         text: 'Print',
                         className: 'btn btn-secondary',
                         titleAttr: 'Print table',
-                        exportOptions: {
-                            columns: ':visible',
-                            footer: true // Include footer
-                        }
+                        exportOptions: { columns: ':visible', footer: true }
                     },
                     {
                         extend: 'pdf',
                         text: 'PDF',
                         className: 'btn btn-danger',
                         titleAttr: 'Export to PDF',
-                        orientation: 'landscape', // Set PDF orientation to landscape
+                        orientation: 'landscape',
                         title: 'Activity Logs',
-                        exportOptions: {
-                            columns: ':visible',
-                            footer: true // Include footer
-                        }
+                        exportOptions: { columns: ':visible', footer: true }
                     },
                     {
                         extend: 'excel',
@@ -108,26 +117,22 @@
                         className: 'btn btn-success',
                         titleAttr: 'Export to Excel',
                         title: 'Activity Logs',
-                        exportOptions: {
-                            columns: ':visible',
-                            footer: true // Include footer
-                        }
+                        exportOptions: { columns: ':visible', footer: true }
                     }
                 ],
-                dom: 'Bfrtip',
-                ajax: '{{ route("activity-logs") }}',
-                columns: [
-                     {data: 'user', name: 'user'},
-                     {data: 'subject', name: 'subject'},
-                    {data: 'url', name: 'url'},
-                    {data: 'method', name: 'method'},
-                    {data: 'ip', name: 'ip'},
-                    {data: 'agent', name: 'agent'},
-                    {data: 'created_at', name: 'created_at'},
+                drawCallback: function(settings) {
+                    let api = this.api();
+                    let info = api.page.info();
 
-                ]
+                    // If not all data is loaded, load next page automatically
+                    if (info.recordsTotal > info.length && info.end < info.recordsTotal) {
+                        setTimeout(function() {
+                            api.page('next').draw('page');
+                        }, 2000); // Adjust delay if needed
+                    }
+                }
             });
-
         });
+
     </script>
 @endpush
