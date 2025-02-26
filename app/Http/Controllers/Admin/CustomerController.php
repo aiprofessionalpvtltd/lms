@@ -113,14 +113,13 @@ class CustomerController extends BaseController
                 })
                 ->addColumn('actions', function ($customer) {
                     $actions = '';
-//                    if ($customer->is_zindagi_verified == false) {
+                    if ($customer->is_zindagi_verified == false) {
                         $actions .= '<a title="JS Zindagi Account Verification" href="javascript:void(0);"
                                data-href="' . route('jszindagi.verifyAccount', $customer->id) . '"
                                class="text-dark me-3 zindagi-btn">
                                <i class="fas fa-bank"></i>
                             </a><br>';
-
-//                    }
+                    }
 
                     $actions .= '<a title="View Profile" href="' . route('view-customer-profile', $customer->id) . '" class="text-primary me-3"><i class="fas fa-user-astronaut"></i></a><br>';
                     if (auth()->user()->can('view-customer')) {
