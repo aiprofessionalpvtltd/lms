@@ -1522,8 +1522,12 @@ class ReportController extends Controller
         $pdf = Pdf::loadView('admin.reports.invoice-pdf', compact('title', 'invoiceData', 'imageSrc'))->setPaper('a4', 'portrait');;
 
 
+        // Sanitize filename by replacing slashes and other special characters
+        $filename = preg_replace('/[\/\\\\]+/', '_', $invoiceData['borrower_name']) . '_Invoice.pdf';
+
         // Return the PDF for download
-        return $pdf->download($invoiceData['borrower_name'] . '_Invoice.pdf');
+        return $pdf->download($filename);
+
     }
 
 
