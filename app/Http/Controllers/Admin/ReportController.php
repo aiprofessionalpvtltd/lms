@@ -1392,13 +1392,25 @@ class ReportController extends Controller
     public function getInvoiceReport(Request $request)
     {
         $title = 'Loan Payment Invoice';
-        $customer_id = $request->customer_id;
-        $application_id = $request->application_id;
+
+        // Validate the request inputs and return errors if validation fails
+        $validated = $request->validate([
+            'customer_id' => 'nullable|exists:users,id',
+            'application_id' => 'nullable|exists:loan_applications,id',
+        ]);
+
+        $customer_id = $validated['customer_id'] ?? null;
+        $application_id = $validated['application_id'] ?? null;
+
         $customers = User::with(['roles', 'profile'])
             ->whereHas('roles', function ($query) {
                 $query->where('name', 'Customer');
             })
-            ->orderBy('created_at', 'DESC')->get();
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
+        $loanApplications = LoanApplication::where('user_id', $customer_id)->get();
+
         $loan = LoanApplication::with([
             'product',
             'calculatedProduct',
@@ -1442,8 +1454,8 @@ class ReportController extends Controller
             'recoveries' => $recoveryDetails,
         ];
 
-//        dd($invoiceData);
-        return view('admin.reports.invoice', compact('title', 'invoiceData', 'customers', 'loan'));
+
+        return view('admin.reports.invoice', compact('title', 'invoiceData', 'customers', 'loan' ,'loanApplications'));
     }
 
     public function generatePDF(Request $request)

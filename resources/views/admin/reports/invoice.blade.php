@@ -97,7 +97,7 @@
                                         <div class="form-group form-group-feedback form-group-feedback-right">
                                             <select data-placeholder="Select Customer"
                                                     name="customer_id" id="customer_id"
-                                                    class="form-control select2 customer"
+                                                    class="form-control select2 customer" required
                                                     data-fouc>
                                                 <option></option>
                                                 @foreach($customers as $key => $row)
@@ -111,24 +111,29 @@
                                         </div>
                                     </div>
 
+
                                     <!-- Province -->
                                     <div class="col-md-3 mt-4">
                                         <label class="col-form-label">Select Loan Application <span class="text-danger">*</span></label>
                                         <div class="form-group form-group-feedback form-group-feedback-right">
                                             <select data-placeholder="Select Loan Application"
                                                     name="application_id" id="application_id"
-                                                    data-type="application"
+                                                    data-type="application" required
                                                     class="form-control select2 application"
                                                     data-fouc>
                                                 <option></option>
-
+                                                @if(isset($loanApplications))
+                                                    @foreach($loanApplications as $key => $row)
+                                                        <option
+                                                            {{ request('application_id') == $row->id ? 'selected' : '' }} value="{{ $row->id }}">{{ $row->application_id }}</option>
+                                                    @endforeach
+                                                @endif
                                             </select>
                                             @if ($errors->has('application_id'))
                                                 <span class="text-danger">{{ $errors->first('application_id') }}</span>
                                             @endif
                                         </div>
                                     </div>
-
 
                                     <!-- Submit Button -->
                                     <div class="col-md-12 mt-4">
@@ -276,20 +281,20 @@
                         </table>
 
 
-                        <h3  class="border-bottom pb-2">Recovery Details</h3>
+                        <h3 class="border-bottom pb-2">Recovery Details</h3>
 
                         <table class="table mb-4">
                             <thead>
                             <tr class="bg-info text-white">
                                 <th>Installment</th>
                                 <th>Installment Amount</th>
-{{--                                <th>OverDue Days (PKR{{ env('LATE_FEE') }}/day)</th>--}}
-{{--                                <th>Late Fee</th>--}}
-{{--                                <th>Waive Off Charges</th>--}}
+                                {{--                                <th>OverDue Days (PKR{{ env('LATE_FEE') }}/day)</th>--}}
+                                {{--                                <th>Late Fee</th>--}}
+                                {{--                                <th>Waive Off Charges</th>--}}
                                 <th>Total Amount</th>
-{{--                                <th>Payment Method</th>--}}
-{{--                                <th>Status</th>--}}
-{{--                                <th>Remarks</th>--}}
+                                {{--                                <th>Payment Method</th>--}}
+                                {{--                                <th>Status</th>--}}
+                                {{--                                <th>Remarks</th>--}}
                                 <th>Date</th>
 
                             </tr>
@@ -300,23 +305,23 @@
                                     <tr>
                                         <td>{{ $recovery->installmentDetail->installment_number }}</td>
                                         <td>{{ $recovery->amount }}</td>
-{{--                                        <td>{{ $recovery->overdue_days ?? 'N/A' }}</td>--}}
-{{--                                        <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>--}}
-{{--                                        <td>{{ $recovery->waive_off_charges ?? '0' }}</td>--}}
+                                        {{--                                        <td>{{ $recovery->overdue_days ?? 'N/A' }}</td>--}}
+                                        {{--                                        <td>{{ $recovery->penalty_fee ?? 'N/A' }}</td>--}}
+                                        {{--                                        <td>{{ $recovery->waive_off_charges ?? '0' }}</td>--}}
                                         <td>{{ ucfirst($recovery->total_amount) }}</td>
-{{--                                        <td>{{ ucfirst($recovery->payment_method) }}</td>--}}
-{{--                                        <td>{{ ucfirst($recovery->status) }}</td>--}}
-{{--                                        <td>--}}
-{{--                                            {{ $recovery->remarks }}--}}
-{{--                                            @if($recovery->is_early_settlement)--}}
-{{--                                                <br>--}}
-{{--                                                <b class="text-danger">--}}
-{{--                                                    {{ ($recovery->percentage) }}%--}}
-{{--                                                    of {{ ($recovery->remaining_amount) }}--}}
-{{--                                                    is {{ ($recovery->erc_amount) }}--}}
-{{--                                                </b><br>--}}
-{{--                                            @endif--}}
-{{--                                        </td>--}}
+                                        {{--                                        <td>{{ ucfirst($recovery->payment_method) }}</td>--}}
+                                        {{--                                        <td>{{ ucfirst($recovery->status) }}</td>--}}
+                                        {{--                                        <td>--}}
+                                        {{--                                            {{ $recovery->remarks }}--}}
+                                        {{--                                            @if($recovery->is_early_settlement)--}}
+                                        {{--                                                <br>--}}
+                                        {{--                                                <b class="text-danger">--}}
+                                        {{--                                                    {{ ($recovery->percentage) }}%--}}
+                                        {{--                                                    of {{ ($recovery->remaining_amount) }}--}}
+                                        {{--                                                    is {{ ($recovery->erc_amount) }}--}}
+                                        {{--                                                </b><br>--}}
+                                        {{--                                            @endif--}}
+                                        {{--                                        </td>--}}
                                         <td>{{ showDate($recovery->recovery_date) }}</td>
 
                                     </tr>
