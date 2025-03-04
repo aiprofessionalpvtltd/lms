@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 
 use App\Models\Bank;
+use App\Models\Expense;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -33,9 +34,105 @@ class JSBankController extends Controller
         $this->merchanType = env('JS_ZINDAGI_MERCHANT_TYPE');
     }
 
+    public function index()
+    {
+        $title = 'JS Zindagi API';
+        return view('admin.js_bank.index', compact('title'));
+    }
+
+    public function resetAuth()
+    {
+        $response = $this->resetJSBankAuthorization();
+
+        if ($response['success']) {
+            return redirect()->route('jszindagi.index')->with('success', 'Authorization reset successfully.');
+        }
+
+        return back()->with('error', 'Failed to reset authorization.');
+    }
+
+    public function resetJSBankAuthorization()
+    {
+        $url = $this->apiUrl . 'client/reset-oauth-blb';
+        $payload = ['clientSecretId' => $this->clientID];
+
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post($url, $payload);
+
+            if ($response->successful()) {
+                $responseData = $response->json();
+
+                if ($responseData['responseCode'] === '0000') {
+                    $newClientSecret = $responseData['payLoad']['clientSecret'];
+
+                    // Update .env file with new clientSecret
+                    $envUpdated = $this->updateEnvFile('JS_ZINDAGI_CLIENT_SECRET', $newClientSecret);
+
+                    if ($envUpdated) {
+                        return [
+                            'success' => true,
+                            'message' => 'Authorization reset successfully.',
+                            'clientSecret' => $newClientSecret,
+                        ];
+                    } else {
+                        return [
+                            'success' => false,
+                            'message' => 'Failed to update environment variables.',
+                        ];
+                    }
+                } else {
+                    return [
+                        'success' => false,
+                        'message' => $responseData['message'] ?? 'Reset failed',
+                    ];
+                }
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Failed to reset authorization with JS Bank API',
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'An error occurred while resetting authorization.',
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    private function updateEnvFile($key, $value)
+    {
+        $path = base_path('.env');
+
+        if (file_exists($path)) {
+            $env = file_get_contents($path);
+            $pattern = "/^" . preg_quote($key, '/') . "=.*/m";
+
+            if (preg_match($pattern, $env)) {
+                $env = preg_replace($pattern, "$key=\"$value\"", $env);
+            } else {
+                $env .= "\n$key=\"$value\"";
+            }
+
+            file_put_contents($path, $env);
+
+            // Update value in runtime without clearing cache
+            config()->set($key, $value);
+
+            return true;
+        }
+
+        return false;
+    }
+
+
     public function getJSBankAuthorization()
     {
-        $url = 'https://z-sandbox.jsbl.com/zconnect/client/oauth-blb';
+        $url = $this->apiUrl . 'client/oauth-blb';
 
         try {
             $response = Http::withHeaders([
@@ -73,52 +170,6 @@ class JSBankController extends Controller
         }
     }
 
-    public function resetJSBankAuthorization()
-    {
-        $url = 'https://z-sandbox.jsbl.com/zconnect/client/reset-oauth-blb';
-        $payload = ['clientSecretId' => $this->clientID];
-
-        try {
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->post($url, $payload);
-
-            if ($response->successful()) {
-                $responseData = $response->json();
-
-                if ($responseData['responseCode'] === '0000') {
-                    $newClientSecret = $responseData['payLoad']['clientSecret'];
-
-                    // Update .env file with new clientSecret
-                    $this->updateEnvFile('JS_ZINDAGI_CLIENT_SECRET', $newClientSecret);
-
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Authorization reset successfully.',
-                        'clientSecret' => $newClientSecret,
-                    ]);
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => $responseData['message'] ?? 'Reset failed',
-                    ], 400);
-                }
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to reset authorization with JS Bank API',
-            ], $response->status());
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'An error occurred while resetting authorization.',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
     // Verify if Account Exists
     public function verifyAccount($id)
     {
@@ -142,7 +193,7 @@ class JSBankController extends Controller
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => $this->apiUrl . 'verifyacclinkacc-blb',
+            CURLOPT_URL => $this->apiUrl . 'api/v2/verifyacclinkacc-blb',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -208,7 +259,7 @@ class JSBankController extends Controller
         $curl = curl_init();
 
         curl_setopt_array($curl, [
-            CURLOPT_URL => $this->apiUrl . 'accountopening-blb',
+            CURLOPT_URL => $this->apiUrl . 'api/v2/accountopening-blb',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -403,29 +454,6 @@ class JSBankController extends Controller
         ];
 
         return strtoupper($networks[$prefix]) ?? 'Unknown Network';
-    }
-
-    // Update .env file with new clientSecret
-    private function updateEnvFile($key, $value)
-    {
-        $path = base_path('.env');
-
-        if (file_exists($path)) {
-            $env = file_get_contents($path);
-            $pattern = "/^" . preg_quote($key, '/') . "=.*/m";
-
-            if (preg_match($pattern, $env)) {
-                $env = preg_replace($pattern, "$key=\"$value\"", $env);
-            } else {
-                $env .= "\n$key=\"$value\"";
-            }
-
-            file_put_contents($path, $env);
-
-            // Refresh environment variables
-            Artisan::call('config:clear');
-            Artisan::call('config:cache');
-        }
     }
 
 

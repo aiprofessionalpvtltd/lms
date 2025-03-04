@@ -116,7 +116,9 @@ Route::middleware(['auth'])->group(function () {
 
 
     Route::prefix('jszindagi')->name('jszindagi.')->group(function () {
+        Route::get('/index', [JSBankController::class, 'index'])->name('index');
         Route::get('/authorize', [JSBankController::class, 'getJSBankAuthorization'])->name('authorize');
+        Route::get('/resetAuth', [JSBankController::class, 'resetAuth'])->name('resetAuth');
         Route::get('/verifyAccount/{id}', [JSBankController::class, 'verifyAccount'])->name('verifyAccount');
         Route::post('/handle-wallet-transaction', [JSBankController::class, 'handleWalletTransaction'])->name('handleWalletTransaction');
 
