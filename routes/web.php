@@ -122,7 +122,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/generate/mpin', [JSBankController::class, 'generateMpin'])->name('generate.mpin');
         Route::get('/verifyAccount/{id}', [JSBankController::class, 'verifyAccount'])->name('verifyAccount');
         Route::post('/handle-wallet-transaction', [JSBankController::class, 'handleWalletTransaction'])->name('handleWalletTransaction');
-        Route::get('/wallet-to-wallet/confirmation', [JSBankController::class, 'walletToWalletConfirmation'])->name('wallet-to-wallet.confirmation');
+        Route::get('/wallet-to-wallet/confirmation/{id}', [JSBankController::class, 'walletToWalletConfirmation'])->name('wallet-to-wallet.confirmation');
         Route::post('/wallet-to-wallet/confirm', [JSBankController::class, 'confirmWalletTransaction'])
             ->name('wallet-to-wallet.confirm');
 

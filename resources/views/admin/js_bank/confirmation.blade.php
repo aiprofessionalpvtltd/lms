@@ -40,6 +40,7 @@
 
         <form action="{{ route('jszindagi.wallet-to-wallet.confirm') }}" method="POST">
             @csrf
+            <input type="hidden" name="id" value="{{$id}}">
             <button type="submit" class="btn btn-success mt-3">Confirm Transaction</button>
         </form>
 

@@ -340,7 +340,7 @@ class JSBankController extends Controller
                 "w2wpiRequest" => [
                     "MerchantType" => $this->merchanType,
                     "TraceNo" => (string)mt_rand(100000, 999999),
-                    "CompanyName" =>  env('JS_ZINDAGI_COMPANY_NAME'),
+                    "CompanyName" => env('JS_ZINDAGI_COMPANY_NAME'),
                     "DateTime" => now()->format('YmdHis'), // Current date-time
                     "TerminalId" => env('JS_ZINDAGI_COMPANY_NAME'),
                     "ReceiverMobileNumber" => $loanApplication->user->profile->mobile_no,
@@ -384,7 +384,7 @@ class JSBankController extends Controller
                 // Store response in session for confirmation page
                 session(['w2wpi_response' => $responseData['w2wpiResponse']]);
 
-                return redirect()->route('jszindagi.wallet-to-wallet.confirmation');
+                return redirect()->route('jszindagi.wallet-to-wallet.confirmation', $loanApplication->id);
             }
 
             DB::rollBack();
@@ -396,7 +396,7 @@ class JSBankController extends Controller
         }
     }
 
-    public function walletToWalletConfirmation()
+    public function walletToWalletConfirmation($id)
     {
         $responseData = session('w2wpi_response');
         $title = 'Transaction Confirmation';
@@ -404,25 +404,112 @@ class JSBankController extends Controller
             return redirect()->route('home')->withErrors(['error' => 'No transaction data found.']);
         }
 
-        return view('admin.js_bank.confirmation', compact('responseData', 'title'));
+        return view('admin.js_bank.confirmation', compact('responseData', 'title', 'id'));
     }
-    public function confirmWalletTransaction()
+
+    public function confirmWalletTransaction(Request $request)
     {
+
+        // Retrieve response data from session
         $responseData = session('w2wpi_response');
 
         if (!$responseData) {
             return redirect()->route('home')->withErrors(['error' => 'No transaction data found.']);
         }
 
-        // Logic for confirming transaction (e.g., saving to DB)
+        // Generate Trace Number
+        $traceNo = (string)mt_rand(100000, 999999);
 
-        session()->forget('w2wpi_response');
+        // Prepare API request payload
+        $payloadArray = [
+            "w2wpRequest" => [
+                "MerchantType" => $this->merchanType,
+                "TraceNo" => $traceNo,
+                "CompanyName" => env('JS_ZINDAGI_COMPANY_NAME'),
+                "DateTime" => now()->format('YmdHis'),
+                "TerminalId" => env('JS_ZINDAGI_COMPANY_NAME'),
+                "ReceiverMobileNumber" => $responseData['ReceiverMobileNumber'],
+                "MobileNo" => $responseData['CustomerMobile'],
+                "Amount" => $responseData['TransactionAmount'],
+                "Reserved1" => "03",
+                "OtpPin" => env('JS_ZINDAGI_ENCRYPTED_MPIN')
+            ]
+        ];
 
-        dd('confirm');
+        $payloadJson = json_encode($payloadArray);
 
-        return redirect()->route('home')->with('success', 'Transaction confirmed successfully.');
+        // Initialize cURL request
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => env('JS_ZINDAGI_API_URL') . '/api/v2/w2wp-blb',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $payloadJson,
+            CURLOPT_HTTPHEADER => [
+                'clientId: ' . env('JS_ZINDAGI_CLIENT_ID'),
+                'clientSecret: ' . env('JS_ZINDAGI_CLIENT_SECRET'),
+                'organizationId: ' . env('JS_ZINDAGI_ORGANIZATION_ID'),
+                'Content-Type: application/json'
+            ],
+        ]);
+
+        $response = curl_exec($ch);
+        $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        // Handle cURL errors
+        if ($curlError) {
+            return back()->withErrors(['error' => 'Payment request failed: ' . $curlError]);
+        }
+
+        // Decode JSON response
+        $responseData = json_decode($response, true);
+
+        // Check for successful response
+        if ($httpStatus === 200 && isset($responseData['w2wpResponse']['ResponseCode']) && $responseData['w2wpResponse']['ResponseCode'] === "00") {
+            DB::beginTransaction();
+
+            try {
+                $transactionData = [
+                    'loan_application_id' => $request->id,
+                    'user_id' => Auth::id(),
+                    'amount' => (float)$payloadArray['w2wpRequest']['Amount'],
+                    'payment_method' => 'JS Zindagi Wallet TO Wallet',
+                    'status' => 'completed',
+                    'transaction_reference' => $traceNo,
+                    'remarks' => $responseData['w2wpResponse']['ResponseDetails'][0] ?? 'Transaction Successful',
+                    'responseCode' => $responseData['w2wpResponse']['ResponseCode'],
+                    'transactionID' => $traceNo,
+                    'referenceID' => $traceNo,
+                    'dateTime' => currentDateTimeInsert(),
+                ];
+
+
+                // Create transaction record
+                Transaction::create($transactionData);
+
+                DB::commit();
+
+                // Clear session data
+                session()->forget('w2wpi_response');
+
+                return redirect()->route('show-installment')->with('success', 'Transaction successful.');
+            } catch (\Exception $e) {
+
+                DB::rollBack();
+                return back()->withErrors(['error' => 'Transaction failed to save: ' . $e->getMessage()]);
+            }
+        }
+
+        // Handle failed transactions
+        return back()->withErrors(['error' => 'Transaction failed: ' . ($responseData['w2wpResponse']['ResponseDetails'][0] ?? 'Unknown error')]);
     }
-
 
 
     // Get Response Code Descriptions
