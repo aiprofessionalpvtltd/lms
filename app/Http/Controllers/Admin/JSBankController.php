@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\SecurityHelper;
 use App\Http\Controllers\Controller;
 
 use App\Models\Bank;
@@ -130,6 +131,17 @@ class JSBankController extends Controller
     }
 
 
+    public function generateMpin(Request $request)
+    {
+        $mpinData = SecurityHelper::generateEncryptedMPIN();
+
+        // Save encrypted MPIN in .env file
+        $this->updateEnvFile('JS_ZINDAGI_ENCRYPTED_MPIN', $mpinData['encrypted_mpin']);
+        $this->updateEnvFile('JS_ZINDAGI_MPIN', $mpinData['mpin']);
+
+        return redirect()->back()->with('success', 'MPIN generated successfully!');
+    }
+
     public function getJSBankAuthorization()
     {
         $url = $this->apiUrl . 'client/oauth-blb';
@@ -216,7 +228,8 @@ class JSBankController extends Controller
         curl_close($curl);
 
         if ($error) {
-            return ['success' => false, 'message' => 'cURL Error: ' . $error];
+            return redirect()->back()->with('error', 'cURL Error: ' . $error);
+
         }
 
         $responseData = json_decode($response, true);
@@ -309,60 +322,108 @@ class JSBankController extends Controller
         }
     }
 
-    // Handle Wallet Transaction
-    public function handleWalletTransaction(Request $request)
+
+    public function walletToWalletInquiry(Request $request)
     {
         $request->validate(['loan_application_id' => 'required|exists:loan_applications,id']);
 
         DB::beginTransaction();
         try {
+            // Fetch loan application details
             $loanApplication = LoanApplication::with('getLatestInstallment.details', 'user.bank_account')
                 ->findOrFail($request->loan_application_id);
             $disburseAmount = $loanApplication->loan_amount - $loanApplication->getLatestInstallment->processing_fee;
-            $userBankDetail = $loanApplication->user->bank_account;
 
-            // Step 1: Verify Account
-            $verificationResponse = $this->verifyAccount($request);
-            if (!$verificationResponse['success']) {
-                throw new \Exception($verificationResponse['message']);
-            }
 
-            // Step 2: Open Account if Not Exists
-            if (!$verificationResponse['success']) {
-                $openingResponse = $this->openAccount($request);
-                if (!$openingResponse['success']) {
-                    throw new \Exception($openingResponse['message']);
-                }
-            }
-
-            // Process Payment
-            $paymentResponse = $this->openAccount($request);
-            if (!$paymentResponse['success']) {
-                throw new \Exception($paymentResponse['message']);
-            }
-
-            // Save Transaction
-            Transaction::create([
-                'loan_application_id' => $loanApplication->id,
-                'user_id' => Auth::id(),
-                'amount' => $disburseAmount,
-                'payment_method' => 'JS Bank',
-                'status' => 'completed',
-                'transaction_reference' => $paymentResponse['data']['TraceNo'],
-                'remarks' => $paymentResponse['data']['ResponseDetails'][0] ?? '',
-                'responseCode' => $paymentResponse['data']['ResponseCode'],
-                'referenceID' => $paymentResponse['data']['TraceNo'] ?? '',
-                'dateTime' => now(),
+            // Prepare API request payload
+            $payload = json_encode([
+                "w2wpiRequest" => [
+                    "MerchantType" => $this->merchanType,
+                    "TraceNo" => (string)mt_rand(100000, 999999),
+                    "CompanyName" =>  env('JS_ZINDAGI_COMPANY_NAME'),
+                    "DateTime" => now()->format('YmdHis'), // Current date-time
+                    "TerminalId" => env('JS_ZINDAGI_COMPANY_NAME'),
+                    "ReceiverMobileNumber" => $loanApplication->user->profile->mobile_no,
+                    "MobileNo" => env('JS_ZINDAGI_COMPANY_MOBILE'),
+                    "Amount" => (string)$disburseAmount,
+                    "Reserved1" => "03"
+                ]
             ]);
 
-            DB::commit();
-            return redirect()->route('show-installment')->with('success', 'Transaction and installments updated successfully.');
+            // cURL Request
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => env('JS_ZINDAGI_API_URL') . '/api/v2/w2wpi-blb',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS => $payload,
+                CURLOPT_HTTPHEADER => [
+                    'clientId: ' . env('JS_ZINDAGI_CLIENT_ID'),
+                    'clientSecret: ' . env('JS_ZINDAGI_CLIENT_SECRET'),
+                    'organizationId: ' . env('JS_ZINDAGI_ORGANIZATION_ID'),
+                    'Content-Type: application/json'
+                ],
+            ]);
+
+            $response = curl_exec($ch);
+            $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            // Decode JSON response
+            $responseData = json_decode($response, true);
+
+
+            if ($httpStatus === 200 && isset($responseData['w2wpiResponse']['ResponseCode']) && $responseData['w2wpiResponse']['ResponseCode'] === "00") {
+                DB::commit();
+
+                // Store response in session for confirmation page
+                session(['w2wpi_response' => $responseData['w2wpiResponse']]);
+
+                return redirect()->route('jszindagi.wallet-to-wallet.confirmation');
+            }
+
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Transaction failed: ' . ($responseData['w2wpiResponse']['ResponseDetails'][0] ?? 'Unknown error')]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
+
+    public function walletToWalletConfirmation()
+    {
+        $responseData = session('w2wpi_response');
+        $title = 'Transaction Confirmation';
+        if (!$responseData) {
+            return redirect()->route('home')->withErrors(['error' => 'No transaction data found.']);
+        }
+
+        return view('admin.js_bank.confirmation', compact('responseData', 'title'));
+    }
+    public function confirmWalletTransaction()
+    {
+        $responseData = session('w2wpi_response');
+
+        if (!$responseData) {
+            return redirect()->route('home')->withErrors(['error' => 'No transaction data found.']);
+        }
+
+        // Logic for confirming transaction (e.g., saving to DB)
+
+        session()->forget('w2wpi_response');
+
+        dd('confirm');
+
+        return redirect()->route('home')->with('success', 'Transaction confirmed successfully.');
+    }
+
+
 
     // Get Response Code Descriptions
     private function getJSBankZindagiStatusDescription($code)

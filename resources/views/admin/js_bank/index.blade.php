@@ -31,11 +31,27 @@
 
             <div class="card-body">
                 <div class="row">
-                <div class="col-3">
-                    <span><b>Authorization Key : </b> {{env('js_zindagi_client_secret')}}</span>
-                    <a class="btn btn-info" href="{{route('jszindagi.resetAuth')}}">Click to Reset JS Zindagi AUthorization</a>
+                    <div class="col-6">
+                        <span><b>Authorization Key : </b> {{env('js_zindagi_client_secret')}}</span>
+                        <a class="btn btn-info" href="{{route('jszindagi.resetAuth')}}">Click to Reset JS Zindagi
+                            AUthorization</a>
+                    </div>
 
-                </div>
+                    <div class="col-6">
+
+                            @if(env('JS_ZINDAGI_ENCRYPTED_MPIN'))
+                                <span><b> MPIN: </b> {{ env('JS_ZINDAGI_MPIN') }}</span> <br>
+                                <span><b>Encrypted MPIN: </b> {{ env('JS_ZINDAGI_ENCRYPTED_MPIN') }}</span>
+                            @else
+                                <form method="POST" action="{{ route('jszindagi.generate.mpin') }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-info">Generate MPIN</button>
+                                </form>
+                            @endif
+
+
+                    </div>
+
 
                 </div>
             </div>

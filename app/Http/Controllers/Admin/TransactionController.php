@@ -103,8 +103,8 @@ class TransactionController extends Controller
                 return $this->jazzCashMWAPI($request);
             }
 
-            if ($request->service_api == 'js_zindagi_wallet') {
-                return app(JSBankController::class)->handleWalletTransaction($request);
+            if ($request->service_api == 'js_zindagi_w2w') {
+                return app(JSBankController::class)->walletToWalletInquiry($request);
             }
 
             if ($request->service_api == 'js_bank_ibft' || $request->service_api == 'js_bank_ift' || $request->service_api == 'js_bank_coc') {

@@ -119,8 +119,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/index', [JSBankController::class, 'index'])->name('index');
         Route::get('/authorize', [JSBankController::class, 'getJSBankAuthorization'])->name('authorize');
         Route::get('/resetAuth', [JSBankController::class, 'resetAuth'])->name('resetAuth');
+        Route::post('/generate/mpin', [JSBankController::class, 'generateMpin'])->name('generate.mpin');
         Route::get('/verifyAccount/{id}', [JSBankController::class, 'verifyAccount'])->name('verifyAccount');
         Route::post('/handle-wallet-transaction', [JSBankController::class, 'handleWalletTransaction'])->name('handleWalletTransaction');
+        Route::get('/wallet-to-wallet/confirmation', [JSBankController::class, 'walletToWalletConfirmation'])->name('wallet-to-wallet.confirmation');
+        Route::post('/wallet-to-wallet/confirm', [JSBankController::class, 'confirmWalletTransaction'])
+            ->name('wallet-to-wallet.confirm');
 
     });
     Route::prefix('jsbank')->name('jsbank.')->group(function () {

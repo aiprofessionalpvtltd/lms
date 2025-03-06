@@ -72,6 +72,27 @@
                         <p><strong>Swift Code:</strong> {{ $loanApplication->user->bank_account->swift_code }}</p>
 
                     </div>
+                    <div class="col-md-4">
+                        <h1>JS Zindagi Information</h1>
+                        <p>
+                            <strong>JS Zindagi Verified:</strong>
+                            @php
+                                $class = $loanApplication->user->is_zindagi_verified == 1 ? 'text-success' : 'text-danger';
+                                $label = $loanApplication->user->is_zindagi_verified == 1 ? 'Verified' : 'Not Verified';
+                            @endphp
+                            <span class="{{ $class }}">{{ $label }}</span>
+                        </p>
+
+                        <p>
+                            <strong>JS Zindagi Account Opened:</strong>
+                            @php
+                                $class = $loanApplication->user->is_account_opened == 1 ? 'text-success' : 'text-danger';
+                                $label = $loanApplication->user->is_account_opened == 1 ? 'Open' : 'Not Open';
+                            @endphp
+                            <span class="{{ $class }}">{{ $label }}</span>
+                        </p>
+
+                    </div>
 
                 </div>
             </div>
@@ -102,7 +123,10 @@
                                                     <option value="js_bank_ift">JS Bank (IFT)</option>
                                                 @endif
                                                 <option value="js_bank_coc">JS Bank (COC)</option>
-                                                <option value="js_zindagi_wallet">JS Zindagi API Wallet</option>
+                                                @if($loanApplication->user->is_zindagi_verified == 1)
+                                                <option value="js_zindagi_w2w">JS Zindagi W2W</option>
+                                                @endif
+
                                                 {{--                                                <option value="tasdeeq_credit_check">Tasdeeq Credit Check</option>--}}
                                                 {{--                                                <option value="datacheck">DataCheck</option>--}}
                                                 {{--                                                <option value="nacta_aml">NACTA Data (AML)</option>--}}
