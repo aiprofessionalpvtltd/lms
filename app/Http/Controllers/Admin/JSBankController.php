@@ -64,7 +64,7 @@ class JSBankController extends Controller
                 'Content-Type' => 'application/json',
             ])->post($url, $payload);
 
-            dd($url , $payload ,$response->successful());
+//            dd($url , $payload ,$response->successful());
             if ($response->successful()) {
                 $responseData = $response->json();
 
@@ -94,8 +94,7 @@ class JSBankController extends Controller
                 }
             } else {
                 $responseData = $response->json();
-                dd($responseData);
-                return [
+                 return [
                     'success' => false,
                     'message' => $responseData['messages'],
                 ];
@@ -105,7 +104,7 @@ class JSBankController extends Controller
         } catch (\Exception $e) {
             return [
                 'success' => false,
-                'message' => 'An error occurred while resetting authorization.',
+                'message' => 'An error occurred while resetting authorization.' . $e->getMessage(),
                 'error' => $e->getMessage(),
             ];
         }
