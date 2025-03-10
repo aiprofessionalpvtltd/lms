@@ -64,7 +64,7 @@ class JSBankController extends Controller
                 'Content-Type' => 'application/json',
             ])->post($url, $payload);
 
-//            dd($url , $payload ,$response->json());
+            dd($url , $payload ,$response->json());
             if ($response->successful()) {
                 $responseData = $response->json();
 
