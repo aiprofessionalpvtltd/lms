@@ -45,6 +45,7 @@ class JSBankController extends Controller
     {
         $response = $this->resetJSBankAuthorization();
 
+        dd($response);
         if ($response['success']) {
             return redirect()->route('jszindagi.index')->with('success', 'Authorization reset successfully.');
         }
