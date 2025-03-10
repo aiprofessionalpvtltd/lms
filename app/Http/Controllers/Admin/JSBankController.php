@@ -45,12 +45,13 @@ class JSBankController extends Controller
     {
         $response = $this->resetJSBankAuthorization();
 
-        dd($response);
         if ($response['success']) {
             return redirect()->route('jszindagi.index')->with('success', 'Authorization reset successfully.');
+        } else {
+            return back()->with('error', $response['message']);
+
         }
 
-        return back()->with('error', 'Failed to reset authorization.');
     }
 
     public function resetJSBankAuthorization()
@@ -63,7 +64,7 @@ class JSBankController extends Controller
                 'Content-Type' => 'application/json',
             ])->post($url, $payload);
 
-            dd($url , $payload ,$response->json());
+//            dd($url , $payload ,$response->json());
             if ($response->successful()) {
                 $responseData = $response->json();
 
@@ -91,12 +92,14 @@ class JSBankController extends Controller
                         'message' => $responseData['message'] ?? 'Reset failed',
                     ];
                 }
+            } else {
+                $responseData = $response->json();
+                return [
+                    'success' => false,
+                    'message' => $responseData['messages'],
+                ];
             }
 
-            return [
-                'success' => false,
-                'message' => 'Failed to reset authorization with JS Bank API',
-            ];
 
         } catch (\Exception $e) {
             return [
