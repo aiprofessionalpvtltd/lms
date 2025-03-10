@@ -94,6 +94,7 @@ class JSBankController extends Controller
                 }
             } else {
                 $responseData = $response->json();
+                dd($responseData);
                 return [
                     'success' => false,
                     'message' => $responseData['messages'],
